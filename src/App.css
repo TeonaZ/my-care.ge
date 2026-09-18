@@ -1,0 +1,534 @@
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.app {
+  width: 100%;
+  min-height: 100vh;
+
+  display: block;
+}
+
+
+
+/* მთელი გვერდის ძირითადი პარამეტრები */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* საიტის ზედა მენიუ */
+.header {
+   width: 100%;
+  min-height: 72px;
+  padding: 12px 4%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  background-color: white;
+  border-bottom: 1px solid #eeeeee;
+}
+
+/* Care Georgia ლოგო */
+.logo {
+  font-size: 26px;
+  font-weight: bold;
+  color: #2563eb;
+  white-space: nowrap;
+}
+
+/* მენიუ */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+
+  flex: 1;
+}
+
+/* მენიუს ტექსტები */
+.nav a {
+   color: #333333;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* მაუსის მიტანისას */
+.nav a:hover {
+  color: #2563eb;
+}
+
+/* მარჯვენა ღილაკები */
+.header-buttons {
+   display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ყველა ღილაკის საერთო დიზაინი */
+.header-buttons button {
+ padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* შესვლის ღილაკი */
+.login-btn {
+  background-color: white;
+  color: #2563eb;
+  border: 1px solid #2563eb;
+}
+
+/* რეგისტრაციის ღილაკი */
+.register-btn {
+  background-color: #2563eb;
+  color: white;
+  border: 1px solid #2563eb;
+}
+
+/* რეგისტრაციაზე მაუსის მიტანა */
+.register-btn:hover {
+  background-color: #1d4ed8;
+}
+
+/* =========================
+   HERO SECTION
+========================= */
+
+.hero {
+  width: 100%;
+  min-height: 600px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 80px 7%;
+
+  background: linear-gradient(
+    135deg,
+    #eff6ff,
+    #f8fafc
+  );
+}
+
+.hero-content {
+   width: 100%;
+  max-width: 900px;
+  text-align: center;
+}
+
+.hero-small {
+  color: #2563eb;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.hero h1 {
+  font-size: 52px;
+  line-height: 1.15;
+  color: #172033;
+  margin-bottom: 22px;
+}
+
+.hero h1 span {
+  color: #2563eb;
+}
+
+.hero-description {
+  max-width: 650px;
+  margin: 0 auto 35px;
+
+  font-size: 19px;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+
+/* საძიებო ბლოკი */
+
+.search-box {
+   width: 100%;
+  background-color: white;
+  padding: 14px;
+  border-radius: 14px;
+
+  display: flex;
+  gap: 10px;
+
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+
+/* ჩამოსაშლელი მენიუ */
+
+.search-box select {
+  flex: 1;
+  min-width: 0;
+  padding: 16px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+
+  background-color: white;
+
+  font-size: 16px;
+  color: #334155;
+
+  outline: none;
+}
+
+
+/* ძიების ღილაკი */
+
+.search-btn {
+  padding: 16px 30px;
+
+  border: none;
+  border-radius: 9px;
+
+  background-color: #2563eb;
+  color: white;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.search-btn:hover {
+  background-color: #1d4ed8;
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+   ტელეფონი და პატარა ეკრანი
+========================= */
+
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+
+/* საშუალო ზომის ეკრანი */
+@media (max-width: 1000px) {
+
+  .header {
+    height: auto;
+    padding: 20px 5%;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+
+    justify-content: center;
+    flex-wrap: wrap;
+
+    gap: 15px;
+  }
+
+  .hero {
+    padding: 60px 5%;
+    min-height: 550px;
+  }
+
+  .hero h1 {
+    font-size: 42px;
+  }
+}
+
+
+/* ტელეფონის ეკრანი */
+@media (max-width: 700px) {
+
+  .header {
+    padding: 16px 20px;
+  }
+
+  .logo {
+    font-size: 21px;
+  }
+
+  /* მენიუს დროებით ვმალავთ ტელეფონზე */
+  .nav {
+    display: none;
+  }
+
+  .header-buttons {
+    gap: 6px;
+  }
+
+  .header-buttons button {
+    padding: 9px 11px;
+    font-size: 13px;
+  }
+
+  .hero {
+    min-height: auto;
+    padding: 70px 20px;
+  }
+
+  .hero-small {
+    font-size: 14px;
+  }
+
+  .hero h1 {
+    font-size: 34px;
+  }
+
+  .hero-description {
+    font-size: 16px;
+  }
+
+  /* ძიების ველები ერთმანეთის ქვემოთ ჩამოვა */
+  .search-box {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .search-box select {
+    width: 100%;
+  }
+
+  .search-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 1200px) {
+
+  .header {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .header-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .hero h1 {
+    font-size: 29px;
+  }
+
+  .search-box {
+    max-width: 100%;
+  }
+
+  .search-box select,
+  .search-btn {
+    max-width: 100%;
+  }
+}
+
+
+/* =========================
+   SERVICES SECTION
+========================= */
+
+.services {
+  width: 100%;
+  padding: 80px 5%;
+  background-color: #ffffff;
+}
+
+/* სექციის სათაური */
+.services-title {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 50px;
+}
+
+.services-title > p {
+  color: #2563eb;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.services-title h2 {
+  color: #172033;
+  font-size: 36px;
+  margin-bottom: 15px;
+}
+
+.services-title span {
+  color: #64748b;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+
+/* ბარათების კონტეინერი */
+.service-cards {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  display: grid;
+
+  /* ავტომატურად ანაწილებს ბარათებს */
+  grid-template-columns: repeat(5, 1fr);
+
+  gap: 18px;
+}
+
+
+/* ერთი ბარათი */
+.service-card {
+  background-color: #ffffff;
+
+  border: 1px solid #e8edf5;
+  border-radius: 18px;
+
+  padding: 28px 22px;
+
+  min-height: 270px;
+
+  display: flex;
+  flex-direction: column;
+
+  transition: 0.3s;
+}
+
+
+/* მაუსის მიტანისას ბარათი ოდნავ აიწევა */
+.service-card:hover {
+  transform: translateY(-7px);
+
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+
+  border-color: #bfdbfe;
+}
+
+
+/* Emoji */
+.service-icon {
+  width: 60px;
+  height: 60px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-color: #eff6ff;
+
+  border-radius: 15px;
+
+  font-size: 29px;
+
+  margin-bottom: 22px;
+}
+
+
+/* ბარათის სათაური */
+.service-card h3 {
+  color: #172033;
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+
+/* აღწერა */
+.service-card p {
+  color: #64748b;
+
+  font-size: 15px;
+  line-height: 1.6;
+
+  margin-bottom: 22px;
+}
+
+
+/* ნახვა ღილაკი */
+.service-card button {
+  margin-top: auto;
+
+  background: none;
+  border: none;
+
+  color: #2563eb;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+
+/* =========================
+   SERVICES RESPONSIVE
+========================= */
+
+@media (max-width: 1100px) {
+
+  .service-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+}
+
+
+@media (max-width: 750px) {
+
+  .services {
+    padding: 60px 20px;
+  }
+
+  .services-title h2 {
+    font-size: 29px;
+  }
+
+  .service-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 500px) {
+
+  .service-cards {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+.service-link {
+  margin-top: auto;
+
+  color: #2563eb;
+  text-decoration: none;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.service-link:hover {
+  color: #1d4ed8;
+}
