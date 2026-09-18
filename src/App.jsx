@@ -3,18 +3,24 @@ import Drivers from "./pages/Drivers";
 import DriverProfile from "./pages/DriverProfile";
 import Tutors from "./pages/Tutors";
 import TutorProfile from "./pages/TutorProfile";
+import Nannies from "./pages/Nannies";
+import NannyProfile from "./pages/NannyProfile";
+import Caregivers from "./pages/Caregivers";
+import CaregiverProfile from "./pages/CaregiverProfile";
+import Housekeepers from "./pages/Housekeepers";
+import HousekeeperProfile from "./pages/HousekeeperProfile";
+import Register from "./pages/Register";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import DogWalkers from "./pages/DogWalkers";
 import "./App.css";
 
 function Home() {
   return (
     <div className="app">
-
       {/* HEADER */}
       <header className="header">
-
-        <div className="logo">
-          Care Georgia
-        </div>
+        <div className="logo">Care Georgia</div>
 
         <nav className="nav">
           <a href="#">მთავარი</a>
@@ -24,26 +30,16 @@ function Home() {
         </nav>
 
         <div className="header-buttons">
-          <button className="login-btn">
-            შესვლა
-          </button>
+          <button className="login-btn">შესვლა</button>
 
-          <button className="register-btn">
-            რეგისტრაცია
-          </button>
+          <button className="register-btn">რეგისტრაცია</button>
         </div>
-
       </header>
-
 
       {/* HERO */}
       <main className="hero">
-
         <div className="hero-content">
-
-          <p className="hero-small">
-            ზრუნვა იწყება სწორი ადამიანის პოვნით
-          </p>
+          <p className="hero-small">ზრუნვა იწყება სწორი ადამიანის პოვნით</p>
 
           <h1>
             იპოვე სანდო ადამიანი
@@ -51,40 +47,29 @@ function Home() {
           </h1>
 
           <p className="hero-description">
-            მოძებნე გამოცდილი სპეციალისტები შენს ქალაქში —
-            მარტივად, სწრაფად და უსაფრთხოდ.
+            მოძებნე გამოცდილი სპეციალისტები შენს ქალაქში — მარტივად, სწრაფად და
+            უსაფრთხოდ.
           </p>
-
 
           {/* SEARCH */}
           <div className="search-box">
-
             <select defaultValue="">
               <option value="" disabled>
                 რას ეძებ?
               </option>
 
-              <option value="nanny">
-                👶 ძიძა
-              </option>
+              <option value="nanny">👶 ძიძა</option>
 
-              <option value="elderly">
-                👵 ხანდაზმულის მომვლელი
-              </option>
+              <option value="elderly">👵 ხანდაზმულის მომვლელი</option>
 
-              <option value="driver">
-                🚗 მძღოლი
-              </option>
+              <option value="driver">🚗 მძღოლი</option>
 
-              <option value="tutor">
-                📚 ტუტორი / რეპეტიტორი
-              </option>
+              <option value="tutor">📚 ტუტორი / რეპეტიტორი</option>
 
-              <option value="home">
-                🏠 სახლის დამხმარე
-              </option>
+              <option value="home">🏠 სახლის დამხმარე</option>
+
+              <option value="dogwalker">🐕 Dog Walker</option>
             </select>
-
 
             <select defaultValue="">
               <option value="" disabled>
@@ -99,73 +84,77 @@ function Home() {
               <option value="zugdidi">ზუგდიდი</option>
             </select>
 
-
-            <button className="search-btn">
-              ძიება
-            </button>
-
+            <button className="search-btn">ძიება</button>
           </div>
-
         </div>
-
       </main>
 
       {/* SERVICES */}
-<section className="services">
+      <section className="services">
+        <div className="services-title">
+          <p>ჩვენი სერვისები</p>
+          <h2>როგორი დახმარება გჭირდება?</h2>
+          <span>
+            აირჩიე სასურველი კატეგორია და იპოვე შესაბამისი სპეციალისტი.
+          </span>
+        </div>
 
-  <div className="services-title">
-    <p>ჩვენი სერვისები</p>
-    <h2>როგორი დახმარება გჭირდება?</h2>
-    <span>
-      აირჩიე სასურველი კატეგორია და იპოვე შესაბამისი სპეციალისტი.
-    </span>
-  </div>
+        <div className="service-cards">
+          <div className="service-card">
+            <div className="service-icon">👶</div>
+            <h3>ძიძა</h3>
+            <p>იპოვე სანდო ძიძა ბავშვის მოვლისთვის.</p>
+            <Link to="/nannies" className="service-link">
+              ნახვა →
+            </Link>
+          </div>
 
-  <div className="service-cards">
+          <div className="service-card">
+            <div className="service-icon">👵</div>
+            <h3>მომვლელი</h3>
+            <p>იპოვე მზრუნველი ადამიანი ოჯახის წევრისთვის.</p>
+            <Link to="/caregivers" className="service-link">
+              ნახვა →
+            </Link>
+          </div>
 
-    <div className="service-card">
-      <div className="service-icon">👶</div>
-      <h3>ძიძა</h3>
-      <p>იპოვე სანდო ძიძა ბავშვის მოვლისთვის.</p>
-      <button>ნახვა →</button>
-    </div>
+          <div className="service-card">
+            <div className="service-icon">🚗</div>
+            <h3>მძღოლი</h3>
+            <p>იპოვე გამოცდილი და სანდო მძღოლი.</p>
+            <Link to="/drivers" className="service-link">
+              ნახვა →
+            </Link>
+          </div>
 
-    <div className="service-card">
-      <div className="service-icon">👵</div>
-      <h3>მომვლელი</h3>
-      <p>იპოვე მზრუნველი ადამიანი ოჯახის წევრისთვის.</p>
-      <button>ნახვა →</button>
-    </div>
+          <div className="service-card">
+            <div className="service-icon">📚</div>
+            <h3>ტუტორი</h3>
+            <p>იპოვე მასწავლებელი და რეპეტიტორი.</p>
+            <Link to="/tutors" className="service-link">
+              ნახვა →
+            </Link>
+          </div>
 
-    <div className="service-card">
-      <div className="service-icon">🚗</div>
-      <h3>მძღოლი</h3>
-      <p>იპოვე გამოცდილი და სანდო მძღოლი.</p>
-     <Link to="/drivers" className="service-link">
-      ნახვა →
-    </Link>
-    </div>
+          <div className="service-card">
+            <div className="service-icon">🏠</div>
+            <h3>სახლის დამხმარე</h3>
+            <p>იპოვე ადამიანი ყოველდღიური საქმეებისთვის.</p>
+            <Link to="/housekeepers" className="service-link">
+              ნახვა →
+            </Link>
+          </div>
 
-    <div className="service-card">
-      <div className="service-icon">📚</div>
-      <h3>ტუტორი</h3>
-      <p>იპოვე მასწავლებელი და რეპეტიტორი.</p>
-      <Link to="/tutors" className="service-link">
-  ნახვა →
-</Link>
-    </div>
-
-    <div className="service-card">
-      <div className="service-icon">🏠</div>
-      <h3>სახლის დამხმარე</h3>
-      <p>იპოვე ადამიანი ყოველდღიური საქმეებისთვის.</p>
-      <button>ნახვა →</button>
-    </div>
-
-  </div>
-
-</section>
-
+          <div className="service-card">
+            <div className="service-icon">🐕</div>
+            <h3>Dog Walker</h3>
+            <p>ძაღლის გასეირნება და მოვლა</p>
+            <Link to="/dogwalker" className="service-link">
+              ნახვა →
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
@@ -175,20 +164,24 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/drivers" element={<Drivers />} />
-        <Route
-        path="/drivers/:id"
-        element={<DriverProfile />}
-      />
+      <Route path="/drivers/:id" element={<DriverProfile />} />
 
       <Route path="/tutors" element={<Tutors />} />
-      <Route
-  path="/tutors/:id"
-  element={<TutorProfile />}
-/>
+      <Route path="/tutors/:id" element={<TutorProfile />} />
 
+      <Route path="/nannies" element={<Nannies />} />
+      <Route path="/nannies/:id" element={<NannyProfile />} />
+
+      <Route path="/caregivers" element={<Caregivers />} />
+      <Route path="/caregivers/:id" element={<CaregiverProfile />} />
+      <Route path="/housekeepers" element={<Housekeepers />} />
+      <Route path="/housekeepers/:id" element={<HousekeeperProfile />} />
+      <Route path="/dogwalker" element={<DogWalkers />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
     </Routes>
   );
 }
-
 
 export default App;

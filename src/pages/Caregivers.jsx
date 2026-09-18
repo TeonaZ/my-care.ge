@@ -1,34 +1,32 @@
 import { Link } from "react-router-dom";
 import "./Drivers.css";
 
-function Drivers() {
-  // დროებითი მონაცემები.
-  // მოგვიანებით ეს ინფორმაცია მონაცემთა ბაზიდან წამოვა.
-  const drivers = [
+function Caregivers() {
+  const caregivers = [
     {
       id: 1,
-      name: "გიორგი მ.",
+      name: "მაია კ.",
       city: "თბილისი",
-      experience: "8 წლიანი გამოცდილება",
-      price: "25 ₾ / საათი",
+      experience: "8 წელი",
+      price: "22 ₾ / საათი",
       rating: "⭐ 4.9",
       verified: true,
     },
     {
       id: 2,
-      name: "ლევან კ.",
-      city: "თბილისი",
-      experience: "5 წლიანი გამოცდილება",
-      price: "20 ₾ / საათი",
+      name: "ეკა მ.",
+      city: "ქუთაისი",
+      experience: "6 წელი",
+      price: "18 ₾ / საათი",
       rating: "⭐ 4.8",
       verified: true,
     },
     {
       id: 3,
-      name: "დავით ნ.",
+      name: "ნანა გ.",
       city: "ბათუმი",
-      experience: "6 წლიანი გამოცდილება",
-      price: "22 ₾ / საათი",
+      experience: "5 წელი",
+      price: "17 ₾ / საათი",
       rating: "⭐ 4.7",
       verified: false,
     },
@@ -36,17 +34,16 @@ function Drivers() {
 
   return (
     <div className="drivers-page">
-      {/* ზედა ნაწილი */}
       <header className="drivers-header">
         <Link to="/" className="back-link">
           ← Care Georgia
         </Link>
 
-        <h1>იპოვე მძღოლი</h1>
+        <h1>იპოვე მომვლელი</h1>
 
         <p>
-          შეარჩიე შენთვის სასურველი მძღოლი ქალაქის, გამოცდილებისა და ფასის
-          მიხედვით.
+          იპოვე სანდო და გამოცდილი ადამიანი ხანდაზმული ოჯახის წევრის მოვლისა და
+          დახმარებისთვის.
         </p>
       </header>
 
@@ -57,6 +54,14 @@ function Drivers() {
           <option>თბილისი</option>
           <option>ბათუმი</option>
           <option>ქუთაისი</option>
+          <option>რუსთავი</option>
+        </select>
+
+        <select>
+          <option>გამოცდილება</option>
+          <option>1+ წელი</option>
+          <option>3+ წელი</option>
+          <option>5+ წელი</option>
         </select>
 
         <select>
@@ -69,32 +74,32 @@ function Drivers() {
         <button>ძიება</button>
       </div>
 
-      {/* მძღოლების სია */}
+      {/* მომვლელების სია */}
       <section className="drivers-list">
-        {drivers.map((driver) => (
-          <div className="driver-card" key={driver.id}>
-            <div className="driver-avatar">👤</div>
+        {caregivers.map((caregiver) => (
+          <div className="driver-card" key={caregiver.id}>
+            <div className="driver-avatar">👵</div>
 
             <div className="driver-info">
               <div className="driver-name">
-                <h2>{driver.name}</h2>
+                <h2>{caregiver.name}</h2>
 
-                {driver.verified && (
+                {caregiver.verified && (
                   <span className="verified">✓ ვერიფიცირებული</span>
                 )}
               </div>
 
-              <p>📍 {driver.city}</p>
+              <p>📍 {caregiver.city}</p>
 
-              <p>🚗 {driver.experience}</p>
+              <p>💼 გამოცდილება: {caregiver.experience}</p>
 
-              <p>{driver.rating}</p>
+              <p>{caregiver.rating}</p>
             </div>
 
             <div className="driver-price">
-              <strong>{driver.price}</strong>
+              <strong>{caregiver.price}</strong>
 
-              <Link to={`/drivers/${driver.id}`} className="profile-btn">
+              <Link to={`/caregivers/${caregiver.id}`} className="profile-btn">
                 პროფილის ნახვა
               </Link>
             </div>
@@ -105,4 +110,4 @@ function Drivers() {
   );
 }
 
-export default Drivers;
+export default Caregivers;

@@ -1,34 +1,32 @@
 import { Link } from "react-router-dom";
 import "./Drivers.css";
 
-function Drivers() {
-  // დროებითი მონაცემები.
-  // მოგვიანებით ეს ინფორმაცია მონაცემთა ბაზიდან წამოვა.
-  const drivers = [
+function Nannies() {
+  const nannies = [
     {
       id: 1,
-      name: "გიორგი მ.",
+      name: "თამარ მ.",
       city: "თბილისი",
-      experience: "8 წლიანი გამოცდილება",
-      price: "25 ₾ / საათი",
+      experience: "7 წელი",
+      price: "20 ₾ / საათი",
       rating: "⭐ 4.9",
       verified: true,
     },
     {
       id: 2,
-      name: "ლევან კ.",
+      name: "ნინო კ.",
       city: "თბილისი",
-      experience: "5 წლიანი გამოცდილება",
-      price: "20 ₾ / საათი",
+      experience: "5 წელი",
+      price: "18 ₾ / საათი",
       rating: "⭐ 4.8",
       verified: true,
     },
     {
       id: 3,
-      name: "დავით ნ.",
+      name: "მარიამ გ.",
       city: "ბათუმი",
-      experience: "6 წლიანი გამოცდილება",
-      price: "22 ₾ / საათი",
+      experience: "4 წელი",
+      price: "15 ₾ / საათი",
       rating: "⭐ 4.7",
       verified: false,
     },
@@ -36,16 +34,15 @@ function Drivers() {
 
   return (
     <div className="drivers-page">
-      {/* ზედა ნაწილი */}
       <header className="drivers-header">
         <Link to="/" className="back-link">
           ← Care Georgia
         </Link>
 
-        <h1>იპოვე მძღოლი</h1>
+        <h1>იპოვე ძიძა</h1>
 
         <p>
-          შეარჩიე შენთვის სასურველი მძღოლი ქალაქის, გამოცდილებისა და ფასის
+          იპოვე სანდო ძიძა ბავშვის ასაკის, ქალაქის, გამოცდილებისა და ფასის
           მიხედვით.
         </p>
       </header>
@@ -57,6 +54,15 @@ function Drivers() {
           <option>თბილისი</option>
           <option>ბათუმი</option>
           <option>ქუთაისი</option>
+          <option>რუსთავი</option>
+        </select>
+
+        <select>
+          <option>ბავშვის ასაკი</option>
+          <option>0 - 1 წელი</option>
+          <option>1 - 3 წელი</option>
+          <option>3 - 6 წელი</option>
+          <option>6+ წელი</option>
         </select>
 
         <select>
@@ -69,32 +75,32 @@ function Drivers() {
         <button>ძიება</button>
       </div>
 
-      {/* მძღოლების სია */}
+      {/* ძიძების სია */}
       <section className="drivers-list">
-        {drivers.map((driver) => (
-          <div className="driver-card" key={driver.id}>
-            <div className="driver-avatar">👤</div>
+        {nannies.map((nanny) => (
+          <div className="driver-card" key={nanny.id}>
+            <div className="driver-avatar">👶</div>
 
             <div className="driver-info">
               <div className="driver-name">
-                <h2>{driver.name}</h2>
+                <h2>{nanny.name}</h2>
 
-                {driver.verified && (
+                {nanny.verified && (
                   <span className="verified">✓ ვერიფიცირებული</span>
                 )}
               </div>
 
-              <p>📍 {driver.city}</p>
+              <p>📍 {nanny.city}</p>
 
-              <p>🚗 {driver.experience}</p>
+              <p>👶 გამოცდილება: {nanny.experience}</p>
 
-              <p>{driver.rating}</p>
+              <p>{nanny.rating}</p>
             </div>
 
             <div className="driver-price">
-              <strong>{driver.price}</strong>
+              <strong>{nanny.price}</strong>
 
-              <Link to={`/drivers/${driver.id}`} className="profile-btn">
+              <Link to={`/nannies/${nanny.id}`} className="profile-btn">
                 პროფილის ნახვა
               </Link>
             </div>
@@ -105,4 +111,4 @@ function Drivers() {
   );
 }
 
-export default Drivers;
+export default Nannies;
