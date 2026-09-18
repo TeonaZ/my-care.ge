@@ -1,4 +1,5 @@
-import { Routes, Route, Link } from "react-router-dom";
+import { useState } from "react";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import Drivers from "./pages/Drivers";
 import DriverProfile from "./pages/DriverProfile";
 import Tutors from "./pages/Tutors";
@@ -16,6 +17,32 @@ import DogWalkers from "./pages/DogWalkers";
 import "./App.css";
 
 function Home() {
+  const navigate = useNavigate();
+  const [selectedService, setSelectedService] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+
+  const handleSearch = () => {
+    if (!selectedService || !selectedCity) {
+      alert("გთხოვ, აირჩიე მომსახურება და ქალაქი.");
+      return;
+    }
+
+    const serviceRoutes = {
+      nanny: "/nannies",
+      elderly: "/caregivers",
+      driver: "/drivers",
+      tutor: "/tutors",
+      home: "/housekeepers",
+      dogwalker: "/dogwalker",
+    };
+
+    const route = serviceRoutes[selectedService];
+
+    if (route) {
+      navigate(`${route}?city=${selectedCity}`);
+    }
+  };
+
   return (
     <div className="app">
       {/* HEADER */}
@@ -53,7 +80,10 @@ function Home() {
 
           {/* SEARCH */}
           <div className="search-box">
-            <select defaultValue="">
+            <select
+              value={selectedService}
+              onChange={(e) => setSelectedService(e.target.value)}
+            >
               <option value="" disabled>
                 რას ეძებ?
               </option>
@@ -68,10 +98,13 @@ function Home() {
 
               <option value="home">🏠 სახლის დამხმარე</option>
 
-              <option value="dogwalker">🐕 Dog Walker</option>
+              <option value="dogwalker">🐕 ძაღლის გამსეირნებელი</option>
             </select>
 
-            <select defaultValue="">
+            <select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+            >
               <option value="" disabled>
                 აირჩიე ქალაქი
               </option>
@@ -84,7 +117,9 @@ function Home() {
               <option value="zugdidi">ზუგდიდი</option>
             </select>
 
-            <button className="search-btn">ძიება</button>
+            <button className="search-btn" onClick={handleSearch}>
+              ძიება
+            </button>
           </div>
         </div>
       </main>

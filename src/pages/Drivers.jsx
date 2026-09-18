@@ -1,7 +1,14 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import "./Drivers.css";
 
 function Drivers() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCity = searchParams.get("city") || "";
+  const [selectedPrice, setSelectedPrice] = useState("");
+  const [appliedCity, setAppliedCity] = useState(selectedCity);
+  const [appliedPrice, setAppliedPrice] = useState("");
+
   // დროებითი მონაცემები.
   // მოგვიანებით ეს ინფორმაცია მონაცემთა ბაზიდან წამოვა.
   const drivers = [
@@ -34,6 +41,40 @@ function Drivers() {
     },
   ];
 
+  const cityMap = {
+    tbilisi: "თბილისი",
+    batumi: "ბათუმი",
+    kutaisi: "ქუთაისი",
+    rustavi: "რუსთავი",
+    gori: "გორი",
+    zugdidi: "ზუგდიდი",
+  };
+
+  const cityName = cityMap[appliedCity];
+
+  const filteredDrivers = drivers.filter((driver) => {
+    // ქალაქის შემოწმება
+    const matchesCity = cityName ? driver.city === cityName : true;
+
+    // ფასიდან მხოლოდ რიცხვის ამოღება
+    const price = parseInt(driver.price);
+
+    let matchesPrice = true;
+
+    if (appliedPrice === "under20") {
+      matchesPrice = price <= 20;
+    }
+
+    if (appliedPrice === "20to30") {
+      matchesPrice = price >= 20 && price <= 30;
+    }
+
+    if (appliedPrice === "over30") {
+      matchesPrice = price >= 30;
+    }
+
+    return matchesCity && matchesPrice;
+  });
   return (
     <div className="drivers-page">
       {/* ზედა ნაწილი */}
@@ -52,26 +93,72 @@ function Drivers() {
 
       {/* ფილტრები */}
       <div className="driver-filters">
-        <select>
-          <option>ყველა ქალაქი</option>
-          <option>თბილისი</option>
-          <option>ბათუმი</option>
-          <option>ქუთაისი</option>
+        <select
+          value={selectedCity}
+          onChange={(e) => {
+            const city = e.target.value;
+
+            if (city) {
+              setSearchParams({ city });
+            } else {
+              setSearchParams({});
+            }
+          }}
+        >
+          <option value="">ყველა ქალაქი</option>
+          <option value="tbilisi">თბილისი</option>
+          <option value="batumi">ბათუმი</option>
+          <option value="kutaisi">ქუთაისი</option>
+          <option value="rustavi">რუსთავი</option>
+          <option value="gori">გორი</option>
+          <option value="zugdidi">ზუგდიდი</option>
+          <option value="telavi">თელავი</option>
+          <option value="akhaltsikhe">ახალციხე</option>
+          <option value="ozurgeti">ოზურგეთი</option>
+          <option value="poti">ფოთი</option>
+          <option value="mtskheta">მცხეთა</option>
+          <option value="khashuri">ხაშური</option>
+          <option value="kobuleti">ქობულეთი</option>
+          <option value="borjomi">ბორჯომი</option>
+          <option value="samtredia">სამტრედია</option>
+          <option value="senaki">სენაკი</option>
+          <option value="marneuli">მარნეული</option>
+          <option value="kvareli">ყვარელი</option>
+          <option value="lagodekhi">ლაგოდეხი</option>
+          <option value="akhmeta">ახმეტა</option>
+          <option value="dusheti">დუშეთი</option>
+          <option value="kaspi">კასპი</option>
+          <option value="chiatura">ჭიათურა</option>
+          <option value="zestafoni">ზესტაფონი</option>
+          <option value="tkibuli">ტყიბული</option>
+          <option value="tsqaltubo">წყალტუბო</option>
+          <option value="ambrolauri">ამბროლაური</option>
+          <option value="oni">ონი</option>
         </select>
 
-        <select>
-          <option>ფასი</option>
-          <option>20 ₾-მდე</option>
-          <option>20 - 30 ₾</option>
-          <option>30 ₾+</option>
+        <select
+          value={selectedPrice}
+          onChange={(e) => setSelectedPrice(e.target.value)}
+        >
+          <option value="">ყველა ფასი</option>
+          <option value="under20">20 ₾-მდე</option>
+          <option value="20to30">20 - 30 ₾</option>
+          <option value="over30">30 ₾+</option>
         </select>
 
-        <button>ძიება</button>
+        <button
+          onClick={() => {
+            setAppliedCity(selectedCity);
+            setAppliedPrice(selectedPrice);
+          }}
+        >
+          ძიება
+        </button>
       </div>
 
       {/* მძღოლების სია */}
       <section className="drivers-list">
-        {drivers.map((driver) => (
+        {filteredDrivers.map((driver) => (
           <div className="driver-card" key={driver.id}>
             <div className="driver-avatar">👤</div>
 
