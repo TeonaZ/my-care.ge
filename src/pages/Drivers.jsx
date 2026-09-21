@@ -1,98 +1,336 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { useLanguage } from "../Context/LanguageContext";
 import "./Drivers.css";
 
-function Drivers() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const selectedCity = searchParams.get("city") || "";
-  const [selectedPrice, setSelectedPrice] = useState("");
-  const [appliedCity, setAppliedCity] = useState(selectedCity);
-  const [appliedPrice, setAppliedPrice] = useState("");
+const translations = {
+  ka: {
+    title: "იპოვე მძღოლი",
+    description:
+      "შეარჩიე შენთვის სასურველი მძღოლი ქალაქის, გამოცდილების, განაკვეთისა და ფასის მიხედვით.",
 
-  // დროებითი მონაცემები.
-  // მოგვიანებით ეს ინფორმაცია მონაცემთა ბაზიდან წამოვა.
-  const drivers = [
-    {
-      id: 1,
-      name: "გიორგი მ.",
-      city: "თბილისი",
-      experience: "8 წლიანი გამოცდილება",
-      price: "25 ₾ / საათი",
-      rating: "⭐ 4.9",
-      verified: true,
-    },
-    {
-      id: 2,
-      name: "ლევან კ.",
-      city: "თბილისი",
-      experience: "5 წლიანი გამოცდილება",
-      price: "20 ₾ / საათი",
-      rating: "⭐ 4.8",
-      verified: true,
-    },
-    {
-      id: 3,
-      name: "დავით ნ.",
-      city: "ბათუმი",
-      experience: "6 წლიანი გამოცდილება",
-      price: "22 ₾ / საათი",
-      rating: "⭐ 4.7",
-      verified: false,
-    },
-  ];
+    allCities: "ყველა ქალაქი",
 
-  const cityMap = {
+    allEmployment: "ყველა განაკვეთი",
+    fullTime: "სრული განაკვეთი",
+    partTime: "ნახევარი განაკვეთი",
+
+    allPrices: "ყველა ფასი",
+    under20: "20 ₾-მდე",
+    price20to30: "20 - 30 ₾",
+    over30: "30 ₾+",
+
+    search: "ძიება",
+    verified: "✓ ვერიფიცირებული",
+    viewProfile: "პროფილის ნახვა",
+
+    name1: "გიორგი მ.",
+    name2: "ლევან კ.",
+    name3: "დავით ნ.",
+
+    years8: "8 წლიანი გამოცდილება",
+    years5: "5 წლიანი გამოცდილება",
+    years6: "6 წლიანი გამოცდილება",
+
+    currency: "₾",
+    perHour: "საათი",
+
     tbilisi: "თბილისი",
     batumi: "ბათუმი",
     kutaisi: "ქუთაისი",
     rustavi: "რუსთავი",
     gori: "გორი",
     zugdidi: "ზუგდიდი",
+    telavi: "თელავი",
+    akhaltsikhe: "ახალციხე",
+    ozurgeti: "ოზურგეთი",
+    poti: "ფოთი",
+    mtskheta: "მცხეთა",
+    khashuri: "ხაშური",
+    kobuleti: "ქობულეთი",
+    borjomi: "ბორჯომი",
+    samtredia: "სამტრედია",
+    senaki: "სენაკი",
+    marneuli: "მარნეული",
+    kvareli: "ყვარელი",
+    lagodekhi: "ლაგოდეხი",
+    akhmeta: "ახმეტა",
+    dusheti: "დუშეთი",
+    kaspi: "კასპი",
+    chiatura: "ჭიათურა",
+    zestafoni: "ზესტაფონი",
+    tkibuli: "ტყიბული",
+    tsqaltubo: "წყალტუბო",
+    ambrolauri: "ამბროლაური",
+    oni: "ონი",
+  },
+
+  en: {
+    title: "Find a Driver",
+    description:
+      "Find the right driver by city, experience, employment type and price.",
+
+    allCities: "All cities",
+
+    allEmployment: "All employment types",
+    fullTime: "Full-time",
+    partTime: "Part-time",
+
+    allPrices: "All prices",
+    under20: "Up to 20 GEL",
+    price20to30: "20 - 30 GEL",
+    over30: "30 GEL+",
+
+    search: "Search",
+    verified: "✓ Verified",
+    viewProfile: "View Profile",
+
+    name1: "Giorgi M.",
+    name2: "Levan K.",
+    name3: "Davit N.",
+
+    years8: "8 years of experience",
+    years5: "5 years of experience",
+    years6: "6 years of experience",
+
+    currency: "GEL",
+    perHour: "hour",
+
+    tbilisi: "Tbilisi",
+    batumi: "Batumi",
+    kutaisi: "Kutaisi",
+    rustavi: "Rustavi",
+    gori: "Gori",
+    zugdidi: "Zugdidi",
+    telavi: "Telavi",
+    akhaltsikhe: "Akhaltsikhe",
+    ozurgeti: "Ozurgeti",
+    poti: "Poti",
+    mtskheta: "Mtskheta",
+    khashuri: "Khashuri",
+    kobuleti: "Kobuleti",
+    borjomi: "Borjomi",
+    samtredia: "Samtredia",
+    senaki: "Senaki",
+    marneuli: "Marneuli",
+    kvareli: "Kvareli",
+    lagodekhi: "Lagodekhi",
+    akhmeta: "Akhmeta",
+    dusheti: "Dusheti",
+    kaspi: "Kaspi",
+    chiatura: "Chiatura",
+    zestafoni: "Zestafoni",
+    tkibuli: "Tkibuli",
+    tsqaltubo: "Tskaltubo",
+    ambrolauri: "Ambrolauri",
+    oni: "Oni",
+  },
+
+  ru: {
+    title: "Найти водителя",
+    description:
+      "Найдите подходящего водителя по городу, опыту, типу занятости и цене.",
+
+    allCities: "Все города",
+
+    allEmployment: "Все типы занятости",
+    fullTime: "Полная занятость",
+    partTime: "Частичная занятость",
+
+    allPrices: "Все цены",
+    under20: "До 20 GEL",
+    price20to30: "20 - 30 GEL",
+    over30: "30 GEL+",
+
+    search: "Поиск",
+    verified: "✓ Проверенный",
+    viewProfile: "Посмотреть профиль",
+
+    name1: "Гиорги М.",
+    name2: "Леван К.",
+    name3: "Давит Н.",
+
+    years8: "8 лет опыта",
+    years5: "5 лет опыта",
+    years6: "6 лет опыта",
+
+    currency: "GEL",
+    perHour: "час",
+
+    tbilisi: "Тбилиси",
+    batumi: "Батуми",
+    kutaisi: "Кутаиси",
+    rustavi: "Рустави",
+    gori: "Гори",
+    zugdidi: "Зугдиди",
+    telavi: "Телави",
+    akhaltsikhe: "Ахалцихе",
+    ozurgeti: "Озургети",
+    poti: "Поти",
+    mtskheta: "Мцхета",
+    khashuri: "Хашури",
+    kobuleti: "Кобулети",
+    borjomi: "Боржоми",
+    samtredia: "Самтредиа",
+    senaki: "Сенаки",
+    marneuli: "Марнеули",
+    kvareli: "Кварели",
+    lagodekhi: "Лагодехи",
+    akhmeta: "Ахмета",
+    dusheti: "Душети",
+    kaspi: "Каспи",
+    chiatura: "Чиатура",
+    zestafoni: "Зестафони",
+    tkibuli: "Ткибули",
+    tsqaltubo: "Цхалтубо",
+    ambrolauri: "Амбролаури",
+    oni: "Они",
+  },
+};
+
+const cities = [
+  "tbilisi",
+  "batumi",
+  "kutaisi",
+  "rustavi",
+  "gori",
+  "zugdidi",
+  "telavi",
+  "akhaltsikhe",
+  "ozurgeti",
+  "poti",
+  "mtskheta",
+  "khashuri",
+  "kobuleti",
+  "borjomi",
+  "samtredia",
+  "senaki",
+  "marneuli",
+  "kvareli",
+  "lagodekhi",
+  "akhmeta",
+  "dusheti",
+  "kaspi",
+  "chiatura",
+  "zestafoni",
+  "tkibuli",
+  "tsqaltubo",
+  "ambrolauri",
+  "oni",
+];
+
+function Drivers() {
+  const { language } = useLanguage();
+  const t = translations[language] || translations.ka;
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const selectedCity = searchParams.get("city") || "";
+
+  const [selectedPrice, setSelectedPrice] = useState("");
+  const [selectedEmployment, setSelectedEmployment] = useState("");
+
+  const [appliedCity, setAppliedCity] = useState(selectedCity);
+  const [appliedPrice, setAppliedPrice] = useState("");
+  const [appliedEmployment, setAppliedEmployment] = useState("");
+
+  const drivers = [
+    {
+      id: 1,
+      name: t.name1,
+      cityValue: "tbilisi",
+      experience: t.years8,
+      employmentType: "full-time",
+      priceValue: 25,
+      rating: "⭐ 4.9",
+      verified: true,
+    },
+    {
+      id: 2,
+      name: t.name2,
+      cityValue: "tbilisi",
+      experience: t.years5,
+      employmentType: "part-time",
+      priceValue: 20,
+      rating: "⭐ 4.8",
+      verified: true,
+    },
+    {
+      id: 3,
+      name: t.name3,
+      cityValue: "batumi",
+      experience: t.years6,
+      employmentType: "full-time",
+      priceValue: 22,
+      rating: "⭐ 4.7",
+      verified: false,
+    },
+  ];
+
+  const getEmploymentName = (employmentType) => {
+    if (employmentType === "full-time") {
+      return t.fullTime;
+    }
+
+    if (employmentType === "part-time") {
+      return t.partTime;
+    }
+
+    return "";
   };
 
-  const cityName = cityMap[appliedCity];
-
   const filteredDrivers = drivers.filter((driver) => {
-    // ქალაქის შემოწმება
-    const matchesCity = cityName ? driver.city === cityName : true;
-
-    // ფასიდან მხოლოდ რიცხვის ამოღება
-    const price = parseInt(driver.price);
+    const matchesCity = appliedCity
+      ? driver.cityValue === appliedCity
+      : true;
 
     let matchesPrice = true;
 
     if (appliedPrice === "under20") {
-      matchesPrice = price <= 20;
+      matchesPrice = driver.priceValue <= 20;
     }
 
     if (appliedPrice === "20to30") {
-      matchesPrice = price >= 20 && price <= 30;
+      matchesPrice =
+        driver.priceValue >= 20 &&
+        driver.priceValue <= 30;
     }
 
     if (appliedPrice === "over30") {
-      matchesPrice = price >= 30;
+      matchesPrice = driver.priceValue >= 30;
     }
 
-    return matchesCity && matchesPrice;
+    const matchesEmployment = appliedEmployment
+      ? driver.employmentType === appliedEmployment
+      : true;
+
+    return (
+      matchesCity &&
+      matchesPrice &&
+      matchesEmployment
+    );
   });
+
+  const getPrice = (driver) => {
+    return `${driver.priceValue} ${t.currency} / ${t.perHour}`;
+  };
+
   return (
     <div className="drivers-page">
-      {/* ზედა ნაწილი */}
+
       <header className="drivers-header">
         <Link to="/" className="back-link">
           ← Care Georgia
         </Link>
 
-        <h1>იპოვე მძღოლი</h1>
+        <h1>{t.title}</h1>
 
-        <p>
-          შეარჩიე შენთვის სასურველი მძღოლი ქალაქის, გამოცდილებისა და ფასის
-          მიხედვით.
-        </p>
+        <p>{t.description}</p>
       </header>
 
-      {/* ფილტრები */}
       <div className="driver-filters">
+
+        {/* ქალაქი */}
         <select
           value={selectedCity}
           onChange={(e) => {
@@ -105,91 +343,139 @@ function Drivers() {
             }
           }}
         >
-          <option value="">ყველა ქალაქი</option>
-          <option value="tbilisi">თბილისი</option>
-          <option value="batumi">ბათუმი</option>
-          <option value="kutaisi">ქუთაისი</option>
-          <option value="rustavi">რუსთავი</option>
-          <option value="gori">გორი</option>
-          <option value="zugdidi">ზუგდიდი</option>
-          <option value="telavi">თელავი</option>
-          <option value="akhaltsikhe">ახალციხე</option>
-          <option value="ozurgeti">ოზურგეთი</option>
-          <option value="poti">ფოთი</option>
-          <option value="mtskheta">მცხეთა</option>
-          <option value="khashuri">ხაშური</option>
-          <option value="kobuleti">ქობულეთი</option>
-          <option value="borjomi">ბორჯომი</option>
-          <option value="samtredia">სამტრედია</option>
-          <option value="senaki">სენაკი</option>
-          <option value="marneuli">მარნეული</option>
-          <option value="kvareli">ყვარელი</option>
-          <option value="lagodekhi">ლაგოდეხი</option>
-          <option value="akhmeta">ახმეტა</option>
-          <option value="dusheti">დუშეთი</option>
-          <option value="kaspi">კასპი</option>
-          <option value="chiatura">ჭიათურა</option>
-          <option value="zestafoni">ზესტაფონი</option>
-          <option value="tkibuli">ტყიბული</option>
-          <option value="tsqaltubo">წყალტუბო</option>
-          <option value="ambrolauri">ამბროლაური</option>
-          <option value="oni">ონი</option>
+          <option value="">
+            {t.allCities}
+          </option>
+
+          {cities.map((city) => (
+            <option key={city} value={city}>
+              {t[city]}
+            </option>
+          ))}
         </select>
 
+        {/* განაკვეთი */}
+        <select
+          value={selectedEmployment}
+          onChange={(e) =>
+            setSelectedEmployment(e.target.value)
+          }
+        >
+          <option value="">
+            {t.allEmployment}
+          </option>
+
+          <option value="full-time">
+            {t.fullTime}
+          </option>
+
+          <option value="part-time">
+            {t.partTime}
+          </option>
+        </select>
+
+        {/* ფასი */}
         <select
           value={selectedPrice}
-          onChange={(e) => setSelectedPrice(e.target.value)}
+          onChange={(e) =>
+            setSelectedPrice(e.target.value)
+          }
         >
-          <option value="">ყველა ფასი</option>
-          <option value="under20">20 ₾-მდე</option>
-          <option value="20to30">20 - 30 ₾</option>
-          <option value="over30">30 ₾+</option>
+          <option value="">
+            {t.allPrices}
+          </option>
+
+          <option value="under20">
+            {t.under20}
+          </option>
+
+          <option value="20to30">
+            {t.price20to30}
+          </option>
+
+          <option value="over30">
+            {t.over30}
+          </option>
         </select>
 
         <button
+          type="button"
           onClick={() => {
             setAppliedCity(selectedCity);
             setAppliedPrice(selectedPrice);
+            setAppliedEmployment(selectedEmployment);
           }}
         >
-          ძიება
+          {t.search}
         </button>
+
       </div>
 
-      {/* მძღოლების სია */}
       <section className="drivers-list">
+
         {filteredDrivers.map((driver) => (
-          <div className="driver-card" key={driver.id}>
-            <div className="driver-avatar">👤</div>
+          <div
+            className="driver-card"
+            key={driver.id}
+          >
+
+            <div className="driver-avatar">
+              👤
+            </div>
 
             <div className="driver-info">
+
               <div className="driver-name">
+
                 <h2>{driver.name}</h2>
 
                 {driver.verified && (
-                  <span className="verified">✓ ვერიფიცირებული</span>
+                  <span className="verified">
+                    {t.verified}
+                  </span>
                 )}
+
               </div>
 
-              <p>📍 {driver.city}</p>
+              <p>
+                📍 {t[driver.cityValue]}
+              </p>
 
-              <p>🚗 {driver.experience}</p>
+              <p>
+                🚗 {driver.experience}
+              </p>
 
-              <p>{driver.rating}</p>
+              <p>
+                🕒 {getEmploymentName(driver.employmentType)}
+              </p>
+
+              <p>
+                {driver.rating}
+              </p>
+
             </div>
 
             <div className="driver-price">
-              <strong>{driver.price}</strong>
 
-              <Link to={`/drivers/${driver.id}`} className="profile-btn">
-                პროფილის ნახვა
+              <strong>
+                {getPrice(driver)}
+              </strong>
+
+              <Link
+                to={`/drivers/${driver.id}`}
+                className="profile-btn"
+              >
+                {t.viewProfile}
               </Link>
+
             </div>
+
           </div>
         ))}
+
       </section>
+
     </div>
   );
 }
-
 export default Drivers;

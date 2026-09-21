@@ -169,39 +169,6 @@
 }
 
 
-/* =========================
-   SERVICE SELECT
-========================= */
-
-.form-group.service-select-group {
-  width: 100%;
-}
-
-.form-group.service-select-group select {
-  display: block;
-
-  width: 100% !important;
-  height: 62px !important;
-  min-height: 62px !important;
-
-  padding: 0 20px !important;
-
-  border: 2px solid #dbe2ea !important;
-  border-radius: 12px !important;
-
-  background-color: #ffffff;
-  color: #334155;
-
-  font-size: 17px !important;
-  font-weight: 500;
-
-  outline: none;
-  cursor: pointer;
-}
-
-.form-group.service-select-group select:focus {
-  border-color: #2563eb !important;
-}
 
 
 /* =========================
@@ -366,4 +333,78 @@
   .form-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* =========================
+   SELECT FIELDS
+========================= */
+
+.form-group select {
+  display: block;
+  width: 100%;
+  height: 70px;
+  min-height: 70px;
+
+  padding: 0 18px;
+
+  border: 1px solid #dbe2ea;
+  border-radius: 14px;
+
+  background-color: #ffffff;
+  color: #334155;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+
+  box-sizing: border-box;
+  outline: none;
+  cursor: pointer;
+
+  appearance: auto;
+}
+
+.form-group select:hover {
+  border-color: #94a3b8;
+}
+
+.form-group select:focus {
+  border-color: #2563eb;
+}
+
+/* =========================
+   POST JOB SELECTS
+========================= */
+
+.post-job-select {
+  display: block !important;
+
+  width: 100% !important;
+  height: 70px !important;
+  min-height: 70px !important;
+
+  padding: 0 20px !important;
+
+  border: 1px solid #dbe2ea !important;
+  border-radius: 14px !important;
+
+  background-color: #ffffff !important;
+  color: #334155 !important;
+
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+
+  box-sizing: border-box !important;
+
+  cursor: pointer;
+  outline: none;
+}
+
+.post-job-select:hover {
+  border-color: #94a3b8 !important;
+}
+
+.post-job-select:focus {
+  border-color: #2563eb !important;
 }

@@ -1,29 +1,366 @@
 import { useState } from "react";
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
+
 import Drivers from "./pages/Drivers";
 import DriverProfile from "./pages/DriverProfile";
+
 import Tutors from "./pages/Tutors";
 import TutorProfile from "./pages/TutorProfile";
+
 import Nannies from "./pages/Nannies";
 import NannyProfile from "./pages/NannyProfile";
+
 import Caregivers from "./pages/Caregivers";
 import CaregiverProfile from "./pages/CaregiverProfile";
+
 import Housekeepers from "./pages/Housekeepers";
 import HousekeeperProfile from "./pages/HousekeeperProfile";
+
+import DogWalkers from "./pages/DogWalkers";
+import DogWalkerProfile from "./pages/DogWalkerProfile";
+
 import Register from "./pages/Register";
+import Login from "./pages/Login";
+
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
-import DogWalkers from "./pages/DogWalkers";
+import Support from "./pages/Support";
+
+import PostJob from "./pages/CreateJob";
+import Jobs from "./pages/Jobs";
+import MyJobs from "./pages/MyJobs";
+import EditJob from "./pages/EditJob";
+
+import MyProfile from "./pages/MyProfile";
+
+import { useLanguage } from "./Context/LanguageContext";
+
 import "./App.css";
+
+/* =========================
+   LANGUAGES
+========================= */
+
+const translations = {
+  ka: {
+    home: "მთავარი",
+    findSpecialist: "იპოვე სპეციალისტი",
+    findJob: "იპოვე სამსახური",
+    myJobs: "ჩემი განცხადებები",
+    myProfile: "ჩემი პროფილი",
+    postJob: "განცხადების დამატება",
+    about: "ჩვენ შესახებ",
+    support: "Support",
+
+    login: "შესვლა",
+    register: "რეგისტრაცია",
+    logout: "გამოსვლა",
+    user: "მომხმარებელი",
+
+    heroSmall: "ზრუნვა იწყება სწორი ადამიანის პოვნით",
+
+    heroTitle: "იპოვე სანდო ადამიანი",
+
+    heroTitleBlue: " შენს ოჯახზე ზრუნვისთვის",
+
+    heroDescription:
+      "მოძებნე გამოცდილი სპეციალისტები შენს ქალაქში — მარტივად, სწრაფად და უსაფრთხოდ.",
+
+    chooseService: "რას ეძებ?",
+    chooseCity: "აირჩიე ქალაქი",
+    search: "ძიება",
+
+    nanny: "ძიძა",
+    elderly: "ხანდაზმულის მომვლელი",
+    caregiver: "მომვლელი",
+    driver: "მძღოლი",
+    tutor: "ტუტორი / რეპეტიტორი",
+    tutorShort: "ტუტორი",
+    housekeeper: "სახლის დამხმარე",
+    dogWalker: "ძაღლის გამსეირნებელი",
+
+    tbilisi: "თბილისი",
+    batumi: "ბათუმი",
+    kutaisi: "ქუთაისი",
+    rustavi: "რუსთავი",
+    gori: "გორი",
+    zugdidi: "ზუგდიდი",
+
+    services: "ჩვენი სერვისები",
+
+    servicesTitle: "როგორი დახმარება გჭირდება?",
+
+    servicesDescription:
+      "აირჩიე სასურველი კატეგორია და იპოვე შესაბამისი სპეციალისტი.",
+
+    nannyDescription:
+      "იპოვე სანდო ძიძა ბავშვის მოვლისთვის.",
+
+    caregiverDescription:
+      "იპოვე მზრუნველი ადამიანი ოჯახის წევრისთვის.",
+
+    driverDescription:
+      "იპოვე გამოცდილი და სანდო მძღოლი.",
+
+    tutorDescription:
+      "იპოვე მასწავლებელი და რეპეტიტორი.",
+
+    housekeeperDescription:
+      "იპოვე ადამიანი ყოველდღიური საქმეებისთვის.",
+
+    dogWalkerDescription:
+      "ძაღლის გასეირნება და მოვლა.",
+
+    view: "ნახვა →",
+
+    searchAlert:
+      "გთხოვ, აირჩიე მომსახურება და ქალაქი.",
+  },
+
+  en: {
+    home: "Home",
+    findSpecialist: "Find a Specialist",
+    findJob: "Find a Job",
+    myJobs: "My Jobs",
+    myProfile: "My Profile",
+    postJob: "Post a Job",
+    about: "About Us",
+    support: "Support",
+
+    login: "Login",
+    register: "Register",
+    logout: "Logout",
+    user: "User",
+
+    heroSmall:
+      "Care starts with finding the right person",
+
+    heroTitle:
+      "Find a trusted person",
+
+    heroTitleBlue:
+      " to care for your family",
+
+    heroDescription:
+      "Find experienced specialists in your city — easily, quickly and safely.",
+
+    chooseService:
+      "What are you looking for?",
+
+    chooseCity:
+      "Choose a city",
+
+    search: "Search",
+
+    nanny: "Nanny",
+    elderly: "Elderly Caregiver",
+    caregiver: "Caregiver",
+    driver: "Driver",
+    tutor: "Tutor / Teacher",
+    tutorShort: "Tutor",
+    housekeeper: "Housekeeper",
+    dogWalker: "Dog Walker",
+
+    tbilisi: "Tbilisi",
+    batumi: "Batumi",
+    kutaisi: "Kutaisi",
+    rustavi: "Rustavi",
+    gori: "Gori",
+    zugdidi: "Zugdidi",
+
+    services: "Our Services",
+
+    servicesTitle:
+      "What kind of help do you need?",
+
+    servicesDescription:
+      "Choose a category and find the right specialist.",
+
+    nannyDescription:
+      "Find a trusted nanny for childcare.",
+
+    caregiverDescription:
+      "Find a caring person for your family member.",
+
+    driverDescription:
+      "Find an experienced and trusted driver.",
+
+    tutorDescription:
+      "Find a teacher or private tutor.",
+
+    housekeeperDescription:
+      "Find help for everyday household tasks.",
+
+    dogWalkerDescription:
+      "Dog walking and pet care.",
+
+    view: "View →",
+
+    searchAlert:
+      "Please choose a service and a city.",
+  },
+
+  ru: {
+    home: "Главная",
+    findSpecialist: "Найти специалиста",
+    findJob: "Найти работу",
+    myJobs: "Мои объявления",
+    myProfile: "Мой профиль",
+    postJob: "Добавить объявление",
+    about: "О нас",
+    support: "Support",
+
+    login: "Войти",
+    register: "Регистрация",
+    logout: "Выйти",
+    user: "Пользователь",
+
+    heroSmall:
+      "Забота начинается с поиска подходящего человека",
+
+    heroTitle:
+      "Найдите надежного человека",
+
+    heroTitleBlue:
+      " для заботы о вашей семье",
+
+    heroDescription:
+      "Найдите опытных специалистов в вашем городе — легко, быстро и безопасно.",
+
+    chooseService:
+      "Что вы ищете?",
+
+    chooseCity:
+      "Выберите город",
+
+    search: "Поиск",
+
+    nanny: "Няня",
+    elderly: "Сиделка для пожилых",
+    caregiver: "Сиделка",
+    driver: "Водитель",
+    tutor: "Репетитор",
+    tutorShort: "Репетитор",
+    housekeeper: "Помощник по дому",
+    dogWalker: "Выгульщик собак",
+
+    tbilisi: "Тбилиси",
+    batumi: "Батуми",
+    kutaisi: "Кутаиси",
+    rustavi: "Рустави",
+    gori: "Гори",
+    zugdidi: "Зугдиди",
+
+    services: "Наши услуги",
+
+    servicesTitle:
+      "Какая помощь вам нужна?",
+
+    servicesDescription:
+      "Выберите нужную категорию и найдите подходящего специалиста.",
+
+    nannyDescription:
+      "Найдите надежную няню для ухода за ребенком.",
+
+    caregiverDescription:
+      "Найдите заботливого человека для члена вашей семьи.",
+
+    driverDescription:
+      "Найдите опытного и надежного водителя.",
+
+    tutorDescription:
+      "Найдите учителя или репетитора.",
+
+    housekeeperDescription:
+      "Найдите помощника для повседневных домашних дел.",
+
+    dogWalkerDescription:
+      "Выгул собак и уход за питомцами.",
+
+    view: "Посмотреть →",
+
+    searchAlert:
+      "Пожалуйста, выберите услугу и город.",
+  },
+};
+
+/* =========================
+   HOME
+========================= */
 
 function Home() {
   const navigate = useNavigate();
-  const [selectedService, setSelectedService] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
+
+  const [selectedService, setSelectedService] =
+    useState("");
+
+  const [selectedCity, setSelectedCity] =
+    useState("");
+
+  const [isUserMenuOpen, setIsUserMenuOpen] =
+    useState(false);
+
+  const {
+    language,
+    setLanguage,
+  } = useLanguage();
+
+  const t =
+    translations[language] ||
+    translations.ka;
+
+  /* =========================
+     LOGIN STATE
+  ========================= */
+
+  const [
+    isLoggedIn,
+    setIsLoggedIn,
+  ] = useState(
+    localStorage.getItem(
+      "careGeorgiaLoggedIn"
+    ) === "true"
+  );
+
+  /* =========================
+     USER
+  ========================= */
+
+  const savedUser =
+    localStorage.getItem(
+      "careGeorgiaUser"
+    );
+
+  let user = null;
+
+  if (savedUser) {
+    try {
+      user =
+        JSON.parse(savedUser);
+    } catch {
+      user = null;
+    }
+  }
+
+  /* =========================
+     LANGUAGE
+  ========================= */
+
+  const handleLanguageChange = (e) => {
+    setLanguage(e.target.value);
+    setIsUserMenuOpen(false);
+  };
+
+  /* =========================
+     SEARCH
+  ========================= */
 
   const handleSearch = () => {
-    if (!selectedService || !selectedCity) {
-      alert("გთხოვ, აირჩიე მომსახურება და ქალაქი.");
+    if (
+      !selectedService ||
+      !selectedCity
+    ) {
+      alert(t.searchAlert);
       return;
     }
 
@@ -36,185 +373,779 @@ function Home() {
       dogwalker: "/dogwalker",
     };
 
-    const route = serviceRoutes[selectedService];
+    const route =
+      serviceRoutes[selectedService];
 
     if (route) {
-      navigate(`${route}?city=${selectedCity}`);
+      navigate(
+        `${route}?city=${selectedCity}`
+      );
     }
+  };
+
+  /* =========================
+     LOGOUT
+  ========================= */
+
+  const handleLogout = () => {
+    localStorage.removeItem(
+      "careGeorgiaLoggedIn"
+    );
+
+    localStorage.removeItem(
+      "careGeorgiaCurrentUserId"
+    );
+
+    /*
+      მხოლოდ აქტიური მომხმარებელი იშლება.
+      careGeorgiaUsers არ იშლება.
+    */
+    localStorage.removeItem(
+      "careGeorgiaUser"
+    );
+
+    setIsUserMenuOpen(false);
+    setIsLoggedIn(false);
+
+    navigate("/");
   };
 
   return (
     <div className="app">
-      {/* HEADER */}
+
+      {/* =========================
+          HEADER
+      ========================= */}
+
       <header className="header">
-        <div className="logo">Care Georgia</div>
+
+        <div className="logo">
+          🇬🇪 Care Georgia
+        </div>
 
         <nav className="nav">
-          <a href="#">მთავარი</a>
-          <a href="#">იპოვე სპეციალისტი</a>
-          <a href="#">იპოვე სამსახური</a>
-          <a href="#">ჩვენ შესახებ</a>
+
+          <Link to="/">
+            {t.home}
+          </Link>
+
+          <a href="#services">
+            {t.findSpecialist}
+          </a>
+
+          <Link to="/jobs">
+            {t.findJob}
+          </Link>
+
+          {isLoggedIn && (
+            <Link to="/my-jobs">
+              {t.myJobs}
+            </Link>
+          )}
+
+          <a href="#about">
+            {t.about}
+          </a>
+
+          {/* SUPPORT */}
+
+          <Link to="/support">
+            🛠️ {t.support}
+          </Link>
+
         </nav>
 
         <div className="header-buttons">
-          <button className="login-btn">შესვლა</button>
 
-          <button className="register-btn">რეგისტრაცია</button>
+          {/* LANGUAGE */}
+
+          <select
+            className="language-select"
+            value={language}
+            onChange={
+              handleLanguageChange
+            }
+            aria-label="Language"
+          >
+            <option value="ka">
+              🇬🇪 ქართული
+            </option>
+
+            <option value="en">
+              🇬🇧 English
+            </option>
+
+            <option value="ru">
+              🇷🇺 Русский
+            </option>
+          </select>
+
+          {/* LOGIN / USER */}
+
+          {isLoggedIn ? (
+            <>
+
+              {/* USER DROPDOWN */}
+
+              <div
+                style={{
+                  position: "relative",
+                }}
+              >
+                <button
+                  type="button"
+                  className="user-name"
+                  onClick={() =>
+                    setIsUserMenuOpen(
+                      (previousValue) =>
+                        !previousValue
+                    )
+                  }
+                  style={{
+                    border: "none",
+                    background:
+                      "transparent",
+                    cursor: "pointer",
+                    fontFamily:
+                      "inherit",
+                    fontSize:
+                      "inherit",
+                    color: "inherit",
+                    padding:
+                      "8px 10px",
+                    display: "flex",
+                    alignItems:
+                      "center",
+                    gap: "5px",
+                  }}
+                >
+                  <span>
+                    👤{" "}
+                    {user?.firstName ||
+                      t.user}
+                  </span>
+
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      transform:
+                        isUserMenuOpen
+                          ? "rotate(180deg)"
+                          : "rotate(0deg)",
+                      transition:
+                        "transform 0.2s ease",
+                    }}
+                  >
+                    ▼
+                  </span>
+                </button>
+
+                {/* DROPDOWN */}
+
+                {isUserMenuOpen && (
+                  <div
+                    style={{
+                      position:
+                        "absolute",
+                      top:
+                        "calc(100% + 8px)",
+                      right: "0",
+                      width: "230px",
+                      backgroundColor:
+                        "#ffffff",
+                      border:
+                        "1px solid #e2e8f0",
+                      borderRadius:
+                        "12px",
+                      boxShadow:
+                        "0 12px 35px rgba(0, 0, 0, 0.14)",
+                      padding: "8px",
+                      zIndex: "1000",
+                    }}
+                  >
+
+                    {/* PROFILE */}
+
+                    <Link
+                      to="/my-profile"
+                      onClick={() =>
+                        setIsUserMenuOpen(
+                          false
+                        )
+                      }
+                      style={{
+                        display:
+                          "flex",
+                        alignItems:
+                          "center",
+                        gap: "10px",
+                        padding:
+                          "12px 14px",
+                        borderRadius:
+                          "8px",
+                        textDecoration:
+                          "none",
+                        color:
+                          "#1e293b",
+                        fontWeight:
+                          "600",
+                      }}
+                    >
+                      <span>👤</span>
+
+                      <span>
+                        {t.myProfile}
+                      </span>
+                    </Link>
+
+                    {/* MY JOBS */}
+
+                    <Link
+                      to="/my-jobs"
+                      onClick={() =>
+                        setIsUserMenuOpen(
+                          false
+                        )
+                      }
+                      style={{
+                        display:
+                          "flex",
+                        alignItems:
+                          "center",
+                        gap: "10px",
+                        padding:
+                          "12px 14px",
+                        borderRadius:
+                          "8px",
+                        textDecoration:
+                          "none",
+                        color:
+                          "#1e293b",
+                        fontWeight:
+                          "600",
+                      }}
+                    >
+                      <span>📋</span>
+
+                      <span>
+                        {t.myJobs}
+                      </span>
+                    </Link>
+
+                  </div>
+                )}
+              </div>
+
+              {/* LOGOUT */}
+
+              <button
+                type="button"
+                className="login-btn"
+                onClick={
+                  handleLogout
+                }
+              >
+                {t.logout}
+              </button>
+
+            </>
+          ) : (
+            <>
+
+              <Link
+                to="/login"
+                className="login-btn"
+              >
+                {t.login}
+              </Link>
+
+              <Link
+                to="/register"
+                className="register-btn"
+              >
+                {t.register}
+              </Link>
+
+            </>
+          )}
+
         </div>
       </header>
 
-      {/* HERO */}
+      {/* =========================
+          HERO
+      ========================= */}
+
       <main className="hero">
+
         <div className="hero-content">
-          <p className="hero-small">ზრუნვა იწყება სწორი ადამიანის პოვნით</p>
+
+          <p className="hero-small">
+            {t.heroSmall}
+          </p>
 
           <h1>
-            იპოვე სანდო ადამიანი
-            <span> შენს ოჯახზე ზრუნვისთვის</span>
+            {t.heroTitle}
+
+            <span>
+              {t.heroTitleBlue}
+            </span>
           </h1>
 
           <p className="hero-description">
-            მოძებნე გამოცდილი სპეციალისტები შენს ქალაქში — მარტივად, სწრაფად და
-            უსაფრთხოდ.
+            {t.heroDescription}
           </p>
 
           {/* SEARCH */}
+
           <div className="search-box">
-            <select
-              value={selectedService}
-              onChange={(e) => setSelectedService(e.target.value)}
-            >
-              <option value="" disabled>
-                რას ეძებ?
-              </option>
-
-              <option value="nanny">👶 ძიძა</option>
-
-              <option value="elderly">👵 ხანდაზმულის მომვლელი</option>
-
-              <option value="driver">🚗 მძღოლი</option>
-
-              <option value="tutor">📚 ტუტორი / რეპეტიტორი</option>
-
-              <option value="home">🏠 სახლის დამხმარე</option>
-
-              <option value="dogwalker">🐕 ძაღლის გამსეირნებელი</option>
-            </select>
 
             <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
+              value={
+                selectedService
+              }
+              onChange={(e) =>
+                setSelectedService(
+                  e.target.value
+                )
+              }
             >
-              <option value="" disabled>
-                აირჩიე ქალაქი
+              <option
+                value=""
+                disabled
+              >
+                {t.chooseService}
               </option>
 
-              <option value="tbilisi">თბილისი</option>
-              <option value="batumi">ბათუმი</option>
-              <option value="kutaisi">ქუთაისი</option>
-              <option value="rustavi">რუსთავი</option>
-              <option value="gori">გორი</option>
-              <option value="zugdidi">ზუგდიდი</option>
+              <option value="nanny">
+                👶 {t.nanny}
+              </option>
+
+              <option value="elderly">
+                👵 {t.elderly}
+              </option>
+
+              <option value="driver">
+                🚗 {t.driver}
+              </option>
+
+              <option value="tutor">
+                📚 {t.tutor}
+              </option>
+
+              <option value="home">
+                🏠 {t.housekeeper}
+              </option>
+
+              <option value="dogwalker">
+                🐕 {t.dogWalker}
+              </option>
             </select>
 
-            <button className="search-btn" onClick={handleSearch}>
-              ძიება
+            {/* CITY */}
+
+            <select
+              value={
+                selectedCity
+              }
+              onChange={(e) =>
+                setSelectedCity(
+                  e.target.value
+                )
+              }
+            >
+              <option
+                value=""
+                disabled
+              >
+                {t.chooseCity}
+              </option>
+
+              <option value="tbilisi">
+                {t.tbilisi}
+              </option>
+
+              <option value="batumi">
+                {t.batumi}
+              </option>
+
+              <option value="kutaisi">
+                {t.kutaisi}
+              </option>
+
+              <option value="rustavi">
+                {t.rustavi}
+              </option>
+
+              <option value="gori">
+                {t.gori}
+              </option>
+
+              <option value="zugdidi">
+                {t.zugdidi}
+              </option>
+            </select>
+
+            <button
+              className="search-btn"
+              onClick={
+                handleSearch
+              }
+            >
+              {t.search}
             </button>
+
           </div>
         </div>
       </main>
 
-      {/* SERVICES */}
-      <section className="services">
+      {/* =========================
+          SERVICES
+      ========================= */}
+
+      <section
+        className="services"
+        id="services"
+      >
+
         <div className="services-title">
-          <p>ჩვენი სერვისები</p>
-          <h2>როგორი დახმარება გჭირდება?</h2>
+
+          <p>
+            {t.services}
+          </p>
+
+          <h2>
+            {t.servicesTitle}
+          </h2>
+
           <span>
-            აირჩიე სასურველი კატეგორია და იპოვე შესაბამისი სპეციალისტი.
+            {t.servicesDescription}
           </span>
+
         </div>
 
         <div className="service-cards">
-          <div className="service-card">
-            <div className="service-icon">👶</div>
-            <h3>ძიძა</h3>
-            <p>იპოვე სანდო ძიძა ბავშვის მოვლისთვის.</p>
-            <Link to="/nannies" className="service-link">
-              ნახვა →
-            </Link>
-          </div>
+
+          {/* NANNY */}
 
           <div className="service-card">
-            <div className="service-icon">👵</div>
-            <h3>მომვლელი</h3>
-            <p>იპოვე მზრუნველი ადამიანი ოჯახის წევრისთვის.</p>
-            <Link to="/caregivers" className="service-link">
-              ნახვა →
+
+            <div className="service-icon">
+              👶
+            </div>
+
+            <h3>
+              {t.nanny}
+            </h3>
+
+            <p>
+              {t.nannyDescription}
+            </p>
+
+            <Link
+              to="/nannies"
+              className="service-link"
+            >
+              {t.view}
             </Link>
+
           </div>
 
-          <div className="service-card">
-            <div className="service-icon">🚗</div>
-            <h3>მძღოლი</h3>
-            <p>იპოვე გამოცდილი და სანდო მძღოლი.</p>
-            <Link to="/drivers" className="service-link">
-              ნახვა →
-            </Link>
-          </div>
+          {/* CAREGIVER */}
 
           <div className="service-card">
-            <div className="service-icon">📚</div>
-            <h3>ტუტორი</h3>
-            <p>იპოვე მასწავლებელი და რეპეტიტორი.</p>
-            <Link to="/tutors" className="service-link">
-              ნახვა →
+
+            <div className="service-icon">
+              👵
+            </div>
+
+            <h3>
+              {t.caregiver}
+            </h3>
+
+            <p>
+              {t.caregiverDescription}
+            </p>
+
+            <Link
+              to="/caregivers"
+              className="service-link"
+            >
+              {t.view}
             </Link>
+
           </div>
 
-          <div className="service-card">
-            <div className="service-icon">🏠</div>
-            <h3>სახლის დამხმარე</h3>
-            <p>იპოვე ადამიანი ყოველდღიური საქმეებისთვის.</p>
-            <Link to="/housekeepers" className="service-link">
-              ნახვა →
-            </Link>
-          </div>
+          {/* DRIVER */}
 
           <div className="service-card">
-            <div className="service-icon">🐕</div>
-            <h3>Dog Walker</h3>
-            <p>ძაღლის გასეირნება და მოვლა</p>
-            <Link to="/dogwalker" className="service-link">
-              ნახვა →
+
+            <div className="service-icon">
+              🚗
+            </div>
+
+            <h3>
+              {t.driver}
+            </h3>
+
+            <p>
+              {t.driverDescription}
+            </p>
+
+            <Link
+              to="/drivers"
+              className="service-link"
+            >
+              {t.view}
             </Link>
+
           </div>
+
+          {/* TUTOR */}
+
+          <div className="service-card">
+
+            <div className="service-icon">
+              📚
+            </div>
+
+            <h3>
+              {t.tutorShort}
+            </h3>
+
+            <p>
+              {t.tutorDescription}
+            </p>
+
+            <Link
+              to="/tutors"
+              className="service-link"
+            >
+              {t.view}
+            </Link>
+
+          </div>
+
+          {/* HOUSEKEEPER */}
+
+          <div className="service-card">
+
+            <div className="service-icon">
+              🏠
+            </div>
+
+            <h3>
+              {t.housekeeper}
+            </h3>
+
+            <p>
+              {t.housekeeperDescription}
+            </p>
+
+            <Link
+              to="/housekeepers"
+              className="service-link"
+            >
+              {t.view}
+            </Link>
+
+          </div>
+
+          {/* DOG WALKER */}
+
+          <div className="service-card">
+
+            <div className="service-icon">
+              🐕
+            </div>
+
+            <h3>
+              {t.dogWalker}
+            </h3>
+
+            <p>
+              {t.dogWalkerDescription}
+            </p>
+
+            <Link
+              to="/dogwalker"
+              className="service-link"
+            >
+              {t.view}
+            </Link>
+
+          </div>
+
         </div>
       </section>
+
     </div>
   );
 }
 
+/* =========================
+   APP ROUTES
+========================= */
+
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/drivers" element={<Drivers />} />
-      <Route path="/drivers/:id" element={<DriverProfile />} />
 
-      <Route path="/tutors" element={<Tutors />} />
-      <Route path="/tutors/:id" element={<TutorProfile />} />
+      {/* HOME */}
 
-      <Route path="/nannies" element={<Nannies />} />
-      <Route path="/nannies/:id" element={<NannyProfile />} />
+      <Route
+        path="/"
+        element={<Home />}
+      />
 
-      <Route path="/caregivers" element={<Caregivers />} />
-      <Route path="/caregivers/:id" element={<CaregiverProfile />} />
-      <Route path="/housekeepers" element={<Housekeepers />} />
-      <Route path="/housekeepers/:id" element={<HousekeeperProfile />} />
-      <Route path="/dogwalker" element={<DogWalkers />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/terms" element={<Terms />} />
-      <Route path="/privacy" element={<Privacy />} />
+      {/* DRIVERS */}
+
+      <Route
+        path="/drivers"
+        element={<Drivers />}
+      />
+
+      <Route
+        path="/drivers/:id"
+        element={
+          <DriverProfile />
+        }
+      />
+
+      {/* TUTORS */}
+
+      <Route
+        path="/tutors"
+        element={<Tutors />}
+      />
+
+      <Route
+        path="/tutors/:id"
+        element={
+          <TutorProfile />
+        }
+      />
+
+      {/* NANNIES */}
+
+      <Route
+        path="/nannies"
+        element={<Nannies />}
+      />
+
+      <Route
+        path="/nannies/:id"
+        element={
+          <NannyProfile />
+        }
+      />
+
+      {/* CAREGIVERS */}
+
+      <Route
+        path="/caregivers"
+        element={<Caregivers />}
+      />
+
+      <Route
+        path="/caregivers/:id"
+        element={
+          <CaregiverProfile />
+        }
+      />
+
+      {/* HOUSEKEEPERS */}
+
+      <Route
+        path="/housekeepers"
+        element={
+          <Housekeepers />
+        }
+      />
+
+      <Route
+        path="/housekeepers/:id"
+        element={
+          <HousekeeperProfile />
+        }
+      />
+
+      {/* DOG WALKERS */}
+
+      <Route
+        path="/dogwalker"
+        element={
+          <DogWalkers />
+        }
+      />
+
+      <Route
+        path="/dogwalker/:id"
+        element={
+          <DogWalkerProfile />
+        }
+      />
+
+      {/* JOBS */}
+
+      <Route
+        path="/post-job"
+        element={<PostJob />}
+      />
+
+      <Route
+        path="/jobs"
+        element={<Jobs />}
+      />
+
+      <Route
+        path="/my-jobs"
+        element={<MyJobs />}
+      />
+
+      <Route
+        path="/edit-job/:id"
+        element={<EditJob />}
+      />
+
+      {/* USER PROFILE */}
+
+      <Route
+        path="/my-profile"
+        element={<MyProfile />}
+      />
+
+      {/* AUTHENTICATION */}
+
+      <Route
+        path="/register"
+        element={<Register />}
+      />
+
+      <Route
+        path="/login"
+        element={<Login />}
+      />
+
+      {/* LEGAL */}
+
+      <Route
+        path="/terms"
+        element={<Terms />}
+      />
+
+      <Route
+        path="/privacy"
+        element={<Privacy />}
+      />
+
+      {/* SUPPORT */}
+
+      <Route
+        path="/support"
+        element={<Support />}
+      />
+
     </Routes>
   );
 }

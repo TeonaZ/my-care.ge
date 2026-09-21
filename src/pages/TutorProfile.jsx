@@ -1,50 +1,195 @@
 import { Link, useParams } from "react-router-dom";
+import { useLanguage } from "../Context/LanguageContext";
 import "./DriverProfile.css";
+
+const translations = {
+  ka: {
+    notFound: "ტუტორი ვერ მოიძებნა",
+    back: "← ტუტორებზე დაბრუნება",
+    verified: "✓ ვერიფიცირებული",
+    reviews: "შეფასება",
+    lessonPrice: "გაკვეთილის ფასი",
+    contact: "დაკავშირება",
+    message: "შეტყობინება",
+    about: "ტუტორის შესახებ",
+    subject: "საგანი",
+    experience: "გამოცდილება",
+    rating: "რეიტინგი",
+
+    // სახელები
+    name1: "ნინო ბ.",
+    name2: "ანა გ.",
+    name3: "მარიამ ლ.",
+
+    // ქალაქები
+    tbilisi: "თბილისი",
+    batumi: "ბათუმი",
+
+    // საგნები
+    english: "ინგლისური ენა",
+    math: "მათემატიკა",
+    georgian: "ქართული ენა",
+
+    // გამოცდილება
+    years6: "6 წელი",
+    years4: "4 წელი",
+    years5: "5 წელი",
+
+    // ფასი
+    currency: "₾",
+    perHour: "საათი",
+
+    // აღწერები
+    description1:
+      "ინგლისური ენის ტუტორი 6 წლიანი გამოცდილებით. ვმუშაობ როგორც მოსწავლეებთან, ასევე ზრდასრულებთან.",
+
+    description2:
+      "მათემატიკის რეპეტიტორი. ვეხმარები მოსწავლეებს სასკოლო პროგრამის ათვისებასა და გამოცდებისთვის მომზადებაში.",
+
+    description3:
+      "ქართული ენის ტუტორი ბათუმში. ვთავაზობ ინდივიდუალურ გაკვეთილებს სხვადასხვა ასაკის მოსწავლეებს.",
+  },
+
+  en: {
+    notFound: "Tutor not found",
+    back: "← Back to Tutors",
+    verified: "✓ Verified",
+    reviews: "reviews",
+    lessonPrice: "Lesson price",
+    contact: "Contact",
+    message: "Message",
+    about: "About the Tutor",
+    subject: "Subject",
+    experience: "Experience",
+    rating: "Rating",
+
+    // Names
+    name1: "Nino B.",
+    name2: "Ana G.",
+    name3: "Mariam L.",
+
+    // Cities
+    tbilisi: "Tbilisi",
+    batumi: "Batumi",
+
+    // Subjects
+    english: "English",
+    math: "Mathematics",
+    georgian: "Georgian",
+
+    // Experience
+    years6: "6 years",
+    years4: "4 years",
+    years5: "5 years",
+
+    // Price
+    currency: "GEL",
+    perHour: "hour",
+
+    // Descriptions
+    description1:
+      "English tutor with 6 years of experience. I work with both school students and adults.",
+
+    description2:
+      "Mathematics tutor. I help students understand the school curriculum and prepare for exams.",
+
+    description3:
+      "Georgian language tutor in Batumi. I offer individual lessons for students of different ages.",
+  },
+
+  ru: {
+    notFound: "Репетитор не найден",
+    back: "← Назад к репетиторам",
+    verified: "✓ Проверенный",
+    reviews: "отзывов",
+    lessonPrice: "Стоимость занятия",
+    contact: "Связаться",
+    message: "Сообщение",
+    about: "О репетиторе",
+    subject: "Предмет",
+    experience: "Опыт",
+    rating: "Рейтинг",
+
+    // Имена
+    name1: "Нино Б.",
+    name2: "Ана Г.",
+    name3: "Мариам Л.",
+
+    // Города
+    tbilisi: "Тбилиси",
+    batumi: "Батуми",
+
+    // Предметы
+    english: "Английский язык",
+    math: "Математика",
+    georgian: "Грузинский язык",
+
+    // Опыт
+    years6: "6 лет",
+    years4: "4 года",
+    years5: "5 лет",
+
+    // Цена
+    currency: "GEL",
+    perHour: "час",
+
+    // Описания
+    description1:
+      "Репетитор английского языка с 6-летним опытом. Работаю как со школьниками, так и со взрослыми.",
+
+    description2:
+      "Репетитор по математике. Помогаю ученикам освоить школьную программу и подготовиться к экзаменам.",
+
+    description3:
+      "Репетитор грузинского языка в Батуми. Предлагаю индивидуальные занятия для учеников разных возрастов.",
+  },
+};
 
 function TutorProfile() {
   const { id } = useParams();
 
+  const { language } = useLanguage();
+
+  const t = translations[language] || translations.ka;
+
   const tutors = [
     {
       id: 1,
-      name: "ნინო ბ.",
-      subject: "ინგლისური ენა",
-      city: "თბილისი",
-      experience: "6 წელი",
-      price: "30 ₾ / საათი",
+      name: t.name1,
+      subject: t.english,
+      city: t.tbilisi,
+      experience: t.years6,
+      price: `30 ${t.currency} / ${t.perHour}`,
       rating: "4.9",
       reviews: 42,
       verified: true,
-      description:
-        "ინგლისური ენის ტუტორი 6 წლიანი გამოცდილებით. ვმუშაობ როგორც მოსწავლეებთან, ასევე ზრდასრულებთან.",
+      description: t.description1,
     },
 
     {
       id: 2,
-      name: "ანა გ.",
-      subject: "მათემატიკა",
-      city: "თბილისი",
-      experience: "4 წელი",
-      price: "25 ₾ / საათი",
+      name: t.name2,
+      subject: t.math,
+      city: t.tbilisi,
+      experience: t.years4,
+      price: `25 ${t.currency} / ${t.perHour}`,
       rating: "4.8",
       reviews: 31,
       verified: true,
-      description:
-        "მათემატიკის რეპეტიტორი. ვეხმარები მოსწავლეებს სასკოლო პროგრამის ათვისებასა და გამოცდებისთვის მომზადებაში.",
+      description: t.description2,
     },
 
     {
       id: 3,
-      name: "მარიამ ლ.",
-      subject: "ქართული ენა",
-      city: "ბათუმი",
-      experience: "5 წელი",
-      price: "25 ₾ / საათი",
+      name: t.name3,
+      subject: t.georgian,
+      city: t.batumi,
+      experience: t.years5,
+      price: `25 ${t.currency} / ${t.perHour}`,
       rating: "4.7",
       reviews: 19,
       verified: false,
-      description:
-        "ქართული ენის ტუტორი ბათუმში. ვთავაზობ ინდივიდუალურ გაკვეთილებს სხვადასხვა ასაკის მოსწავლეებს.",
+      description: t.description3,
     },
   ];
 
@@ -55,10 +200,10 @@ function TutorProfile() {
   if (!tutor) {
     return (
       <div className="profile-not-found">
-        <h1>ტუტორი ვერ მოიძებნა</h1>
+        <h1>{t.notFound}</h1>
 
         <Link to="/tutors">
-          ← ტუტორებზე დაბრუნება
+          {t.back}
         </Link>
       </div>
     );
@@ -66,11 +211,13 @@ function TutorProfile() {
 
   return (
     <div className="profile-page">
-
       <div className="profile-container">
 
-        <Link to="/tutors" className="profile-back">
-          ← ტუტორებზე დაბრუნება
+        <Link
+          to="/tutors"
+          className="profile-back"
+        >
+          {t.back}
         </Link>
 
         <div className="profile-card">
@@ -89,7 +236,7 @@ function TutorProfile() {
 
                 {tutor.verified && (
                   <span className="profile-verified">
-                    ✓ ვერიფიცირებული
+                    {t.verified}
                   </span>
                 )}
 
@@ -107,19 +254,17 @@ function TutorProfile() {
                 ⭐ {tutor.rating}
 
                 <span>
-                  ({tutor.reviews} შეფასება)
+                  ({tutor.reviews} {t.reviews})
                 </span>
               </div>
 
             </div>
-
           </div>
-
 
           <div className="profile-action">
 
             <span>
-              გაკვეთილის ფასი
+              {t.lessonPrice}
             </span>
 
             <strong>
@@ -127,21 +272,21 @@ function TutorProfile() {
             </strong>
 
             <button className="contact-btn">
-              დაკავშირება
+              {t.contact}
             </button>
 
             <button className="message-btn">
-              შეტყობინება
+              {t.message}
             </button>
 
           </div>
-
         </div>
-
 
         <div className="profile-about">
 
-          <h2>ტუტორის შესახებ</h2>
+          <h2>
+            {t.about}
+          </h2>
 
           <p>
             {tutor.description}
@@ -151,28 +296,44 @@ function TutorProfile() {
 
             <div>
               <span>📚</span>
-              <p>საგანი</p>
-              <strong>{tutor.subject}</strong>
+
+              <p>
+                {t.subject}
+              </p>
+
+              <strong>
+                {tutor.subject}
+              </strong>
             </div>
 
             <div>
               <span>🎓</span>
-              <p>გამოცდილება</p>
-              <strong>{tutor.experience}</strong>
+
+              <p>
+                {t.experience}
+              </p>
+
+              <strong>
+                {tutor.experience}
+              </strong>
             </div>
 
             <div>
               <span>⭐</span>
-              <p>რეიტინგი</p>
-              <strong>{tutor.rating} / 5</strong>
+
+              <p>
+                {t.rating}
+              </p>
+
+              <strong>
+                {tutor.rating} / 5
+              </strong>
             </div>
 
           </div>
-
         </div>
 
       </div>
-
     </div>
   );
 }
