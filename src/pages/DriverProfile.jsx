@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./DriverProfile.css";
 
@@ -126,6 +126,29 @@ const translations = {
       "მონიშნეთ მხოლოდ ის ინფორმაცია, რომლის ჩვენებაც გსურთ სპეციალისტისთვის.",
 
     noPhone: "თქვენს ანგარიშზე ტელეფონის ნომერი მითითებული არ არის.",
+
+    applicationManagement: "კანდიდატის განაცხადის მართვა",
+    applicationDescription:
+      "ამ მძღოლმა თქვენს სამუშაო განცხადებაზე განაცხადი გამოგიგზავნათ.",
+    applicationJob: "სამუშაო",
+    applicationStatus: "განაცხადის სტატუსი",
+    applicationSent: "განაცხადი გაგზავნილია",
+    applicationReviewed: "დამსაქმებელმა განიხილა კანდიდატის განაცხადი.",
+    applicationNextStage: "კანდიდატი გადავიდა შერჩევის შემდეგ ეტაპზე.",
+    applicationNotSelected:
+      "ამ ეტაპზე გასაუბრებები გაგრძელდება სხვა კანდიდატებთან.",
+    applicationCompleted: "განაცხადის განხილვა დასრულებულია.",
+    markReviewed: "განხილულად მონიშვნა",
+    moveNextStage: "შემდეგ ეტაპზე გადაყვანა",
+    continueOthers: "სხვა კანდიდატებთან გაგრძელება",
+    completeReview: "განხილვის დასრულება",
+    reviewedHelp:
+      "განაცხადის განხილვის შემდეგ შეგიძლიათ კანდიდატი გადაიყვანოთ შემდეგ ეტაპზე ან გააგრძელოთ გასაუბრებები სხვა კანდიდატებთან.",
+    nextStageHelp:
+      "კანდიდატი შერჩევის შემდეგ ეტაპზეა. საჭიროების შემთხვევაში შეგიძლიათ დაუკავშირდეთ.",
+    notSelectedHelp:
+      "მადლობა დაინტერესებისა და განაცხადისთვის. ამ ეტაპზე დამსაქმებელი გასაუბრებებს სხვა კანდიდატებთან აგრძელებს. წარმატებებს გისურვებთ შემდეგ შესაძლებლობებში!",
+    completedHelp: "ამ კანდიდატის განაცხადის განხილვა დასრულებულია.",
   },
 
   en: {
@@ -252,6 +275,30 @@ const translations = {
       "Select only the contact information you want to share with the specialist.",
 
     noPhone: "There is no phone number saved on your account.",
+
+    applicationManagement: "Manage Candidate Application",
+    applicationDescription: "This driver has applied to one of your job posts.",
+    applicationJob: "Job",
+    applicationStatus: "Application status",
+    applicationSent: "Application sent",
+    applicationReviewed:
+      "The employer has reviewed the candidate's application.",
+    applicationNextStage: "The candidate has moved to the next stage.",
+    applicationNotSelected:
+      "At this stage, interviews will continue with other candidates.",
+    applicationCompleted: "Application review has been completed.",
+    markReviewed: "Mark as reviewed",
+    moveNextStage: "Move to next stage",
+    continueOthers: "Continue with other candidates",
+    completeReview: "Complete review",
+    reviewedHelp:
+      "After reviewing the application, you can move the candidate to the next stage or continue interviews with other candidates.",
+    nextStageHelp:
+      "The candidate is in the next stage of the selection process. You can contact them if needed.",
+    notSelectedHelp:
+      "Thank you for your interest and application. At this stage, the employer is continuing interviews with other candidates. We wish you success with future opportunities!",
+    completedHelp:
+      "The review of this candidate's application has been completed.",
   },
 
   ru: {
@@ -381,12 +428,37 @@ const translations = {
       "Выберите только те контактные данные, которые хотите показать специалисту.",
 
     noPhone: "В вашем аккаунте не указан номер телефона.",
+
+    applicationManagement: "Управление заявкой кандидата",
+    applicationDescription:
+      "Этот водитель отправил заявку на одно из ваших объявлений.",
+    applicationJob: "Работа",
+    applicationStatus: "Статус заявки",
+    applicationSent: "Заявка отправлена",
+    applicationReviewed: "Работодатель рассмотрел заявку кандидата.",
+    applicationNextStage: "Кандидат перешел на следующий этап отбора.",
+    applicationNotSelected:
+      "На этом этапе собеседования продолжатся с другими кандидатами.",
+    applicationCompleted: "Рассмотрение заявки завершено.",
+    markReviewed: "Отметить как рассмотренную",
+    moveNextStage: "Перевести на следующий этап",
+    continueOthers: "Продолжить с другими кандидатами",
+    completeReview: "Завершить рассмотрение",
+    reviewedHelp:
+      "После рассмотрения заявки можно перевести кандидата на следующий этап или продолжить собеседования с другими кандидатами.",
+    nextStageHelp:
+      "Кандидат находится на следующем этапе отбора. При необходимости вы можете связаться с ним.",
+    notSelectedHelp:
+      "Спасибо за интерес и заявку. На этом этапе работодатель продолжает собеседования с другими кандидатами. Желаем успехов в следующих возможностях!",
+    completedHelp: "Рассмотрение заявки этого кандидата завершено.",
   },
 };
 
 function DriverProfile() {
   const { id } = useParams();
-  const { language } = useLanguage();
+  
+  const location = useLocation();
+const { language } = useLanguage();
 
   const t = translations[language] || translations.ka;
 
@@ -407,6 +479,30 @@ function DriverProfile() {
   const currentUser = getCurrentUser();
 
   const isClient = currentUser?.accountType === "client";
+
+  const returnFrom = location.state?.from;
+
+  const backPath =
+    returnFrom === "my-jobs"
+      ? "/my-jobs"
+      : returnFrom === "sent-interests"
+        ? "/sent-interests"
+        : "/drivers";
+
+  const backText =
+    returnFrom === "my-jobs"
+      ? language === "ka"
+        ? "← ჩემს განცხადებებზე დაბრუნება"
+        : language === "ru"
+          ? "← Вернуться к моим объявлениям"
+          : "← Back to My Jobs"
+      : returnFrom === "sent-interests"
+        ? language === "ka"
+          ? "← გაგზავნილ დაინტერესებებში დაბრუნება"
+          : language === "ru"
+            ? "← Вернуться к отправленным предложениям"
+            : "← Back to Sent Interests"
+        : t.back;
 
   /* =========================
      DEFAULT DRIVERS
@@ -573,7 +669,17 @@ function DriverProfile() {
     }
   };
 
+  const getSavedApplications = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("careGeorgiaApplications"));
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  };
+
   const [interests, setInterests] = useState(getSavedInterests);
+  const [applications, setApplications] = useState(getSavedApplications);
 
   const [showInterestBox, setShowInterestBox] = useState(false);
 
@@ -588,7 +694,7 @@ function DriverProfile() {
       <div className="profile-not-found">
         <h1>{t.notFound}</h1>
 
-        <Link to="/drivers">{t.back}</Link>
+        <Link to={backPath}>{backText}</Link>
       </div>
     );
   }
@@ -657,12 +763,117 @@ function DriverProfile() {
      MATCHING JOBS
   ========================= */
 
-  const myMatchingJobs = getSavedJobs().filter(
+  const savedJobs = getSavedJobs();
+
+  const myMatchingJobs = savedJobs.filter(
     (job) =>
       String(job.ownerId) === String(currentUserId) &&
       job.service === "driver" &&
       job.status !== "closed",
   );
+
+  const employerApplications = applications.filter(
+    (application) =>
+      String(application.specialistProfileId) === String(driver.id) &&
+      String(application.jobOwnerId) === String(currentUserId),
+  );
+
+  const getApplicationJob = (application) =>
+    savedJobs.find(
+      (job) =>
+        String(job.id) === String(application.jobId) &&
+        String(job.ownerId) === String(currentUserId),
+    );
+
+  const normalizeApplicationStatus = (status) => {
+    if (status === "reviewed") return "reviewed";
+    if (status === "next-stage") return "next-stage";
+    if (status === "not-selected") return "not-selected";
+    if (status === "completed") return "completed";
+    return "pending";
+  };
+
+  const getApplicationStatusInfo = (application) => {
+    const status = normalizeApplicationStatus(application?.status);
+
+    if (status === "reviewed")
+      return {
+        icon: "👀",
+        text: t.applicationReviewed,
+        help: t.reviewedHelp,
+        bg: "#eff6ff",
+        border: "#bfdbfe",
+        color: "#1d4ed8",
+      };
+    if (status === "next-stage")
+      return {
+        icon: "➡️",
+        text: t.applicationNextStage,
+        help: t.nextStageHelp,
+        bg: "#f0fdf4",
+        border: "#bbf7d0",
+        color: "#15803d",
+      };
+    if (status === "not-selected")
+      return {
+        icon: "🌿",
+        text: t.applicationNotSelected,
+        help: t.notSelectedHelp,
+        bg: "#f0fdf4",
+        border: "#bbf7d0",
+        color: "#166534",
+      };
+    if (status === "completed")
+      return {
+        icon: "✅",
+        text: t.applicationCompleted,
+        help: t.completedHelp,
+        bg: "#f8fafc",
+        border: "#cbd5e1",
+        color: "#475569",
+      };
+
+    return {
+      icon: "📨",
+      text: t.applicationSent,
+      help: "",
+      bg: "#fffbeb",
+      border: "#fde68a",
+      color: "#92400e",
+    };
+  };
+
+  const updateApplicationStatus = (applicationId, newStatus) => {
+    const application = applications.find(
+      (item) => String(item.id) === String(applicationId),
+    );
+
+    if (!application) return;
+    if (String(application.jobOwnerId) !== String(currentUserId)) return;
+    if (String(application.specialistProfileId) !== String(driver.id)) return;
+
+    const now = new Date().toISOString();
+
+    const updatedApplications = applications.map((item) => {
+      if (String(item.id) !== String(applicationId)) return item;
+
+      return {
+        ...item,
+        status: newStatus,
+        statusUpdatedAt: now,
+        ...(newStatus === "reviewed" ? { reviewedAt: now } : {}),
+        ...(newStatus === "next-stage" ? { nextStageAt: now } : {}),
+        ...(newStatus === "not-selected" ? { notSelectedAt: now } : {}),
+        ...(newStatus === "completed" ? { completedAt: now } : {}),
+      };
+    });
+
+    setApplications(updatedApplications);
+    localStorage.setItem(
+      "careGeorgiaApplications",
+      JSON.stringify(updatedApplications),
+    );
+  };
 
   const hasInterestForJob = (jobId) => {
     return interests.some(
@@ -786,6 +997,10 @@ function DriverProfile() {
       JSON.stringify(updatedInterests),
     );
 
+    window.dispatchEvent(
+      new Event("careGeorgiaInterestsUpdated"),
+    );
+
     setShowInterestBox(false);
 
     resetInterestForm();
@@ -796,9 +1011,7 @@ function DriverProfile() {
   return (
     <div className="profile-page">
       <div className="profile-container">
-        <Link to="/drivers" className="profile-back">
-          {t.back}
-        </Link>
+        <Link to={backPath} className="profile-back">{backText}</Link>
 
         {/* MAIN CARD */}
 
@@ -885,6 +1098,243 @@ function DriverProfile() {
             )}
           </div>
         </div>
+
+        {/* APPLICATION MANAGEMENT */}
+
+        {isLoggedIn && isClient && employerApplications.length > 0 && (
+          <div
+            style={{
+              backgroundColor: "#ffffff",
+              border: "2px solid #bfdbfe",
+              borderRadius: "16px",
+              padding: "25px",
+              marginBottom: "25px",
+            }}
+          >
+            <h2 style={{ marginTop: 0, marginBottom: "8px" }}>
+              📩 {t.applicationManagement}
+            </h2>
+
+            <p
+              style={{
+                color: "#64748b",
+                lineHeight: "1.6",
+                marginBottom: "20px",
+              }}
+            >
+              {t.applicationDescription}
+            </p>
+
+            {employerApplications.map((application) => {
+              const job = getApplicationJob(application);
+              const status = normalizeApplicationStatus(application.status);
+              const info = getApplicationStatusInfo(application);
+
+              return (
+                <div
+                  key={application.id}
+                  style={{
+                    padding: "18px",
+                    marginTop: "14px",
+                    backgroundColor: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "12px",
+                  }}
+                >
+                  {job && (
+                    <div style={{ marginBottom: "18px", lineHeight: "1.7" }}>
+                      <strong style={{ display: "block", marginBottom: "7px" }}>
+                        💼 {t.applicationJob}
+                      </strong>
+                      <div>
+                        🚗{" "}
+                        {language === "ka"
+                          ? "მძღოლი"
+                          : language === "ru"
+                            ? "Водитель"
+                            : "Driver"}
+                      </div>
+                      <div>📍 {getCityName(job.city)}</div>
+                      <div>
+                        🕒{" "}
+                        {job.employmentType === "full-time"
+                          ? t.fullTime
+                          : t.partTime}
+                      </div>
+                      <div>
+                        💰 {job.budget} {t.currency} /{" "}
+                        {getPaymentTypeName(job.paymentType)}
+                      </div>
+                      {job.description && (
+                        <div style={{ marginTop: "8px", color: "#64748b" }}>
+                          {job.description}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <strong style={{ display: "block", marginBottom: "8px" }}>
+                    {t.applicationStatus}
+                  </strong>
+
+                  <div
+                    style={{
+                      padding: "14px",
+                      backgroundColor: info.bg,
+                      border: `1px solid ${info.border}`,
+                      color: info.color,
+                      borderRadius: "10px",
+                      fontWeight: "700",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    {info.icon} {info.text}
+                    {info.help && (
+                      <div
+                        style={{
+                          marginTop: "7px",
+                          fontWeight: "400",
+                          lineHeight: "1.6",
+                        }}
+                      >
+                        {info.help}
+                      </div>
+                    )}
+                  </div>
+
+                  {status === "pending" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                        marginTop: "16px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(application.id, "reviewed")
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "none",
+                          borderRadius: "9px",
+                          backgroundColor: "#2563eb",
+                          color: "#fff",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        👀 {t.markReviewed}
+                      </button>
+                    </div>
+                  )}
+
+                  {status === "reviewed" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                        marginTop: "16px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(application.id, "next-stage")
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "none",
+                          borderRadius: "9px",
+                          backgroundColor: "#16a34a",
+                          color: "#fff",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        ➡️ {t.moveNextStage}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(
+                            application.id,
+                            "not-selected",
+                          )
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "1px solid #bbf7d0",
+                          borderRadius: "9px",
+                          backgroundColor: "#f0fdf4",
+                          color: "#166534",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        🌿 {t.continueOthers}
+                      </button>
+                    </div>
+                  )}
+
+                  {status === "next-stage" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                        marginTop: "16px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(application.id, "completed")
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "none",
+                          borderRadius: "9px",
+                          backgroundColor: "#2563eb",
+                          color: "#fff",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        ✅ {t.completeReview}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(
+                            application.id,
+                            "not-selected",
+                          )
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "1px solid #bbf7d0",
+                          borderRadius: "9px",
+                          backgroundColor: "#f0fdf4",
+                          color: "#166534",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        🌿 {t.continueOthers}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* EMPLOYER INTEREST */}
 

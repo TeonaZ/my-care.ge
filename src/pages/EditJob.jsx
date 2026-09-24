@@ -58,6 +58,12 @@ const translations = {
     descriptionPlaceholder:
       "დაწერე სამუშაოს პირობები და სხვა მნიშვნელოვანი ინფორმაცია.",
 
+    contactSharing: "საკონტაქტო ინფორმაციის გაზიარება",
+    contactSharingHelp: "აირჩიე, რომელი საკონტაქტო ინფორმაცია გამოჩნდეს ამ განცხადებაზე.",
+    shareEmail: "ელ. ფოსტის გაზიარება",
+    sharePhone: "ტელეფონის გაზიარება",
+    contactMissing: "ეს ინფორმაცია შენს პროფილში მითითებული არ არის.",
+
     save: "ცვლილებების შენახვა",
 
     loginRequired:
@@ -124,6 +130,12 @@ const translations = {
     descriptionLabel: "Job description",
     descriptionPlaceholder:
       "Describe the job conditions and other important information.",
+
+    contactSharing: "Contact sharing",
+    contactSharingHelp: "Choose which contact information should be visible on this job post.",
+    shareEmail: "Share email",
+    sharePhone: "Share phone",
+    contactMissing: "This information is not available in your profile.",
 
     save: "Save Changes",
 
@@ -192,6 +204,12 @@ const translations = {
     descriptionPlaceholder:
       "Опишите условия работы и другую важную информацию.",
 
+    contactSharing: "Контактная информация",
+    contactSharingHelp: "Выберите, какие контактные данные будут видны в этом объявлении.",
+    shareEmail: "Показывать эл. почту",
+    sharePhone: "Показывать телефон",
+    contactMissing: "Эта информация не указана в вашем профиле.",
+
     save: "Сохранить изменения",
 
     loginRequired:
@@ -244,6 +262,33 @@ function EditJob() {
     description,
     setDescription,
   ] = useState("");
+
+  const [shareEmail, setShareEmail] =
+    useState(false);
+
+  const [sharePhone, setSharePhone] =
+    useState(false);
+
+  let currentUser = null;
+
+  try {
+    const savedUser =
+      localStorage.getItem("careGeorgiaUser");
+
+    currentUser = savedUser
+      ? JSON.parse(savedUser)
+      : null;
+  } catch {
+    currentUser = null;
+  }
+
+  const hasEmail = Boolean(
+    currentUser?.email
+  );
+
+  const hasPhone = Boolean(
+    currentUser?.phone
+  );
 
   const [jobFound, setJobFound] =
     useState(true);
@@ -365,6 +410,18 @@ function EditJob() {
     setDescription(
       job.description || ""
     );
+
+    /*
+      ძველი განცხადებები, რომლებსაც გაზიარების
+      flags არ აქვთ, ავტომატურად არაფერს გააზიარებენ.
+    */
+    setShareEmail(
+      job.showEmployerEmail === true
+    );
+
+    setSharePhone(
+      job.showEmployerPhone === true
+    );
   }, [
     id,
     navigate,
@@ -456,6 +513,22 @@ function EditJob() {
             Number(budget),
 
           description,
+
+          showEmployerEmail:
+            shareEmail && hasEmail,
+
+          showEmployerPhone:
+            sharePhone && hasPhone,
+
+          employerEmail:
+            shareEmail && hasEmail
+              ? currentUser.email
+              : "",
+
+          employerPhone:
+            sharePhone && hasPhone
+              ? currentUser.phone
+              : "",
 
           updatedAt:
             new Date().toISOString(),
@@ -793,6 +866,106 @@ function EditJob() {
                   outline: "none",
                 }}
               />
+            </div>
+
+            {/* CONTACT SHARING */}
+
+            <div
+              className="form-group"
+              style={{
+                padding: "16px",
+                border: "1px solid #dbe2ea",
+                borderRadius: "10px",
+                backgroundColor: "#f8fafc",
+              }}
+            >
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  fontWeight: "700",
+                }}
+              >
+                📇 {t.contactSharing}
+              </label>
+
+              <p
+                style={{
+                  margin: "0 0 14px",
+                  color: "#64748b",
+                  fontSize: "14px",
+                  lineHeight: "1.5",
+                }}
+              >
+                {t.contactSharingHelp}
+              </p>
+
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "12px",
+                  cursor: hasEmail
+                    ? "pointer"
+                    : "not-allowed",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={shareEmail}
+                  disabled={!hasEmail}
+                  onChange={(e) =>
+                    setShareEmail(
+                      e.target.checked
+                    )
+                  }
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                  }}
+                />
+
+                <span>
+                  ✉️ {t.shareEmail}
+                  {hasEmail
+                    ? ` — ${currentUser.email}`
+                    : ` — ${t.contactMissing}`}
+                </span>
+              </label>
+
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  cursor: hasPhone
+                    ? "pointer"
+                    : "not-allowed",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={sharePhone}
+                  disabled={!hasPhone}
+                  onChange={(e) =>
+                    setSharePhone(
+                      e.target.checked
+                    )
+                  }
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                  }}
+                />
+
+                <span>
+                  📞 {t.sharePhone}
+                  {hasPhone
+                    ? ` — ${currentUser.phone}`
+                    : ` — ${t.contactMissing}`}
+                </span>
+              </label>
             </div>
 
             <button

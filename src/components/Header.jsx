@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 
@@ -8,6 +8,9 @@ const translations = {
     findSpecialist: "იპოვე სპეციალისტი",
     findJob: "იპოვე სამსახური",
     myJobs: "ჩემი განცხადებები",
+    myApplications: "ჩემი განაცხადები",
+    receivedInterests: "დამსაქმებლის დაინტერესება",
+    sentInterests: "გაგზავნილი დაინტერესებები",
     myProfile: "ჩემი პროფილი",
     createSpecialistProfile: "სპეციალისტის პროფილის შექმნა",
     about: "ჩვენ შესახებ",
@@ -22,7 +25,10 @@ const translations = {
     home: "Home",
     findSpecialist: "Find a Specialist",
     findJob: "Find a Job",
-    myJobs: "My Jobs",
+    myJobs: "My Job Posts",
+    myApplications: "My Applications",
+    receivedInterests: "Employer Interests",
+    sentInterests: "Sent Interests",
     myProfile: "My Profile",
     createSpecialistProfile: "Create Specialist Profile",
     about: "About Us",
@@ -38,6 +44,9 @@ const translations = {
     findSpecialist: "Найти специалиста",
     findJob: "Найти работу",
     myJobs: "Мои объявления",
+    myApplications: "Мои заявки",
+    receivedInterests: "Интерес работодателя",
+    sentInterests: "Отправленные предложения",
     myProfile: "Мой профиль",
     createSpecialistProfile: "Создать профиль специалиста",
     about: "О нас",
@@ -57,6 +66,7 @@ function Header() {
   const t = translations[language] || translations.ka;
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [unreadInterests, setUnreadInterests] = useState(0);
 
   /* =========================
      LOGIN STATE
@@ -77,6 +87,48 @@ function Header() {
   } catch {
     user = null;
   }
+
+  const currentUserId = localStorage.getItem("careGeorgiaCurrentUserId");
+
+  useEffect(() => {
+    const refreshUnreadInterests = () => {
+      if (!currentUserId || user?.accountType !== "provider") {
+        setUnreadInterests(0);
+        return;
+      }
+
+      try {
+        const saved = JSON.parse(
+          localStorage.getItem("careGeorgiaInterests") || "[]"
+        );
+
+        const interests = Array.isArray(saved) ? saved : [];
+
+        const unreadCount = interests.filter(
+          (interest) =>
+            String(interest.specialistUserId) === String(currentUserId) &&
+            interest.specialistSeen !== true
+        ).length;
+
+        setUnreadInterests(unreadCount);
+      } catch {
+        setUnreadInterests(0);
+      }
+    };
+
+    refreshUnreadInterests();
+
+    window.addEventListener("careGeorgiaInterestsUpdated", refreshUnreadInterests);
+    window.addEventListener("storage", refreshUnreadInterests);
+
+    return () => {
+      window.removeEventListener(
+        "careGeorgiaInterestsUpdated",
+        refreshUnreadInterests
+      );
+      window.removeEventListener("storage", refreshUnreadInterests);
+    };
+  }, [currentUserId, user?.accountType]);
 
   /* =========================
      CLOSE USER MENU
@@ -142,6 +194,17 @@ function Header() {
     navigate("/");
   };
 
+  const menuLinkStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "12px 14px",
+    borderRadius: "8px",
+    textDecoration: "none",
+    color: "#1e293b",
+    fontWeight: "600",
+  };
+
   return (
     <header className="header">
       {/* =========================
@@ -195,14 +258,6 @@ function Header() {
           {t.findJob}
         </Link>
 
-        {/* MY JOBS */}
-
-        {isLoggedIn && (
-          <Link to="/my-jobs" onClick={closeMenu}>
-            {t.myJobs}
-          </Link>
-        )}
-
         {/* ABOUT */}
 
         <Link to="/about" onClick={closeMenu}>
@@ -246,7 +301,61 @@ function Header() {
               position: "relative",
             }}
           >
-            {/* USER NAME */}
+            {/* USER NAME + NEW INTEREST BELL */}
+
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              {user?.accountType === "provider" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeMenu();
+                    navigate("/received-interests");
+                  }}
+                  aria-label={t.receivedInterests}
+                  title={t.receivedInterests}
+                  style={{
+                    position: "relative",
+                    border: "none",
+                    background: "transparent",
+                    cursor: "pointer",
+                    fontSize: "20px",
+                    padding: "7px",
+                    lineHeight: 1,
+                  }}
+                >
+                  <span
+                    style={{
+                      opacity: unreadInterests > 0 ? 1 : 0.55,
+                    }}
+                  >
+                    🔔
+                  </span>
+
+                  {unreadInterests > 0 && (
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: "0",
+                        right: "0",
+                        minWidth: "17px",
+                        height: "17px",
+                        padding: "0 4px",
+                        borderRadius: "999px",
+                        backgroundColor: "#dc2626",
+                        color: "#ffffff",
+                        fontSize: "10px",
+                        fontWeight: "800",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      {unreadInterests > 9 ? "9+" : unreadInterests}
+                    </span>
+                  )}
+                </button>
+              )}
 
             <button
               type="button"
@@ -281,6 +390,7 @@ function Header() {
                 ▼
               </span>
             </button>
+            </div>
 
             {/* =========================
                 DROPDOWN
@@ -331,57 +441,74 @@ function Header() {
                   <span>{t.myProfile}</span>
                 </Link>
 
-                {/* MY JOBS */}
+                {/* =========================
+                    CLIENT / EMPLOYER
+                ========================= */}
 
-                <Link
-                  to="/my-jobs"
-                  onClick={closeMenu}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "12px 14px",
-                    borderRadius: "8px",
-                    textDecoration: "none",
-                    color: "#1e293b",
-                    fontWeight: "600",
-                  }}
-                >
-                  <span>📋</span>
+                {user?.accountType === "client" && (
+                  <>
+                    <Link
+                      to="/my-jobs"
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
+                    >
+                      <span>📋</span>
+                      <span>{t.myJobs}</span>
+                    </Link>
 
-                  <span>{t.myJobs}</span>
-                </Link>
+                    <Link
+                      to="/sent-interests"
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
+                    >
+                      <span>📤</span>
+                      <span>{t.sentInterests}</span>
+                    </Link>
+                  </>
+                )}
 
                 {/* =========================
-                    PROVIDER ONLY
+                    PROVIDER / JOB SEEKER
                 ========================= */}
 
                 {user?.accountType === "provider" && (
-                  <Link
-                    to="/create-specialist-profile"
-                    onClick={closeMenu}
-                    style={{
-                      display: "flex",
+                  <>
+                    <Link
+                      to="/my-jobs"
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
+                    >
+                      <span>📋</span>
+                      <span>{t.myJobs}</span>
+                    </Link>
 
-                      alignItems: "center",
+                    <Link
+                      to="/my-applications"
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
+                    >
+                      <span>📨</span>
+                      <span>{t.myApplications}</span>
+                    </Link>
 
-                      gap: "10px",
+                    <Link
+                      to="/received-interests"
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
+                    >
+                      <span>🔔</span>
+                      <span>{t.receivedInterests}</span>
+                    </Link>
 
-                      padding: "12px 14px",
-
-                      borderRadius: "8px",
-
-                      textDecoration: "none",
-
-                      color: "#1e293b",
-
-                      fontWeight: "600",
-                    }}
-                  >
-                    <span>🧑‍💼</span>
-
-                    <span>{t.createSpecialistProfile}</span>
-                  </Link>
+                    <Link
+                      to="/create-specialist-profile"
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
+                    >
+                      <span>🧑‍💼</span>
+                      <span>{t.createSpecialistProfile}</span>
+                    </Link>
+                  </>
                 )}
 
                 {/* DIVIDER */}

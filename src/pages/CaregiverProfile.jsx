@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./DriverProfile.css";
 
@@ -62,15 +62,12 @@ const translations = {
 
     description1:
       "ხანდაზმულ ადამიანებზე ზრუნვის 8 წლიანი გამოცდილება მაქვს. შემიძლია ყოველდღიურ საქმიანობაში დახმარება, გასეირნება და თანმხლებად ყოფნა.",
-
     description2:
       "მაქვს ხანდაზმულ ადამიანებთან მუშაობის გამოცდილება. პასუხისმგებლიანი, ყურადღებიანი და პუნქტუალური ვარ.",
-
     description3:
       "ვთავაზობ ოჯახებს ხანდაზმული ოჯახის წევრის ყოველდღიურ დახმარებასა და მოვლას ბათუმში.",
 
     interestTitle: "დაინტერესებული ხართ ამ სპეციალისტით?",
-
     interestDescription:
       "შეგიძლიათ სპეციალისტს თქვენი ერთ-ერთი სამუშაო განცხადებიდან გაუგზავნოთ შეთავაზება.",
 
@@ -81,9 +78,7 @@ const translations = {
     cancel: "გაუქმება",
 
     interestSent: "დაინტერესება წარმატებით გაიგზავნა.",
-
     sentForJob: "ამ განცხადებისთვის დაინტერესება გაგზავნილია",
-
     alreadySent: "ამ განცხადებისთვის დაინტერესება უკვე გაგზავნილი გაქვთ.",
 
     noJobs:
@@ -101,13 +96,42 @@ const translations = {
     shareContactTitle: "რომელი საკონტაქტო ინფორმაცია გამოჩნდეს სპეციალისტთან?",
 
     shareEmail: "ჩემი ელ. ფოსტის ჩვენება",
-
     sharePhone: "ჩემი ტელეფონის ნომრის ჩვენება",
 
     noContactShared:
       "თუ არც ერთს არ მონიშნავთ, სპეციალისტი თქვენს ელ. ფოსტას და ტელეფონის ნომერს ვერ ნახავს.",
 
     noPhone: "თქვენს ანგარიშზე ტელეფონის ნომერი მითითებული არ არის.",
+
+    applicationManagement: "კანდიდატის განაცხადის მართვა",
+    applicationDescription:
+      "ამ სპეციალისტმა თქვენს სამუშაო განცხადებაზე განაცხადი გამოგიგზავნათ.",
+
+    applicationJob: "სამუშაო",
+    applicationStatus: "განაცხადის სტატუსი",
+
+    applicationSent: "განაცხადი გაგზავნილია",
+    applicationReviewed: "დამსაქმებელმა განიხილა კანდიდატის განაცხადი.",
+    applicationNextStage: "კანდიდატი გადავიდა შერჩევის შემდეგ ეტაპზე.",
+    applicationNotSelected:
+      "ამ ეტაპზე გასაუბრებები გაგრძელდება სხვა კანდიდატებთან.",
+    applicationCompleted: "განაცხადის განხილვა დასრულებულია.",
+
+    markReviewed: "განხილულად მონიშვნა",
+    moveNextStage: "შემდეგ ეტაპზე გადაყვანა",
+    continueOthers: "სხვა კანდიდატებთან გაგრძელება",
+    completeReview: "განხილვის დასრულება",
+
+    reviewedHelp:
+      "განაცხადის განხილვის შემდეგ შეგიძლიათ კანდიდატი გადაიყვანოთ შემდეგ ეტაპზე ან გააგრძელოთ გასაუბრებები სხვა კანდიდატებთან.",
+
+    nextStageHelp:
+      "კანდიდატი შერჩევის შემდეგ ეტაპზეა. საჭიროების შემთხვევაში შეგიძლიათ დაუკავშირდეთ.",
+
+    notSelectedHelp:
+      "მადლობა დაინტერესებისა და განაცხადისთვის. ამ ეტაპზე დამსაქმებელი გასაუბრებებს სხვა კანდიდატებთან აგრძელებს. წარმატებებს გისურვებთ შემდეგ შესაძლებლობებში!",
+
+    completedHelp: "ამ კანდიდატის განაცხადის განხილვა დასრულებულია.",
   },
 
   en: {
@@ -168,15 +192,12 @@ const translations = {
 
     description1:
       "I have 8 years of experience caring for elderly people. I can assist with daily activities, walks and companionship.",
-
     description2:
       "I have experience working with elderly people. I am responsible, attentive and punctual.",
-
     description3:
       "I provide daily assistance and care for elderly family members in Batumi.",
 
     interestTitle: "Interested in this specialist?",
-
     interestDescription:
       "You can send this specialist an offer connected to one of your job posts.",
 
@@ -187,17 +208,13 @@ const translations = {
     cancel: "Cancel",
 
     interestSent: "Interest sent successfully.",
-
     sentForJob: "Interest has been sent for this job",
-
     alreadySent: "You have already sent interest for this job.",
 
     noJobs: "To send an offer, first create a matching job post.",
-
     createJob: "Create Job",
 
     clientOnly: "Only an employer account can send an offer.",
-
     ownProfile: "You cannot send an offer to your own profile.",
 
     loginToSend: "Log in with an employer account to send an offer.",
@@ -205,13 +222,43 @@ const translations = {
     shareContactTitle: "Which contact information should the specialist see?",
 
     shareEmail: "Show my email address",
-
     sharePhone: "Show my phone number",
 
     noContactShared:
       "If you select neither option, the specialist will not see your email address or phone number.",
 
     noPhone: "There is no phone number saved on your account.",
+
+    applicationManagement: "Manage Candidate Application",
+    applicationDescription:
+      "This specialist has applied to one of your job posts.",
+
+    applicationJob: "Job",
+    applicationStatus: "Application status",
+
+    applicationSent: "Application sent",
+    applicationReviewed: "The employer has reviewed the application.",
+    applicationNextStage: "The candidate has moved to the next stage.",
+    applicationNotSelected:
+      "At this stage, interviews will continue with other candidates.",
+    applicationCompleted: "Application review has been completed.",
+
+    markReviewed: "Mark as reviewed",
+    moveNextStage: "Move to next stage",
+    continueOthers: "Continue with other candidates",
+    completeReview: "Complete review",
+
+    reviewedHelp:
+      "After reviewing the application, you can move the candidate to the next stage or continue interviews with other candidates.",
+
+    nextStageHelp:
+      "The candidate is in the next stage of the selection process. You can contact them if needed.",
+
+    notSelectedHelp:
+      "Thank you for your interest and application. At this stage, the employer is continuing interviews with other candidates. We wish you success with future opportunities!",
+
+    completedHelp:
+      "The review of this candidate's application has been completed.",
   },
 
   ru: {
@@ -272,15 +319,12 @@ const translations = {
 
     description1:
       "У меня 8 лет опыта ухода за пожилыми людьми. Могу помогать в повседневных делах, сопровождать на прогулках и составлять компанию.",
-
     description2:
       "У меня есть опыт работы с пожилыми людьми. Я ответственная, внимательная и пунктуальная.",
-
     description3:
       "Предлагаю семьям ежедневную помощь и уход за пожилым членом семьи в Батуми.",
 
     interestTitle: "Заинтересованы в этом специалисте?",
-
     interestDescription:
       "Вы можете отправить специалисту предложение по одному из ваших объявлений о работе.",
 
@@ -291,13 +335,11 @@ const translations = {
     cancel: "Отмена",
 
     interestSent: "Предложение успешно отправлено.",
-
     sentForJob: "Предложение по этому объявлению отправлено",
-
     alreadySent: "Вы уже отправили предложение по этому объявлению.",
 
     noJobs:
-      "Чтобы отправить предложение, сначала создайте подходящее объявление о работе.",
+      "Чтобы отправить предложение, сначала создайте подходящее объявление.",
 
     createJob: "Создать объявление",
 
@@ -310,20 +352,51 @@ const translations = {
     shareContactTitle: "Какие контактные данные должен видеть специалист?",
 
     shareEmail: "Показать мой адрес электронной почты",
-
     sharePhone: "Показать мой номер телефона",
 
     noContactShared:
       "Если ничего не выбрать, специалист не увидит ваш адрес электронной почты или номер телефона.",
 
     noPhone: "В вашем аккаунте не указан номер телефона.",
+
+    applicationManagement: "Управление заявкой кандидата",
+    applicationDescription:
+      "Этот специалист отправил заявку на одно из ваших объявлений.",
+
+    applicationJob: "Работа",
+    applicationStatus: "Статус заявки",
+
+    applicationSent: "Заявка отправлена",
+    applicationReviewed: "Работодатель рассмотрел заявку кандидата.",
+    applicationNextStage: "Кандидат перешел на следующий этап отбора.",
+    applicationNotSelected:
+      "На этом этапе собеседования продолжатся с другими кандидатами.",
+    applicationCompleted: "Рассмотрение заявки завершено.",
+
+    markReviewed: "Отметить как рассмотренную",
+    moveNextStage: "Перевести на следующий этап",
+    continueOthers: "Продолжить с другими кандидатами",
+    completeReview: "Завершить рассмотрение",
+
+    reviewedHelp:
+      "После рассмотрения заявки можно перевести кандидата на следующий этап или продолжить собеседования с другими кандидатами.",
+
+    nextStageHelp:
+      "Кандидат находится на следующем этапе отбора. При необходимости вы можете связаться с ним.",
+
+    notSelectedHelp:
+      "Спасибо за интерес и заявку. На этом этапе работодатель продолжает собеседования с другими кандидатами. Желаем успехов в следующих возможностях!",
+
+    completedHelp: "Рассмотрение заявки этого кандидата завершено.",
   },
 };
 
 function CaregiverProfile() {
   const { id } = useParams();
 
-  const { language } = useLanguage();
+  
+  const location = useLocation();
+const { language } = useLanguage();
   const t = translations[language] || translations.ka;
 
   const isLoggedIn = localStorage.getItem("careGeorgiaLoggedIn") === "true";
@@ -333,78 +406,11 @@ function CaregiverProfile() {
   const getCurrentUser = () => {
     try {
       const saved = localStorage.getItem("careGeorgiaUser");
-
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
   };
-
-  const currentUser = getCurrentUser();
-
-  const isClient = currentUser?.accountType === "client";
-
-  const defaultCaregivers = [
-    {
-      id: "1",
-      ownerId: null,
-      isCustom: false,
-      name: t.name1,
-      city: t.tbilisi,
-      rawCity: "tbilisi",
-      experience: t.years8,
-      employmentType: "full-time",
-      paymentType: "hourly",
-      priceValue: 22,
-      rating: 4.9,
-      reviews: 51,
-      verified: true,
-      description: t.description1,
-      phone: "+995 555 41 22 33",
-      email: "maia@example.com",
-      showPhone: true,
-    },
-
-    {
-      id: "2",
-      ownerId: null,
-      isCustom: false,
-      name: t.name2,
-      city: t.kutaisi,
-      rawCity: "kutaisi",
-      experience: t.years6,
-      employmentType: "part-time",
-      paymentType: "hourly",
-      priceValue: 18,
-      rating: 4.8,
-      reviews: 34,
-      verified: true,
-      description: t.description2,
-      phone: "+995 555 42 33 44",
-      email: "eka@example.com",
-      showPhone: true,
-    },
-
-    {
-      id: "3",
-      ownerId: null,
-      isCustom: false,
-      name: t.name3,
-      city: t.batumi,
-      rawCity: "batumi",
-      experience: t.years5,
-      employmentType: "full-time",
-      paymentType: "hourly",
-      priceValue: 17,
-      rating: 4.7,
-      reviews: 22,
-      verified: false,
-      description: t.description3,
-      phone: "+995 555 43 44 55",
-      email: "nana@example.com",
-      showPhone: true,
-    },
-  ];
 
   const getSavedSpecialists = () => {
     try {
@@ -436,6 +442,104 @@ function CaregiverProfile() {
     }
   };
 
+  const getSavedApplications = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("careGeorgiaApplications"));
+
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const currentUser = getCurrentUser();
+
+  const isClient = currentUser?.accountType === "client";
+
+  const returnFrom = location.state?.from;
+
+  const backPath =
+    returnFrom === "my-jobs"
+      ? "/my-jobs"
+      : returnFrom === "sent-interests"
+        ? "/sent-interests"
+        : "/caregivers";
+
+  const backText =
+    returnFrom === "my-jobs"
+      ? language === "ka"
+        ? "← ჩემს განცხადებებზე დაბრუნება"
+        : language === "ru"
+          ? "← Вернуться к моим объявлениям"
+          : "← Back to My Jobs"
+      : returnFrom === "sent-interests"
+        ? language === "ka"
+          ? "← გაგზავნილ დაინტერესებებში დაბრუნება"
+          : language === "ru"
+            ? "← Вернуться к отправленным предложениям"
+            : "← Back to Sent Interests"
+        : t.back;
+
+  const defaultCaregivers = [
+    {
+      id: "1",
+      ownerId: null,
+      isCustom: false,
+      name: t.name1,
+      city: t.tbilisi,
+      rawCity: "tbilisi",
+      experience: t.years8,
+      employmentType: "full-time",
+      paymentType: "hourly",
+      priceValue: 22,
+      rating: 4.9,
+      reviews: 51,
+      verified: true,
+      description: t.description1,
+      phone: "+995 555 41 22 33",
+      email: "maia@example.com",
+      showPhone: true,
+    },
+    {
+      id: "2",
+      ownerId: null,
+      isCustom: false,
+      name: t.name2,
+      city: t.kutaisi,
+      rawCity: "kutaisi",
+      experience: t.years6,
+      employmentType: "part-time",
+      paymentType: "hourly",
+      priceValue: 18,
+      rating: 4.8,
+      reviews: 34,
+      verified: true,
+      description: t.description2,
+      phone: "+995 555 42 33 44",
+      email: "eka@example.com",
+      showPhone: true,
+    },
+    {
+      id: "3",
+      ownerId: null,
+      isCustom: false,
+      name: t.name3,
+      city: t.batumi,
+      rawCity: "batumi",
+      experience: t.years5,
+      employmentType: "full-time",
+      paymentType: "hourly",
+      priceValue: 17,
+      rating: 4.7,
+      reviews: 22,
+      verified: false,
+      description: t.description3,
+      phone: "+995 555 43 44 55",
+      email: "nana@example.com",
+      showPhone: true,
+    },
+  ];
+
   const savedProfile = getSavedSpecialists().find(
     (profile) =>
       String(profile.id) === String(id) &&
@@ -459,9 +563,7 @@ function CaregiverProfile() {
 
   const getSafeName = (profile) => {
     const firstName = profile.firstName || "";
-
     const lastName = profile.lastName || "";
-
     const lastInitial = lastName ? `${lastName.charAt(0)}.` : "";
 
     return (
@@ -479,40 +581,24 @@ function CaregiverProfile() {
   if (savedProfile) {
     caregiver = {
       id: String(savedProfile.id),
-
       ownerId: savedProfile.ownerId,
-
       isCustom: true,
-
       name: getSafeName(savedProfile),
-
       city: getCityName(savedProfile.city),
-
       rawCity: savedProfile.city,
-
       experience: savedProfile.experience || "",
-
       employmentType: savedProfile.employmentType || "",
-
       paymentType: savedProfile.paymentType || "hourly",
-
       priceValue: Number(savedProfile.priceValue) || 0,
-
       rating:
         savedProfile.rating !== null && savedProfile.rating !== undefined
           ? savedProfile.rating
           : null,
-
       reviews: Number(savedProfile.reviews) || 0,
-
       verified: savedProfile.verified === true,
-
       description: savedProfile.description || "",
-
       phone: savedProfile.phone || "",
-
       email: savedProfile.email || "",
-
       showPhone: savedProfile.showPhone === true,
     };
   } else {
@@ -522,51 +608,64 @@ function CaregiverProfile() {
   }
 
   const [interests, setInterests] = useState(getSavedInterests);
+  const [applications, setApplications] = useState(getSavedApplications);
 
   const [showInterestBox, setShowInterestBox] = useState(false);
-
   const [selectedJobId, setSelectedJobId] = useState("");
-
   const [shareEmail, setShareEmail] = useState(false);
-
   const [sharePhone, setSharePhone] = useState(false);
 
   if (!caregiver) {
     return (
       <div className="profile-not-found">
         <h1>{t.notFound}</h1>
-
-        <Link to="/caregivers">{t.back}</Link>
+        <Link to={backPath}>{backText}</Link>
       </div>
     );
   }
 
-  const myMatchingJobs = getSavedJobs().filter(
+  const savedJobs = getSavedJobs();
+
+  const myMatchingJobs = savedJobs.filter(
     (job) =>
       String(job.ownerId) === String(currentUserId) &&
       job.service === "caregiver" &&
       job.status !== "closed",
   );
 
+  /*
+    მხოლოდ იმ დამსაქმებლის განაცხადები,
+    ვისაც ეს სამუშაო ეკუთვნის.
+  */
+  const employerApplications = applications.filter(
+    (application) =>
+      caregiver.isCustom &&
+      String(application.specialistProfileId) === String(caregiver.id) &&
+      String(application.jobOwnerId) === String(currentUserId) &&
+      (!caregiver.ownerId ||
+        !application.applicantUserId ||
+        String(application.applicantUserId) === String(caregiver.ownerId)),
+  );
+
+  const getApplicationJob = (application) => {
+    return savedJobs.find(
+      (job) =>
+        String(job.id) === String(application.jobId) &&
+        String(job.ownerId) === String(currentUserId),
+    );
+  };
+
   const getPaymentTypeName = (paymentType) => {
-    if (paymentType === "monthly") {
-      return t.monthly;
-    }
-
-    if (paymentType === "biweekly") {
-      return t.biweekly;
-    }
-
-    if (paymentType === "daily") {
-      return t.daily;
-    }
+    if (paymentType === "monthly") return t.monthly;
+    if (paymentType === "biweekly") return t.biweekly;
+    if (paymentType === "daily") return t.daily;
 
     return t.hourly;
   };
 
-  const caregiverPrice = `${
-    caregiver.priceValue
-  } ${t.currency} / ${getPaymentTypeName(caregiver.paymentType)}`;
+  const caregiverPrice = `${caregiver.priceValue} ${
+    t.currency
+  } / ${getPaymentTypeName(caregiver.paymentType)}`;
 
   const employmentName =
     caregiver.employmentType === "full-time" ? t.fullTime : t.partTime;
@@ -574,6 +673,142 @@ function CaregiverProfile() {
   const hasRating = caregiver.rating !== null && caregiver.rating !== undefined;
 
   const phoneCanBeShown = caregiver.phone && caregiver.showPhone === true;
+
+  /*
+    APPLICATION STATUS
+  */
+
+  const normalizeApplicationStatus = (status) => {
+    if (status === "reviewed") return "reviewed";
+    if (status === "next-stage") return "next-stage";
+    if (status === "not-selected") return "not-selected";
+    if (status === "completed") return "completed";
+
+    return "pending";
+  };
+
+  const getApplicationStatusInfo = (application) => {
+    const status = normalizeApplicationStatus(application?.status);
+
+    if (status === "reviewed") {
+      return {
+        icon: "👀",
+        text: t.applicationReviewed,
+        help: t.reviewedHelp,
+        backgroundColor: "#eff6ff",
+        borderColor: "#bfdbfe",
+        color: "#1d4ed8",
+      };
+    }
+
+    if (status === "next-stage") {
+      return {
+        icon: "➡️",
+        text: t.applicationNextStage,
+        help: t.nextStageHelp,
+        backgroundColor: "#f0fdf4",
+        borderColor: "#bbf7d0",
+        color: "#15803d",
+      };
+    }
+
+    if (status === "not-selected") {
+      return {
+        icon: "🌿",
+        text: t.applicationNotSelected,
+        help: t.notSelectedHelp,
+        backgroundColor: "#f8fafc",
+        borderColor: "#cbd5e1",
+        color: "#475569",
+      };
+    }
+
+    if (status === "completed") {
+      return {
+        icon: "✅",
+        text: t.applicationCompleted,
+        help: t.completedHelp,
+        backgroundColor: "#f8fafc",
+        borderColor: "#cbd5e1",
+        color: "#475569",
+      };
+    }
+
+    return {
+      icon: "📨",
+      text: t.applicationSent,
+      help: "",
+      backgroundColor: "#fffbeb",
+      borderColor: "#fde68a",
+      color: "#92400e",
+    };
+  };
+
+  const updateApplicationStatus = (applicationId, newStatus) => {
+    const application = applications.find(
+      (item) => String(item.id) === String(applicationId),
+    );
+
+    if (!application) return;
+
+    /*
+      სტატუსის შეცვლა მხოლოდ სამუშაოს მფლობელს შეუძლია.
+    */
+    if (String(application.jobOwnerId) !== String(currentUserId)) {
+      return;
+    }
+
+    /*
+      განაცხადი აუცილებლად ამ გახსნილ პროფილს
+      უნდა ეკუთვნოდეს.
+    */
+    if (String(application.specialistProfileId) !== String(caregiver.id)) {
+      return;
+    }
+
+    const now = new Date().toISOString();
+
+    const updatedApplications = applications.map((item) => {
+      if (String(item.id) !== String(applicationId)) {
+        return item;
+      }
+
+      const updatedApplication = {
+        ...item,
+        status: newStatus,
+        statusUpdatedAt: now,
+      };
+
+      if (newStatus === "reviewed") {
+        updatedApplication.reviewedAt = now;
+      }
+
+      if (newStatus === "next-stage") {
+        updatedApplication.nextStageAt = now;
+      }
+
+      if (newStatus === "not-selected") {
+        updatedApplication.notSelectedAt = now;
+      }
+
+      if (newStatus === "completed") {
+        updatedApplication.completedAt = now;
+      }
+
+      return updatedApplication;
+    });
+
+    setApplications(updatedApplications);
+
+    localStorage.setItem(
+      "careGeorgiaApplications",
+      JSON.stringify(updatedApplications),
+    );
+  };
+
+  /*
+    EMPLOYER INTEREST
+  */
 
   const hasInterestForJob = (jobId) => {
     return interests.some(
@@ -619,9 +854,7 @@ function CaregiverProfile() {
   };
 
   const handleSendInterest = () => {
-    if (!selectedJobId) {
-      return;
-    }
+    if (!selectedJobId) return;
 
     if (!isLoggedIn || !currentUserId || !isClient) {
       return;
@@ -639,9 +872,7 @@ function CaregiverProfile() {
       (job) => String(job.id) === String(selectedJobId),
     );
 
-    if (!selectedJob) {
-      return;
-    }
+    if (!selectedJob) return;
 
     if (hasInterestForJob(selectedJob.id)) {
       alert(t.alreadySent);
@@ -650,17 +881,12 @@ function CaregiverProfile() {
 
     const newInterest = {
       id: crypto.randomUUID(),
-
       employerUserId: String(currentUserId),
-
       specialistUserId: String(caregiver.ownerId),
-
       specialistProfileId: String(caregiver.id),
-
       jobId: String(selectedJob.id),
 
       showEmployerEmail: shareEmail,
-
       showEmployerPhone: sharePhone,
 
       employerEmail: shareEmail ? currentUser?.email || "" : "",
@@ -668,9 +894,7 @@ function CaregiverProfile() {
       employerPhone: sharePhone ? currentUser?.phone || "" : "",
 
       status: "sent",
-
       specialistSeen: false,
-
       createdAt: new Date().toISOString(),
     };
 
@@ -681,6 +905,10 @@ function CaregiverProfile() {
     localStorage.setItem(
       "careGeorgiaInterests",
       JSON.stringify(updatedInterests),
+    );
+
+    window.dispatchEvent(
+      new Event("careGeorgiaInterestsUpdated"),
     );
 
     setSelectedJobId("");
@@ -694,9 +922,9 @@ function CaregiverProfile() {
   return (
     <div className="profile-page">
       <div className="profile-container">
-        <Link to="/caregivers" className="profile-back">
-          {t.back}
-        </Link>
+        <Link to={backPath} className="profile-back">{backText}</Link>
+
+        {/* MAIN PROFILE */}
 
         <div className="profile-card">
           <div className="profile-main">
@@ -779,6 +1007,281 @@ function CaregiverProfile() {
             )}
           </div>
         </div>
+
+        {/* APPLICATION MANAGEMENT */}
+
+        {isLoggedIn && isClient && employerApplications.length > 0 && (
+          <div
+            style={{
+              backgroundColor: "#ffffff",
+              border: "2px solid #bfdbfe",
+              borderRadius: "16px",
+              padding: "25px",
+              marginBottom: "25px",
+            }}
+          >
+            <h2
+              style={{
+                marginTop: "0",
+                marginBottom: "8px",
+              }}
+            >
+              📩 {t.applicationManagement}
+            </h2>
+
+            <p
+              style={{
+                color: "#64748b",
+                lineHeight: "1.6",
+                marginBottom: "20px",
+              }}
+            >
+              {t.applicationDescription}
+            </p>
+
+            {employerApplications.map((application) => {
+              const job = getApplicationJob(application);
+
+              const status = normalizeApplicationStatus(application.status);
+
+              const statusInfo = getApplicationStatusInfo(application);
+
+              return (
+                <div
+                  key={application.id}
+                  style={{
+                    padding: "18px",
+                    marginTop: "14px",
+                    backgroundColor: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "12px",
+                  }}
+                >
+                  {job && (
+                    <div
+                      style={{
+                        marginBottom: "18px",
+                        lineHeight: "1.7",
+                      }}
+                    >
+                      <strong
+                        style={{
+                          display: "block",
+                          marginBottom: "7px",
+                        }}
+                      >
+                        💼 {t.applicationJob}
+                      </strong>
+
+                      <div>
+                        👵{" "}
+                        {language === "ka"
+                          ? "მომვლელი"
+                          : language === "ru"
+                            ? "Сиделка"
+                            : "Caregiver"}
+                      </div>
+
+                      <div>📍 {getCityName(job.city)}</div>
+
+                      <div>
+                        🕒{" "}
+                        {job.employmentType === "full-time"
+                          ? t.fullTime
+                          : t.partTime}
+                      </div>
+
+                      <div>
+                        💰 {job.budget} {t.currency} /{" "}
+                        {getPaymentTypeName(job.paymentType)}
+                      </div>
+
+                      {job.description && (
+                        <div
+                          style={{
+                            marginTop: "8px",
+                            color: "#64748b",
+                          }}
+                        >
+                          {job.description}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <strong
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    {t.applicationStatus}
+                  </strong>
+
+                  <div
+                    style={{
+                      padding: "14px",
+                      backgroundColor: statusInfo.backgroundColor,
+                      border: `1px solid ${statusInfo.borderColor}`,
+                      color: statusInfo.color,
+                      borderRadius: "10px",
+                      fontWeight: "700",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    {statusInfo.icon} {statusInfo.text}
+                    {statusInfo.help && (
+                      <div
+                        style={{
+                          marginTop: "7px",
+                          fontWeight: "400",
+                          lineHeight: "1.6",
+                        }}
+                      >
+                        {statusInfo.help}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* PENDING */}
+
+                  {status === "pending" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                        marginTop: "16px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(application.id, "reviewed")
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "none",
+                          borderRadius: "9px",
+                          backgroundColor: "#2563eb",
+                          color: "#ffffff",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        👀 {t.markReviewed}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* REVIEWED */}
+
+                  {status === "reviewed" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                        marginTop: "16px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(application.id, "next-stage")
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "none",
+                          borderRadius: "9px",
+                          backgroundColor: "#16a34a",
+                          color: "#ffffff",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        ➡️ {t.moveNextStage}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(
+                            application.id,
+                            "not-selected",
+                          )
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "1px solid #cbd5e1",
+                          borderRadius: "9px",
+                          backgroundColor: "#ffffff",
+                          color: "#475569",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        🌿 {t.continueOthers}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* NEXT STAGE */}
+
+                  {status === "next-stage" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                        marginTop: "16px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(application.id, "completed")
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "none",
+                          borderRadius: "9px",
+                          backgroundColor: "#2563eb",
+                          color: "#ffffff",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        ✅ {t.completeReview}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(
+                            application.id,
+                            "not-selected",
+                          )
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "1px solid #cbd5e1",
+                          borderRadius: "9px",
+                          backgroundColor: "#ffffff",
+                          color: "#475569",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        🌿 {t.continueOthers}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* EMPLOYER INTEREST */}
 
@@ -1012,7 +1515,8 @@ function CaregiverProfile() {
                         alignItems: "center",
                         gap: "10px",
                         marginBottom: "12px",
-                        cursor: "pointer",
+                        cursor: currentUser?.email ? "pointer" : "not-allowed",
+                        opacity: currentUser?.email ? 1 : 0.6,
                       }}
                     >
                       <input
@@ -1239,31 +1743,24 @@ function CaregiverProfile() {
           <div className="profile-stats">
             <div>
               <span>💼</span>
-
               <p>{t.experience}</p>
-
               <strong>{caregiver.experience}</strong>
             </div>
 
             <div>
               <span>📍</span>
-
               <p>{t.city}</p>
-
               <strong>{caregiver.city}</strong>
             </div>
 
             <div>
               <span>🕒</span>
-
               <p>{t.employment}</p>
-
               <strong>{employmentName}</strong>
             </div>
 
             <div>
               <span>⭐</span>
-
               <p>{t.rating}</p>
 
               <strong>

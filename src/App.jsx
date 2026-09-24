@@ -37,6 +37,9 @@ import About from "./pages/About";
 import PostJob from "./pages/CreateJob";
 import Jobs from "./pages/Jobs";
 import MyJobs from "./pages/MyJobs";
+import MyApplications from "./pages/MyApplications";
+import ReceivedInterests from "./pages/ReceivedInterests";
+import SentInterests from "./pages/SentInterests";
 import EditJob from "./pages/EditJob";
 
 import MyProfile from "./pages/MyProfile";
@@ -782,6 +785,21 @@ function App() {
         <Route
           path="/my-jobs"
           element={<MyJobs />}
+        />
+
+        <Route
+          path="/my-applications"
+          element={<MyApplications />}
+        />
+
+        <Route
+          path="/received-interests"
+          element={<ReceivedInterests />}
+        />
+
+        <Route
+          path="/sent-interests"
+          element={<SentInterests />}
         />
 
         <Route

@@ -29,10 +29,6 @@ const translations = {
       "პროფილის სანახავად ჯერ უნდა შეხვიდე ანგარიშში.",
 
     login: "შესვლა",
-
-    myJobs: "ჩემი განცხადებები",
-    postJob: "განცხადების დამატება",
-
     phonePrivacy:
       "ტელეფონის ნომრის გამოჩენა",
 
@@ -67,10 +63,6 @@ const translations = {
       "You need to log in to view your profile.",
 
     login: "Login",
-
-    myJobs: "My Jobs",
-    postJob: "Post a Job",
-
     phonePrivacy:
       "Phone visibility",
 
@@ -105,10 +97,6 @@ const translations = {
       "Чтобы открыть профиль, войдите в аккаунт.",
 
     login: "Войти",
-
-    myJobs: "Мои объявления",
-    postJob: "Добавить объявление",
-
     phonePrivacy:
       "Отображение телефона",
 
@@ -545,64 +533,6 @@ function MyProfile() {
             <p>
               {t.description}
             </p>
-          </div>
-
-          {/* QUICK LINKS */}
-
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "10px",
-              marginBottom:
-                "24px",
-            }}
-          >
-            <Link
-              to="/my-jobs"
-              style={{
-                flex: "1",
-                minWidth:
-                  "150px",
-                padding:
-                  "11px",
-                border:
-                  "1px solid #dbe2ea",
-                borderRadius:
-                  "9px",
-                textAlign:
-                  "center",
-                textDecoration:
-                  "none",
-                fontWeight:
-                  "600",
-              }}
-            >
-              📋 {t.myJobs}
-            </Link>
-
-            <Link
-              to="/post-job"
-              style={{
-                flex: "1",
-                minWidth:
-                  "150px",
-                padding:
-                  "11px",
-                border:
-                  "1px solid #dbe2ea",
-                borderRadius:
-                  "9px",
-                textAlign:
-                  "center",
-                textDecoration:
-                  "none",
-                fontWeight:
-                  "600",
-              }}
-            >
-              ➕ {t.postJob}
-            </Link>
           </div>
 
           {/* PROFILE FORM */}
