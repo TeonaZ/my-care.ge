@@ -6,8 +6,7 @@ import "./Drivers.css";
 const translations = {
   ka: {
     title: "🐕 იპოვე ძაღლის გამსეირნებელი",
-    description:
-      "იპოვე სანდო ადამიანი შენი ძაღლის გასეირნებისა და მოვლისთვის.",
+    description: "იპოვე სანდო ადამიანი შენი ძაღლის გასეირნებისა და მოვლისთვის.",
 
     allCities: "ყველა ქალაქი",
     tbilisi: "თბილისი",
@@ -16,6 +15,9 @@ const translations = {
     rustavi: "რუსთავი",
     gori: "გორი",
     zugdidi: "ზუგდიდი",
+    poti: "ფოთი",
+    telavi: "თელავი",
+    other: "სხვა",
 
     allExperience: "ყველა გამოცდილება",
     onePlus: "1+ წელი",
@@ -35,6 +37,8 @@ const translations = {
     verified: "✓ ვერიფიცირებული",
     experience: "გამოცდილება",
     viewProfile: "პროფილის ნახვა",
+    noReviews: "ჯერ არ აქვს შეფასება",
+    noResults: "შესაბამისი ძაღლის გამსეირნებელი ვერ მოიძებნა",
 
     name1: "გიორგი დ.",
     name2: "ანა მ.",
@@ -45,13 +49,15 @@ const translations = {
     years4: "4 წელი",
 
     currency: "₾",
-    perHour: "საათი",
+    hourly: "საათი",
+    daily: "დღე",
+    biweekly: "2 კვირა",
+    monthly: "თვე",
   },
 
   en: {
     title: "🐕 Find a Dog Walker",
-    description:
-      "Find a trusted person to walk and care for your dog.",
+    description: "Find a trusted person to walk and care for your dog.",
 
     allCities: "All cities",
     tbilisi: "Tbilisi",
@@ -60,6 +66,9 @@ const translations = {
     rustavi: "Rustavi",
     gori: "Gori",
     zugdidi: "Zugdidi",
+    poti: "Poti",
+    telavi: "Telavi",
+    other: "Other",
 
     allExperience: "All experience",
     onePlus: "1+ years",
@@ -79,6 +88,8 @@ const translations = {
     verified: "✓ Verified",
     experience: "Experience",
     viewProfile: "View Profile",
+    noReviews: "No reviews yet",
+    noResults: "No matching dog walkers found",
 
     name1: "Giorgi D.",
     name2: "Ana M.",
@@ -89,7 +100,10 @@ const translations = {
     years4: "4 years",
 
     currency: "GEL",
-    perHour: "hour",
+    hourly: "hour",
+    daily: "day",
+    biweekly: "2 weeks",
+    monthly: "month",
   },
 
   ru: {
@@ -104,6 +118,9 @@ const translations = {
     rustavi: "Рустави",
     gori: "Гори",
     zugdidi: "Зугдиди",
+    poti: "Поти",
+    telavi: "Телави",
+    other: "Другой",
 
     allExperience: "Любой опыт",
     onePlus: "1+ год",
@@ -123,6 +140,8 @@ const translations = {
     verified: "✓ Проверенный",
     experience: "Опыт",
     viewProfile: "Посмотреть профиль",
+    noReviews: "Пока нет отзывов",
+    noResults: "Подходящие выгульщики собак не найдены",
 
     name1: "Гиорги Д.",
     name2: "Ана М.",
@@ -133,7 +152,10 @@ const translations = {
     years4: "4 года",
 
     currency: "GEL",
-    perHour: "час",
+    hourly: "час",
+    daily: "день",
+    biweekly: "2 недели",
+    monthly: "месяц",
   },
 };
 
@@ -147,51 +169,154 @@ function DogWalkers() {
   const selectedCity = searchParams.get("city") || "";
 
   const [selectedExperience, setSelectedExperience] = useState("");
+
   const [selectedEmployment, setSelectedEmployment] = useState("");
+
   const [selectedPrice, setSelectedPrice] = useState("");
 
   const [appliedCity, setAppliedCity] = useState(selectedCity);
+
   const [appliedExperience, setAppliedExperience] = useState("");
+
   const [appliedEmployment, setAppliedEmployment] = useState("");
+
   const [appliedPrice, setAppliedPrice] = useState("");
 
-  const dogWalkers = [
+  /* =========================
+     DEFAULT DOG WALKERS
+  ========================= */
+
+  const defaultDogWalkers = [
     {
-      id: 1,
+      id: "1",
       name: t.name1,
       cityValue: "tbilisi",
       experience: t.years5,
       experienceYears: 5,
       employmentType: "full-time",
+      paymentType: "hourly",
       priceValue: 15,
-      rating: "⭐ 4.9",
+      rating: 4.9,
+      reviews: 35,
       verified: true,
+      isCustom: false,
     },
 
     {
-      id: 2,
+      id: "2",
       name: t.name2,
       cityValue: "tbilisi",
       experience: t.years3,
       experienceYears: 3,
       employmentType: "part-time",
+      paymentType: "hourly",
       priceValue: 12,
-      rating: "⭐ 4.8",
+      rating: 4.8,
+      reviews: 27,
       verified: true,
+      isCustom: false,
     },
 
     {
-      id: 3,
+      id: "3",
       name: t.name3,
       cityValue: "batumi",
       experience: t.years4,
       experienceYears: 4,
       employmentType: "part-time",
+      paymentType: "hourly",
       priceValue: 10,
-      rating: "⭐ 4.7",
+      rating: 4.7,
+      reviews: 19,
       verified: false,
+      isCustom: false,
     },
   ];
+
+  /* =========================
+     SAVED SPECIALISTS
+  ========================= */
+
+  const getSavedSpecialists = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("careGeorgiaSpecialists"));
+
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const getSafeName = (profile) => {
+    const firstName = profile.firstName || "";
+
+    const lastName = profile.lastName || "";
+
+    const lastInitial = lastName ? `${lastName.charAt(0)}.` : "";
+
+    return (
+      `${firstName} ${lastInitial}`.trim() ||
+      (language === "ka"
+        ? "ძაღლის გამსეირნებელი"
+        : language === "ru"
+          ? "Выгульщик собак"
+          : "Dog Walker")
+    );
+  };
+
+  /*
+    CreateSpecialistProfile-ში
+    Dog Walker ინახება როგორც:
+    profession: "dog-walker"
+  */
+
+  const customDogWalkers = getSavedSpecialists()
+    .filter(
+      (profile) =>
+        profile.profession === "dog-walker" && profile.status !== "inactive",
+    )
+    .map((profile) => ({
+      id: String(profile.id),
+
+      ownerId: profile.ownerId,
+
+      name: getSafeName(profile),
+
+      cityValue: profile.city || "other",
+
+      experience: profile.experience || "",
+
+      experienceYears: Number(
+        String(profile.experience || "0").match(/\d+/)?.[0] || 0,
+      ),
+
+      employmentType: profile.employmentType || "part-time",
+
+      paymentType: profile.paymentType || "hourly",
+
+      priceValue: Number(profile.priceValue) || 0,
+
+      rating:
+        profile.rating !== null && profile.rating !== undefined
+          ? Number(profile.rating)
+          : null,
+
+      reviews: Number(profile.reviews) || 0,
+
+      verified: profile.verified === true,
+
+      isCustom: true,
+    }));
+
+  /* =========================
+     ALL DOG WALKERS
+  ========================= */
+
+  const dogWalkers = [...customDogWalkers, ...defaultDogWalkers];
+
+  /* =========================
+     CITY
+  ========================= */
 
   const cityNames = {
     tbilisi: t.tbilisi,
@@ -200,7 +325,18 @@ function DogWalkers() {
     rustavi: t.rustavi,
     gori: t.gori,
     zugdidi: t.zugdidi,
+    poti: t.poti,
+    telavi: t.telavi,
+    other: t.other,
   };
+
+  const getCityName = (city) => {
+    return cityNames[city] || city || t.other;
+  };
+
+  /* =========================
+     EMPLOYMENT
+  ========================= */
 
   const getEmploymentName = (employmentType) => {
     if (employmentType === "full-time") {
@@ -214,14 +350,38 @@ function DogWalkers() {
     return "";
   };
 
-  const getPrice = (walker) => {
-    return `${walker.priceValue} ${t.currency} / ${t.perHour}`;
+  /* =========================
+     PAYMENT
+  ========================= */
+
+  const getPaymentTypeName = (paymentType) => {
+    if (paymentType === "monthly") {
+      return t.monthly;
+    }
+
+    if (paymentType === "biweekly") {
+      return t.biweekly;
+    }
+
+    if (paymentType === "daily") {
+      return t.daily;
+    }
+
+    return t.hourly;
   };
 
+  const getPrice = (walker) => {
+    return `${walker.priceValue} ${t.currency} / ${getPaymentTypeName(
+      walker.paymentType,
+    )}`;
+  };
+
+  /* =========================
+     FILTER
+  ========================= */
+
   const filteredDogWalkers = dogWalkers.filter((walker) => {
-    const matchesCity = appliedCity
-      ? walker.cityValue === appliedCity
-      : true;
+    const matchesCity = appliedCity ? walker.cityValue === appliedCity : true;
 
     let matchesExperience = true;
 
@@ -248,9 +408,7 @@ function DogWalkers() {
     }
 
     if (appliedPrice === "10to20") {
-      matchesPrice =
-        walker.priceValue >= 10 &&
-        walker.priceValue <= 20;
+      matchesPrice = walker.priceValue >= 10 && walker.priceValue <= 20;
     }
 
     if (appliedPrice === "over20") {
@@ -258,227 +416,180 @@ function DogWalkers() {
     }
 
     return (
-      matchesCity &&
-      matchesExperience &&
-      matchesEmployment &&
-      matchesPrice
+      matchesCity && matchesExperience && matchesEmployment && matchesPrice
     );
   });
 
   return (
     <div className="drivers-page">
-
       <header className="drivers-header">
-
         <Link to="/" className="back-link">
           ← Care Georgia
         </Link>
 
-        <h1>
-          {t.title}
-        </h1>
+        <h1>{t.title}</h1>
 
-        <p>
-          {t.description}
-        </p>
-
+        <p>{t.description}</p>
       </header>
 
-      <div className="driver-filters">
+      {/* FILTERS */}
 
-        {/* ქალაქი */}
+      <div className="driver-filters">
+        {/* CITY */}
+
         <select
           value={selectedCity}
           onChange={(e) => {
             const city = e.target.value;
 
             if (city) {
-              setSearchParams({ city });
+              setSearchParams({
+                city,
+              });
             } else {
               setSearchParams({});
             }
           }}
         >
-          <option value="">
-            {t.allCities}
-          </option>
+          <option value="">{t.allCities}</option>
 
-          <option value="tbilisi">
-            {t.tbilisi}
-          </option>
+          <option value="tbilisi">{t.tbilisi}</option>
 
-          <option value="batumi">
-            {t.batumi}
-          </option>
+          <option value="batumi">{t.batumi}</option>
 
-          <option value="kutaisi">
-            {t.kutaisi}
-          </option>
+          <option value="kutaisi">{t.kutaisi}</option>
 
-          <option value="rustavi">
-            {t.rustavi}
-          </option>
+          <option value="rustavi">{t.rustavi}</option>
 
-          <option value="gori">
-            {t.gori}
-          </option>
+          <option value="gori">{t.gori}</option>
 
-          <option value="zugdidi">
-            {t.zugdidi}
-          </option>
+          <option value="zugdidi">{t.zugdidi}</option>
+
+          <option value="poti">{t.poti}</option>
+
+          <option value="telavi">{t.telavi}</option>
+
+          <option value="other">{t.other}</option>
         </select>
 
-        {/* გამოცდილება */}
+        {/* EXPERIENCE */}
+
         <select
           value={selectedExperience}
-          onChange={(e) =>
-            setSelectedExperience(e.target.value)
-          }
+          onChange={(e) => setSelectedExperience(e.target.value)}
         >
-          <option value="">
-            {t.allExperience}
-          </option>
+          <option value="">{t.allExperience}</option>
 
-          <option value="1">
-            {t.onePlus}
-          </option>
+          <option value="1">{t.onePlus}</option>
 
-          <option value="3">
-            {t.threePlus}
-          </option>
+          <option value="3">{t.threePlus}</option>
 
-          <option value="5">
-            {t.fivePlus}
-          </option>
+          <option value="5">{t.fivePlus}</option>
         </select>
 
-        {/* განაკვეთი */}
+        {/* EMPLOYMENT */}
+
         <select
           value={selectedEmployment}
-          onChange={(e) =>
-            setSelectedEmployment(e.target.value)
-          }
+          onChange={(e) => setSelectedEmployment(e.target.value)}
         >
-          <option value="">
-            {t.allEmployment}
-          </option>
+          <option value="">{t.allEmployment}</option>
 
-          <option value="full-time">
-            {t.fullTime}
-          </option>
+          <option value="full-time">{t.fullTime}</option>
 
-          <option value="part-time">
-            {t.partTime}
-          </option>
+          <option value="part-time">{t.partTime}</option>
         </select>
 
-        {/* ფასი */}
+        {/* PRICE */}
+
         <select
           value={selectedPrice}
-          onChange={(e) =>
-            setSelectedPrice(e.target.value)
-          }
+          onChange={(e) => setSelectedPrice(e.target.value)}
         >
-          <option value="">
-            {t.allPrices}
-          </option>
+          <option value="">{t.allPrices}</option>
 
-          <option value="under10">
-            {t.under10}
-          </option>
+          <option value="under10">{t.under10}</option>
 
-          <option value="10to20">
-            {t.price10to20}
-          </option>
+          <option value="10to20">{t.price10to20}</option>
 
-          <option value="over20">
-            {t.over20}
-          </option>
+          <option value="over20">{t.over20}</option>
         </select>
 
-        {/* ძიება */}
+        {/* SEARCH */}
+
         <button
           type="button"
           onClick={() => {
             setAppliedCity(selectedCity);
+
             setAppliedExperience(selectedExperience);
+
             setAppliedEmployment(selectedEmployment);
+
             setAppliedPrice(selectedPrice);
           }}
         >
           {t.search}
         </button>
-
       </div>
 
+      {/* DOG WALKERS */}
+
       <section className="drivers-list">
-
-        {filteredDogWalkers.map((walker) => (
-
+        {filteredDogWalkers.length === 0 ? (
           <div
-            className="driver-card"
-            key={walker.id}
+            style={{
+              width: "100%",
+              padding: "30px",
+              textAlign: "center",
+              color: "#64748b",
+            }}
           >
-
-            <div className="driver-avatar">
-              🐕
-            </div>
-
-            <div className="driver-info">
-
-              <div className="driver-name">
-
-                <h2>
-                  {walker.name}
-                </h2>
-
-                {walker.verified && (
-                  <span className="verified">
-                    {t.verified}
-                  </span>
-                )}
-
-              </div>
-
-              <p>
-                📍 {cityNames[walker.cityValue]}
-              </p>
-
-              <p>
-                🐕 {t.experience}: {walker.experience}
-              </p>
-
-              <p>
-                🕒 {getEmploymentName(walker.employmentType)}
-              </p>
-
-              <p>
-                {walker.rating}
-              </p>
-
-            </div>
-
-            <div className="driver-price">
-
-              <strong>
-                {getPrice(walker)}
-              </strong>
-
-              <Link
-                to={`/dogwalker/${walker.id}`}
-                className="profile-btn"
-              >
-                {t.viewProfile}
-              </Link>
-
-            </div>
-
+            {t.noResults}
           </div>
+        ) : (
+          filteredDogWalkers.map((walker) => {
+            const hasRating =
+              walker.rating !== null &&
+              walker.rating !== undefined &&
+              walker.rating !== "";
 
-        ))}
+            return (
+              <div className="driver-card" key={walker.id}>
+                <div className="driver-avatar">🐕</div>
 
+                <div className="driver-info">
+                  <div className="driver-name">
+                    <h2>{walker.name}</h2>
+
+                    {walker.verified && (
+                      <span className="verified">{t.verified}</span>
+                    )}
+                  </div>
+
+                  <p>📍 {getCityName(walker.cityValue)}</p>
+
+                  <p>
+                    🐕 {t.experience}: {walker.experience}
+                  </p>
+
+                  <p>🕒 {getEmploymentName(walker.employmentType)}</p>
+
+                  <p>{hasRating ? `⭐ ${walker.rating}` : t.noReviews}</p>
+                </div>
+
+                <div className="driver-price">
+                  <strong>{getPrice(walker)}</strong>
+
+                  <Link to={`/dogwalker/${walker.id}`} className="profile-btn">
+                    {t.viewProfile}
+                  </Link>
+                </div>
+              </div>
+            );
+          })
+        )}
       </section>
-
     </div>
   );
 }

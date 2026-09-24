@@ -16,6 +16,7 @@ const translations = {
     rustavi: "რუსთავი",
     gori: "გორი",
     zugdidi: "ზუგდიდი",
+    other: "სხვა",
 
     allExperience: "ყველა გამოცდილება",
     onePlus: "1+ წელი",
@@ -45,7 +46,13 @@ const translations = {
     years5: "5 წელი",
 
     currency: "₾",
-    perHour: "საათი",
+
+    hourly: "საათი",
+    daily: "დღე",
+    biweekly: "2 კვირა",
+    monthly: "თვე",
+
+    noResults: "ამ ფილტრებით მომვლელი ვერ მოიძებნა.",
   },
 
   en: {
@@ -60,6 +67,7 @@ const translations = {
     rustavi: "Rustavi",
     gori: "Gori",
     zugdidi: "Zugdidi",
+    other: "Other",
 
     allExperience: "All experience",
     onePlus: "1+ years",
@@ -89,7 +97,14 @@ const translations = {
     years5: "5 years",
 
     currency: "GEL",
-    perHour: "hour",
+
+    hourly: "hour",
+    daily: "day",
+    biweekly: "2 weeks",
+    monthly: "month",
+
+    noResults:
+      "No caregivers were found with these filters.",
   },
 
   ru: {
@@ -104,6 +119,7 @@ const translations = {
     rustavi: "Рустави",
     gori: "Гори",
     zugdidi: "Зугдиди",
+    other: "Другой",
 
     allExperience: "Любой опыт",
     onePlus: "1+ год",
@@ -133,7 +149,14 @@ const translations = {
     years5: "5 лет",
 
     currency: "GEL",
-    perHour: "час",
+
+    hourly: "час",
+    daily: "день",
+    biweekly: "2 недели",
+    monthly: "месяц",
+
+    noResults:
+      "По этим фильтрам сиделки не найдены.",
   },
 };
 
@@ -141,53 +164,185 @@ function Caregivers() {
   const { language } = useLanguage();
   const t = translations[language] || translations.ka;
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] =
+    useSearchParams();
 
-  const selectedCity = searchParams.get("city") || "";
+  const selectedCity =
+    searchParams.get("city") || "";
 
-  const [selectedExperience, setSelectedExperience] = useState("");
-  const [selectedEmployment, setSelectedEmployment] = useState("");
-  const [selectedPrice, setSelectedPrice] = useState("");
+  const [selectedExperience, setSelectedExperience] =
+    useState("");
 
-  const [appliedCity, setAppliedCity] = useState(selectedCity);
-  const [appliedExperience, setAppliedExperience] = useState("");
-  const [appliedEmployment, setAppliedEmployment] = useState("");
-  const [appliedPrice, setAppliedPrice] = useState("");
+  const [selectedEmployment, setSelectedEmployment] =
+    useState("");
 
-  const caregivers = [
+  const [selectedPrice, setSelectedPrice] =
+    useState("");
+
+  const [appliedCity, setAppliedCity] =
+    useState(selectedCity);
+
+  const [appliedExperience, setAppliedExperience] =
+    useState("");
+
+  const [appliedEmployment, setAppliedEmployment] =
+    useState("");
+
+  const [appliedPrice, setAppliedPrice] =
+    useState("");
+
+  // ძველი სატესტო მომვლელები
+  const defaultCaregivers = [
     {
-      id: 1,
+      id: "1",
       name: t.name1,
       cityValue: "tbilisi",
       experience: t.years8,
       experienceYears: 8,
       employmentType: "full-time",
+      paymentType: "hourly",
       priceValue: 22,
       rating: "⭐ 4.9",
       verified: true,
     },
+
     {
-      id: 2,
+      id: "2",
       name: t.name2,
       cityValue: "kutaisi",
       experience: t.years6,
       experienceYears: 6,
       employmentType: "part-time",
+      paymentType: "hourly",
       priceValue: 18,
       rating: "⭐ 4.8",
       verified: true,
     },
+
     {
-      id: 3,
+      id: "3",
       name: t.name3,
       cityValue: "batumi",
       experience: t.years5,
       experienceYears: 5,
       employmentType: "full-time",
+      paymentType: "hourly",
       priceValue: 17,
       rating: "⭐ 4.7",
       verified: false,
     },
+  ];
+
+  // localStorage-დან სპეციალისტების წამოღება
+  const getSavedSpecialists = () => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem(
+          "careGeorgiaSpecialists"
+        )
+      );
+
+      return Array.isArray(saved)
+        ? saved
+        : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const savedSpecialists =
+    getSavedSpecialists();
+
+  // გამოცდილებიდან რიცხვის ამოღება
+  // მაგალითად "5 წელი" -> 5
+  const getExperienceYears = (experience) => {
+    if (
+      experience === null ||
+      experience === undefined
+    ) {
+      return 0;
+    }
+
+    const match = String(experience).match(
+      /\d+([.,]\d+)?/
+    );
+
+    if (!match) {
+      return 0;
+    }
+
+    return Number(
+      match[0].replace(",", ".")
+    );
+  };
+
+  // მომხმარებლების მიერ შექმნილი აქტიური მომვლელები
+  const customCaregivers = savedSpecialists
+    .filter(
+      (profile) =>
+        profile.profession ===
+          "caregiver" &&
+        profile.status !== "inactive"
+    )
+    .map((profile) => {
+      const firstName =
+        profile.firstName || "";
+
+      const lastName =
+        profile.lastName || "";
+
+      const lastInitial = lastName
+        ? `${lastName.charAt(0)}.`
+        : "";
+
+      const safeName =
+        `${firstName} ${lastInitial}`.trim() ||
+        (language === "ka"
+          ? "მომვლელი"
+          : language === "ru"
+          ? "Сиделка"
+          : "Caregiver");
+
+      return {
+        id: String(profile.id),
+
+        name: safeName,
+
+        cityValue:
+          profile.city || "other",
+
+        experience:
+          profile.experience || "",
+
+        experienceYears:
+          getExperienceYears(
+            profile.experience
+          ),
+
+        employmentType:
+          profile.employmentType || "",
+
+        paymentType:
+          profile.paymentType || "hourly",
+
+        priceValue:
+          Number(profile.priceValue) || 0,
+
+        rating:
+          profile.rating !== null &&
+          profile.rating !== undefined
+            ? `⭐ ${profile.rating}`
+            : "",
+
+        verified:
+          profile.verified === true,
+      };
+    });
+
+  // ძველი + მომხმარებლების პროფილები
+  const caregivers = [
+    ...defaultCaregivers,
+    ...customCaregivers,
   ];
 
   const cityNames = {
@@ -197,76 +352,129 @@ function Caregivers() {
     rustavi: t.rustavi,
     gori: t.gori,
     zugdidi: t.zugdidi,
+    other: t.other,
   };
 
-  const getEmploymentName = (employmentType) => {
-    if (employmentType === "full-time") {
+  const getEmploymentName = (
+    employmentType
+  ) => {
+    if (
+      employmentType === "full-time"
+    ) {
       return t.fullTime;
     }
 
-    if (employmentType === "part-time") {
+    if (
+      employmentType === "part-time"
+    ) {
       return t.partTime;
     }
 
     return "";
   };
 
-  const filteredCaregivers = caregivers.filter((caregiver) => {
-    const matchesCity = appliedCity
-      ? caregiver.cityValue === appliedCity
-      : true;
-
-    let matchesExperience = true;
-
-    if (appliedExperience === "1") {
-      matchesExperience = caregiver.experienceYears >= 1;
+  const getPaymentTypeName = (
+    paymentType
+  ) => {
+    if (paymentType === "monthly") {
+      return t.monthly;
     }
 
-    if (appliedExperience === "3") {
-      matchesExperience = caregiver.experienceYears >= 3;
+    if (paymentType === "biweekly") {
+      return t.biweekly;
     }
 
-    if (appliedExperience === "5") {
-      matchesExperience = caregiver.experienceYears >= 5;
+    if (paymentType === "daily") {
+      return t.daily;
     }
 
-    const matchesEmployment = appliedEmployment
-      ? caregiver.employmentType === appliedEmployment
-      : true;
+    return t.hourly;
+  };
 
-    let matchesPrice = true;
+  const filteredCaregivers =
+    caregivers.filter((caregiver) => {
+      const matchesCity =
+        appliedCity
+          ? caregiver.cityValue ===
+            appliedCity
+          : true;
 
-    if (appliedPrice === "under20") {
-      matchesPrice = caregiver.priceValue <= 20;
-    }
+      let matchesExperience = true;
 
-    if (appliedPrice === "20to30") {
-      matchesPrice =
-        caregiver.priceValue >= 20 &&
-        caregiver.priceValue <= 30;
-    }
+      if (
+        appliedExperience === "1"
+      ) {
+        matchesExperience =
+          caregiver.experienceYears >= 1;
+      }
 
-    if (appliedPrice === "over30") {
-      matchesPrice = caregiver.priceValue >= 30;
-    }
+      if (
+        appliedExperience === "3"
+      ) {
+        matchesExperience =
+          caregiver.experienceYears >= 3;
+      }
 
-    return (
-      matchesCity &&
-      matchesExperience &&
-      matchesEmployment &&
-      matchesPrice
-    );
-  });
+      if (
+        appliedExperience === "5"
+      ) {
+        matchesExperience =
+          caregiver.experienceYears >= 5;
+      }
+
+      const matchesEmployment =
+        appliedEmployment
+          ? caregiver.employmentType ===
+            appliedEmployment
+          : true;
+
+      let matchesPrice = true;
+
+      if (
+        appliedPrice === "under20"
+      ) {
+        matchesPrice =
+          caregiver.priceValue <= 20;
+      }
+
+      if (
+        appliedPrice === "20to30"
+      ) {
+        matchesPrice =
+          caregiver.priceValue >= 20 &&
+          caregiver.priceValue <= 30;
+      }
+
+      if (
+        appliedPrice === "over30"
+      ) {
+        matchesPrice =
+          caregiver.priceValue >= 30;
+      }
+
+      return (
+        matchesCity &&
+        matchesExperience &&
+        matchesEmployment &&
+        matchesPrice
+      );
+    });
 
   const getPrice = (caregiver) => {
-    return `${caregiver.priceValue} ${t.currency} / ${t.perHour}`;
+    return `${caregiver.priceValue} ${
+      t.currency
+    } / ${getPaymentTypeName(
+      caregiver.paymentType
+    )}`;
   };
 
   return (
     <div className="drivers-page">
-
       <header className="drivers-header">
-        <Link to="/" className="back-link">
+        <Link
+          to="/"
+          className="back-link"
+        >
           ← Care Georgia
         </Link>
 
@@ -276,15 +484,18 @@ function Caregivers() {
       </header>
 
       <div className="driver-filters">
-
         {/* ქალაქი */}
+
         <select
           value={selectedCity}
           onChange={(e) => {
-            const city = e.target.value;
+            const city =
+              e.target.value;
 
             if (city) {
-              setSearchParams({ city });
+              setSearchParams({
+                city,
+              });
             } else {
               setSearchParams({});
             }
@@ -317,13 +528,20 @@ function Caregivers() {
           <option value="zugdidi">
             {t.zugdidi}
           </option>
+
+          <option value="other">
+            {t.other}
+          </option>
         </select>
 
         {/* გამოცდილება */}
+
         <select
           value={selectedExperience}
           onChange={(e) =>
-            setSelectedExperience(e.target.value)
+            setSelectedExperience(
+              e.target.value
+            )
           }
         >
           <option value="">
@@ -344,10 +562,13 @@ function Caregivers() {
         </select>
 
         {/* განაკვეთი */}
+
         <select
           value={selectedEmployment}
           onChange={(e) =>
-            setSelectedEmployment(e.target.value)
+            setSelectedEmployment(
+              e.target.value
+            )
           }
         >
           <option value="">
@@ -364,10 +585,13 @@ function Caregivers() {
         </select>
 
         {/* ფასი */}
+
         <select
           value={selectedPrice}
           onChange={(e) =>
-            setSelectedPrice(e.target.value)
+            setSelectedPrice(
+              e.target.value
+            )
           }
         >
           <option value="">
@@ -390,83 +614,125 @@ function Caregivers() {
         <button
           type="button"
           onClick={() => {
-            setAppliedCity(selectedCity);
-            setAppliedExperience(selectedExperience);
-            setAppliedEmployment(selectedEmployment);
-            setAppliedPrice(selectedPrice);
+            setAppliedCity(
+              selectedCity
+            );
+
+            setAppliedExperience(
+              selectedExperience
+            );
+
+            setAppliedEmployment(
+              selectedEmployment
+            );
+
+            setAppliedPrice(
+              selectedPrice
+            );
           }}
         >
           {t.search}
         </button>
-
       </div>
 
       <section className="drivers-list">
-
-        {filteredCaregivers.map((caregiver) => (
+        {filteredCaregivers.length ===
+        0 ? (
           <div
             className="driver-card"
-            key={caregiver.id}
+            style={{
+              justifyContent:
+                "center",
+              textAlign: "center",
+              padding: "40px",
+            }}
           >
-
-            <div className="driver-avatar">
-              👵
-            </div>
-
-            <div className="driver-info">
-
-              <div className="driver-name">
-
-                <h2>
-                  {caregiver.name}
-                </h2>
-
-                {caregiver.verified && (
-                  <span className="verified">
-                    {t.verified}
-                  </span>
-                )}
-
-              </div>
-
-              <p>
-                📍 {cityNames[caregiver.cityValue]}
-              </p>
-
-              <p>
-                💼 {t.experience}: {caregiver.experience}
-              </p>
-
-              <p>
-                🕒 {getEmploymentName(caregiver.employmentType)}
-              </p>
-
-              <p>
-                {caregiver.rating}
-              </p>
-
-            </div>
-
-            <div className="driver-price">
-
-              <strong>
-                {getPrice(caregiver)}
-              </strong>
-
-              <Link
-                to={`/caregivers/${caregiver.id}`}
-                className="profile-btn"
-              >
-                {t.viewProfile}
-              </Link>
-
-            </div>
-
+            <p>
+              {t.noResults}
+            </p>
           </div>
-        ))}
+        ) : (
+          filteredCaregivers.map(
+            (caregiver) => (
+              <div
+                className="driver-card"
+                key={caregiver.id}
+              >
+                <div className="driver-avatar">
+                  👵
+                </div>
 
+                <div className="driver-info">
+                  <div className="driver-name">
+                    <h2>
+                      {
+                        caregiver.name
+                      }
+                    </h2>
+
+                    {caregiver.verified && (
+                      <span className="verified">
+                        {
+                          t.verified
+                        }
+                      </span>
+                    )}
+                  </div>
+
+                  <p>
+                    📍{" "}
+                    {cityNames[
+                      caregiver
+                        .cityValue
+                    ] ||
+                      caregiver.cityValue}
+                  </p>
+
+                  <p>
+                    💼{" "}
+                    {t.experience}:{" "}
+                    {
+                      caregiver.experience
+                    }
+                  </p>
+
+                  <p>
+                    🕒{" "}
+                    {getEmploymentName(
+                      caregiver.employmentType
+                    )}
+                  </p>
+
+                  {caregiver.rating && (
+                    <p>
+                      {
+                        caregiver.rating
+                      }
+                    </p>
+                  )}
+                </div>
+
+                <div className="driver-price">
+                  <strong>
+                    {getPrice(
+                      caregiver
+                    )}
+                  </strong>
+
+                  <Link
+                    to={`/caregivers/${caregiver.id}`}
+                    className="profile-btn"
+                  >
+                    {
+                      t.viewProfile
+                    }
+                  </Link>
+                </div>
+              </div>
+            )
+          )
+        )}
       </section>
-
     </div>
   );
 }

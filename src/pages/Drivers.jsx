@@ -33,7 +33,11 @@ const translations = {
     years6: "6 წლიანი გამოცდილება",
 
     currency: "₾",
-    perHour: "საათი",
+
+    hourly: "საათი",
+    daily: "დღე",
+    biweekly: "2 კვირა",
+    monthly: "თვე",
 
     tbilisi: "თბილისი",
     batumi: "ბათუმი",
@@ -63,6 +67,7 @@ const translations = {
     tsqaltubo: "წყალტუბო",
     ambrolauri: "ამბროლაური",
     oni: "ონი",
+    other: "სხვა",
   },
 
   en: {
@@ -94,7 +99,11 @@ const translations = {
     years6: "6 years of experience",
 
     currency: "GEL",
-    perHour: "hour",
+
+    hourly: "hour",
+    daily: "day",
+    biweekly: "2 weeks",
+    monthly: "month",
 
     tbilisi: "Tbilisi",
     batumi: "Batumi",
@@ -124,6 +133,7 @@ const translations = {
     tsqaltubo: "Tskaltubo",
     ambrolauri: "Ambrolauri",
     oni: "Oni",
+    other: "Other",
   },
 
   ru: {
@@ -155,7 +165,11 @@ const translations = {
     years6: "6 лет опыта",
 
     currency: "GEL",
-    perHour: "час",
+
+    hourly: "час",
+    daily: "день",
+    biweekly: "2 недели",
+    monthly: "месяц",
 
     tbilisi: "Тбилиси",
     batumi: "Батуми",
@@ -185,6 +199,7 @@ const translations = {
     tsqaltubo: "Цхалтубо",
     ambrolauri: "Амбролаури",
     oni: "Они",
+    other: "Другой",
   },
 };
 
@@ -217,6 +232,7 @@ const cities = [
   "tsqaltubo",
   "ambrolauri",
   "oni",
+  "other",
 ];
 
 function Drivers() {
@@ -234,13 +250,18 @@ function Drivers() {
   const [appliedPrice, setAppliedPrice] = useState("");
   const [appliedEmployment, setAppliedEmployment] = useState("");
 
-  const drivers = [
+  /* =========================
+     DEFAULT DRIVERS
+  ========================= */
+
+  const defaultDrivers = [
     {
       id: 1,
       name: t.name1,
       cityValue: "tbilisi",
       experience: t.years8,
       employmentType: "full-time",
+      paymentType: "hourly",
       priceValue: 25,
       rating: "⭐ 4.9",
       verified: true,
@@ -251,6 +272,7 @@ function Drivers() {
       cityValue: "tbilisi",
       experience: t.years5,
       employmentType: "part-time",
+      paymentType: "hourly",
       priceValue: 20,
       rating: "⭐ 4.8",
       verified: true,
@@ -261,11 +283,91 @@ function Drivers() {
       cityValue: "batumi",
       experience: t.years6,
       employmentType: "full-time",
+      paymentType: "hourly",
       priceValue: 22,
       rating: "⭐ 4.7",
       verified: false,
     },
   ];
+
+  /* =========================
+     SAVED SPECIALISTS
+  ========================= */
+
+  let savedSpecialists = [];
+
+  try {
+    const savedData = JSON.parse(
+      localStorage.getItem("careGeorgiaSpecialists")
+    );
+
+    if (Array.isArray(savedData)) {
+      savedSpecialists = savedData;
+    }
+  } catch {
+    savedSpecialists = [];
+  }
+
+  /* =========================
+     CUSTOM DRIVERS
+  ========================= */
+
+  const customDrivers = savedSpecialists
+    .filter(
+      (profile) =>
+        profile.profession === "driver" &&
+        profile.status !== "inactive"
+    )
+    .map((profile) => {
+      const firstName = profile.firstName || "";
+
+      const lastNameInitial = profile.lastName
+        ? `${profile.lastName.charAt(0)}.`
+        : "";
+
+      const displayName =
+        `${firstName} ${lastNameInitial}`.trim() ||
+        "Care Georgia";
+
+      return {
+        id: profile.id,
+
+        name: displayName,
+
+        cityValue: profile.city || "other",
+
+        experience: profile.experience || "",
+
+        employmentType:
+          profile.employmentType || "full-time",
+
+        paymentType:
+          profile.paymentType || "hourly",
+
+        priceValue: Number(profile.priceValue) || 0,
+
+        rating: profile.rating
+          ? `⭐ ${profile.rating}`
+          : "⭐ —",
+
+        verified: profile.verified === true,
+
+        isCustom: true,
+      };
+    });
+
+  /* =========================
+     ALL DRIVERS
+  ========================= */
+
+  const drivers = [
+    ...defaultDrivers,
+    ...customDrivers,
+  ];
+
+  /* =========================
+     EMPLOYMENT NAME
+  ========================= */
 
   const getEmploymentName = (employmentType) => {
     if (employmentType === "full-time") {
@@ -278,6 +380,30 @@ function Drivers() {
 
     return "";
   };
+
+  /* =========================
+     PAYMENT TYPE
+  ========================= */
+
+  const getPaymentTypeName = (paymentType) => {
+    if (paymentType === "daily") {
+      return t.daily;
+    }
+
+    if (paymentType === "biweekly") {
+      return t.biweekly;
+    }
+
+    if (paymentType === "monthly") {
+      return t.monthly;
+    }
+
+    return t.hourly;
+  };
+
+  /* =========================
+     FILTER
+  ========================= */
 
   const filteredDrivers = drivers.filter((driver) => {
     const matchesCity = appliedCity
@@ -311,13 +437,18 @@ function Drivers() {
     );
   });
 
+  /* =========================
+     PRICE
+  ========================= */
+
   const getPrice = (driver) => {
-    return `${driver.priceValue} ${t.currency} / ${t.perHour}`;
+    return `${driver.priceValue} ${t.currency} / ${getPaymentTypeName(
+      driver.paymentType
+    )}`;
   };
 
   return (
     <div className="drivers-page">
-
       <header className="drivers-header">
         <Link to="/" className="back-link">
           ← Care Georgia
@@ -329,8 +460,8 @@ function Drivers() {
       </header>
 
       <div className="driver-filters">
+        {/* CITY */}
 
-        {/* ქალაქი */}
         <select
           value={selectedCity}
           onChange={(e) => {
@@ -348,13 +479,17 @@ function Drivers() {
           </option>
 
           {cities.map((city) => (
-            <option key={city} value={city}>
-              {t[city]}
+            <option
+              key={city}
+              value={city}
+            >
+              {t[city] || city}
             </option>
           ))}
         </select>
 
-        {/* განაკვეთი */}
+        {/* EMPLOYMENT */}
+
         <select
           value={selectedEmployment}
           onChange={(e) =>
@@ -374,7 +509,8 @@ function Drivers() {
           </option>
         </select>
 
-        {/* ფასი */}
+        {/* PRICE */}
+
         <select
           value={selectedPrice}
           onChange={(e) =>
@@ -403,42 +539,46 @@ function Drivers() {
           onClick={() => {
             setAppliedCity(selectedCity);
             setAppliedPrice(selectedPrice);
-            setAppliedEmployment(selectedEmployment);
+            setAppliedEmployment(
+              selectedEmployment
+            );
           }}
         >
           {t.search}
         </button>
-
       </div>
 
-      <section className="drivers-list">
+      {/* =========================
+          DRIVERS LIST
+      ========================= */}
 
+      <section className="drivers-list">
         {filteredDrivers.map((driver) => (
           <div
             className="driver-card"
             key={driver.id}
           >
-
             <div className="driver-avatar">
               👤
             </div>
 
             <div className="driver-info">
-
               <div className="driver-name">
-
-                <h2>{driver.name}</h2>
+                <h2>
+                  {driver.name}
+                </h2>
 
                 {driver.verified && (
                   <span className="verified">
                     {t.verified}
                   </span>
                 )}
-
               </div>
 
               <p>
-                📍 {t[driver.cityValue]}
+                📍{" "}
+                {t[driver.cityValue] ||
+                  driver.cityValue}
               </p>
 
               <p>
@@ -446,17 +586,18 @@ function Drivers() {
               </p>
 
               <p>
-                🕒 {getEmploymentName(driver.employmentType)}
+                🕒{" "}
+                {getEmploymentName(
+                  driver.employmentType
+                )}
               </p>
 
               <p>
                 {driver.rating}
               </p>
-
             </div>
 
             <div className="driver-price">
-
               <strong>
                 {getPrice(driver)}
               </strong>
@@ -467,15 +608,12 @@ function Drivers() {
               >
                 {t.viewProfile}
               </Link>
-
             </div>
-
           </div>
         ))}
-
       </section>
-
     </div>
   );
 }
+
 export default Drivers;

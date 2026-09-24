@@ -16,6 +16,9 @@ const translations = {
     rustavi: "რუსთავი",
     gori: "გორი",
     zugdidi: "ზუგდიდი",
+    poti: "ფოთი",
+    telavi: "თელავი",
+    other: "სხვა",
 
     allServices: "ყველა მომსახურება",
     cleaning: "სახლის დასუფთავება",
@@ -35,6 +38,8 @@ const translations = {
     verified: "✓ ვერიფიცირებული",
     experience: "გამოცდილება",
     viewProfile: "პროფილის ნახვა",
+    noReviews: "ჯერ არ აქვს შეფასება",
+    noResults: "შესაბამისი სახლის დამხმარე ვერ მოიძებნა",
 
     name1: "ნათია მ.",
     name2: "თამუნა კ.",
@@ -45,7 +50,11 @@ const translations = {
     years5: "5 წელი",
 
     currency: "₾",
-    perHour: "საათი",
+
+    hourly: "საათი",
+    dailyPayment: "დღე",
+    biweekly: "2 კვირა",
+    monthly: "თვე",
   },
 
   en: {
@@ -60,6 +69,9 @@ const translations = {
     rustavi: "Rustavi",
     gori: "Gori",
     zugdidi: "Zugdidi",
+    poti: "Poti",
+    telavi: "Telavi",
+    other: "Other",
 
     allServices: "All services",
     cleaning: "House cleaning",
@@ -79,6 +91,8 @@ const translations = {
     verified: "✓ Verified",
     experience: "Experience",
     viewProfile: "View Profile",
+    noReviews: "No reviews yet",
+    noResults: "No matching housekeepers found",
 
     name1: "Natia M.",
     name2: "Tamuna K.",
@@ -89,7 +103,11 @@ const translations = {
     years5: "5 years",
 
     currency: "GEL",
-    perHour: "hour",
+
+    hourly: "hour",
+    dailyPayment: "day",
+    biweekly: "2 weeks",
+    monthly: "month",
   },
 
   ru: {
@@ -104,6 +122,9 @@ const translations = {
     rustavi: "Рустави",
     gori: "Гори",
     zugdidi: "Зугдиди",
+    poti: "Поти",
+    telavi: "Телави",
+    other: "Другой",
 
     allServices: "Все услуги",
     cleaning: "Уборка дома",
@@ -123,6 +144,8 @@ const translations = {
     verified: "✓ Проверенная",
     experience: "Опыт",
     viewProfile: "Посмотреть профиль",
+    noReviews: "Пока нет отзывов",
+    noResults: "Подходящие помощники по дому не найдены",
 
     name1: "Натия М.",
     name2: "Тамуна К.",
@@ -133,12 +156,17 @@ const translations = {
     years5: "5 лет",
 
     currency: "GEL",
-    perHour: "час",
+
+    hourly: "час",
+    dailyPayment: "день",
+    biweekly: "2 недели",
+    monthly: "месяц",
   },
 };
 
 function Housekeepers() {
   const { language } = useLanguage();
+
   const t = translations[language] || translations.ka;
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -146,49 +174,175 @@ function Housekeepers() {
   const selectedCity = searchParams.get("city") || "";
 
   const [selectedService, setSelectedService] = useState("");
+
   const [selectedPrice, setSelectedPrice] = useState("");
+
   const [selectedEmployment, setSelectedEmployment] = useState("");
 
   const [appliedCity, setAppliedCity] = useState(selectedCity);
+
   const [appliedService, setAppliedService] = useState("");
+
   const [appliedPrice, setAppliedPrice] = useState("");
+
   const [appliedEmployment, setAppliedEmployment] = useState("");
 
-  const housekeepers = [
+  /* =========================
+     DEFAULT HOUSEKEEPERS
+  ========================= */
+
+  const defaultHousekeepers = [
     {
-      id: 1,
+      id: "1",
       name: t.name1,
       cityValue: "tbilisi",
       services: ["cleaning", "daily"],
       experience: t.years6,
       employmentType: "full-time",
+      paymentType: "hourly",
       priceValue: 20,
-      rating: "⭐ 4.9",
+      rating: 4.9,
+      reviews: 41,
       verified: true,
+      isCustom: false,
     },
+
     {
-      id: 2,
+      id: "2",
       name: t.name2,
       cityValue: "tbilisi",
       services: ["cleaning", "cooking"],
       experience: t.years4,
       employmentType: "part-time",
+      paymentType: "hourly",
       priceValue: 18,
-      rating: "⭐ 4.8",
+      rating: 4.8,
+      reviews: 28,
       verified: true,
+      isCustom: false,
     },
+
     {
-      id: 3,
+      id: "3",
       name: t.name3,
       cityValue: "batumi",
       services: ["daily", "cooking"],
       experience: t.years5,
       employmentType: "part-time",
+      paymentType: "hourly",
       priceValue: 17,
-      rating: "⭐ 4.7",
+      rating: 4.7,
+      reviews: 20,
       verified: false,
+      isCustom: false,
     },
   ];
+
+  /* =========================
+     SAVED SPECIALISTS
+  ========================= */
+
+  const getSavedSpecialists = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("careGeorgiaSpecialists"));
+
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const getSafeName = (profile) => {
+    const firstName = profile.firstName || "";
+
+    const lastName = profile.lastName || "";
+
+    const lastInitial = lastName ? `${lastName.charAt(0)}.` : "";
+
+    return (
+      `${firstName} ${lastInitial}`.trim() ||
+      (language === "ka"
+        ? "სახლის დამხმარე"
+        : language === "ru"
+          ? "Помощник по дому"
+          : "Housekeeper")
+    );
+  };
+
+  const getServices = (profile) => {
+    if (Array.isArray(profile.services) && profile.services.length > 0) {
+      return profile.services;
+    }
+
+    if (profile.serviceType) {
+      return [profile.serviceType];
+    }
+
+    if (profile.service) {
+      const service = String(profile.service).toLowerCase();
+
+      if (
+        service === "cleaning" ||
+        service === "daily" ||
+        service === "cooking"
+      ) {
+        return [service];
+      }
+    }
+
+    /*
+      ძველი/ზოგადი პროფილი თუ კონკრეტულ
+      მომსახურებას არ ინახავს, ყველა
+      მომსახურების ფილტრში არ დავმალოთ.
+    */
+    return ["cleaning", "daily", "cooking"];
+  };
+
+  const customHousekeepers = getSavedSpecialists()
+    .filter(
+      (profile) =>
+        profile.profession === "housekeeper" && profile.status !== "inactive",
+    )
+    .map((profile) => ({
+      id: String(profile.id),
+
+      ownerId: profile.ownerId,
+
+      name: getSafeName(profile),
+
+      cityValue: profile.city || "other",
+
+      services: getServices(profile),
+
+      experience: profile.experience || "",
+
+      employmentType: profile.employmentType || "part-time",
+
+      paymentType: profile.paymentType || "hourly",
+
+      priceValue: Number(profile.priceValue) || 0,
+
+      rating:
+        profile.rating !== null && profile.rating !== undefined
+          ? Number(profile.rating)
+          : null,
+
+      reviews: Number(profile.reviews) || 0,
+
+      verified: profile.verified === true,
+
+      isCustom: true,
+    }));
+
+  /* =========================
+     ALL HOUSEKEEPERS
+  ========================= */
+
+  const housekeepers = [...customHousekeepers, ...defaultHousekeepers];
+
+  /* =========================
+     CITY
+  ========================= */
 
   const cityNames = {
     tbilisi: t.tbilisi,
@@ -197,7 +351,18 @@ function Housekeepers() {
     rustavi: t.rustavi,
     gori: t.gori,
     zugdidi: t.zugdidi,
+    poti: t.poti,
+    telavi: t.telavi,
+    other: t.other,
   };
+
+  const getCityName = (city) => {
+    return cityNames[city] || city || t.other;
+  };
+
+  /* =========================
+     EMPLOYMENT
+  ========================= */
 
   const getEmploymentName = (employmentType) => {
     if (employmentType === "full-time") {
@@ -210,6 +375,36 @@ function Housekeepers() {
 
     return "";
   };
+
+  /* =========================
+     PAYMENT
+  ========================= */
+
+  const getPaymentTypeName = (paymentType) => {
+    if (paymentType === "monthly") {
+      return t.monthly;
+    }
+
+    if (paymentType === "biweekly") {
+      return t.biweekly;
+    }
+
+    if (paymentType === "daily") {
+      return t.dailyPayment;
+    }
+
+    return t.hourly;
+  };
+
+  const getPrice = (housekeeper) => {
+    return `${housekeeper.priceValue} ${t.currency} / ${getPaymentTypeName(
+      housekeeper.paymentType,
+    )}`;
+  };
+
+  /* =========================
+     FILTER
+  ========================= */
 
   const filteredHousekeepers = housekeepers.filter((housekeeper) => {
     const matchesCity = appliedCity
@@ -228,8 +423,7 @@ function Housekeepers() {
 
     if (appliedPrice === "20to30") {
       matchesPrice =
-        housekeeper.priceValue >= 20 &&
-        housekeeper.priceValue <= 30;
+        housekeeper.priceValue >= 20 && housekeeper.priceValue <= 30;
     }
 
     if (appliedPrice === "over30") {
@@ -240,17 +434,8 @@ function Housekeepers() {
       ? housekeeper.employmentType === appliedEmployment
       : true;
 
-    return (
-      matchesCity &&
-      matchesService &&
-      matchesPrice &&
-      matchesEmployment
-    );
+    return matchesCity && matchesService && matchesPrice && matchesEmployment;
   });
-
-  const getPrice = (housekeeper) => {
-    return `${housekeeper.priceValue} ${t.currency} / ${t.perHour}`;
-  };
 
   return (
     <div className="drivers-page">
@@ -264,197 +449,166 @@ function Housekeepers() {
         <p>{t.description}</p>
       </header>
 
-      <div className="driver-filters">
+      {/* FILTERS */}
 
-        {/* ქალაქი */}
+      <div className="driver-filters">
+        {/* CITY */}
+
         <select
           value={selectedCity}
           onChange={(e) => {
             const city = e.target.value;
 
             if (city) {
-              setSearchParams({ city });
+              setSearchParams({
+                city,
+              });
             } else {
               setSearchParams({});
             }
           }}
         >
-          <option value="">
-            {t.allCities}
-          </option>
+          <option value="">{t.allCities}</option>
 
-          <option value="tbilisi">
-            {t.tbilisi}
-          </option>
+          <option value="tbilisi">{t.tbilisi}</option>
 
-          <option value="batumi">
-            {t.batumi}
-          </option>
+          <option value="batumi">{t.batumi}</option>
 
-          <option value="kutaisi">
-            {t.kutaisi}
-          </option>
+          <option value="kutaisi">{t.kutaisi}</option>
 
-          <option value="rustavi">
-            {t.rustavi}
-          </option>
+          <option value="rustavi">{t.rustavi}</option>
 
-          <option value="gori">
-            {t.gori}
-          </option>
+          <option value="gori">{t.gori}</option>
 
-          <option value="zugdidi">
-            {t.zugdidi}
-          </option>
+          <option value="zugdidi">{t.zugdidi}</option>
+
+          <option value="poti">{t.poti}</option>
+
+          <option value="telavi">{t.telavi}</option>
+
+          <option value="other">{t.other}</option>
         </select>
 
-        {/* მომსახურება */}
+        {/* SERVICE */}
+
         <select
           value={selectedService}
-          onChange={(e) =>
-            setSelectedService(e.target.value)
-          }
+          onChange={(e) => setSelectedService(e.target.value)}
         >
-          <option value="">
-            {t.allServices}
-          </option>
+          <option value="">{t.allServices}</option>
 
-          <option value="cleaning">
-            {t.cleaning}
-          </option>
+          <option value="cleaning">{t.cleaning}</option>
 
-          <option value="daily">
-            {t.daily}
-          </option>
+          <option value="daily">{t.daily}</option>
 
-          <option value="cooking">
-            {t.cooking}
-          </option>
+          <option value="cooking">{t.cooking}</option>
         </select>
 
-        {/* განაკვეთი */}
+        {/* EMPLOYMENT */}
+
         <select
           value={selectedEmployment}
-          onChange={(e) =>
-            setSelectedEmployment(e.target.value)
-          }
+          onChange={(e) => setSelectedEmployment(e.target.value)}
         >
-          <option value="">
-            {t.allEmployment}
-          </option>
+          <option value="">{t.allEmployment}</option>
 
-          <option value="full-time">
-            {t.fullTime}
-          </option>
+          <option value="full-time">{t.fullTime}</option>
 
-          <option value="part-time">
-            {t.partTime}
-          </option>
+          <option value="part-time">{t.partTime}</option>
         </select>
 
-        {/* ფასი */}
+        {/* PRICE */}
+
         <select
           value={selectedPrice}
-          onChange={(e) =>
-            setSelectedPrice(e.target.value)
-          }
+          onChange={(e) => setSelectedPrice(e.target.value)}
         >
-          <option value="">
-            {t.allPrices}
-          </option>
+          <option value="">{t.allPrices}</option>
 
-          <option value="under20">
-            {t.under20}
-          </option>
+          <option value="under20">{t.under20}</option>
 
-          <option value="20to30">
-            {t.price20to30}
-          </option>
+          <option value="20to30">{t.price20to30}</option>
 
-          <option value="over30">
-            {t.over30}
-          </option>
+          <option value="over30">{t.over30}</option>
         </select>
 
-        {/* ძიება */}
+        {/* SEARCH */}
+
         <button
           type="button"
           onClick={() => {
             setAppliedCity(selectedCity);
+
             setAppliedService(selectedService);
+
             setAppliedPrice(selectedPrice);
+
             setAppliedEmployment(selectedEmployment);
           }}
         >
           {t.search}
         </button>
-
       </div>
 
+      {/* HOUSEKEEPERS */}
+
       <section className="drivers-list">
-
-        {filteredHousekeepers.map((housekeeper) => (
+        {filteredHousekeepers.length === 0 ? (
           <div
-            className="driver-card"
-            key={housekeeper.id}
+            style={{
+              width: "100%",
+              padding: "30px",
+              textAlign: "center",
+              color: "#64748b",
+            }}
           >
-
-            <div className="driver-avatar">
-              🏠
-            </div>
-
-            <div className="driver-info">
-
-              <div className="driver-name">
-
-                <h2>
-                  {housekeeper.name}
-                </h2>
-
-                {housekeeper.verified && (
-                  <span className="verified">
-                    {t.verified}
-                  </span>
-                )}
-
-              </div>
-
-              <p>
-                📍 {cityNames[housekeeper.cityValue]}
-              </p>
-
-              <p>
-                💼 {t.experience}: {housekeeper.experience}
-              </p>
-
-              <p>
-                🕒 {getEmploymentName(housekeeper.employmentType)}
-              </p>
-
-              <p>
-                {housekeeper.rating}
-              </p>
-
-            </div>
-
-            <div className="driver-price">
-
-              <strong>
-                {getPrice(housekeeper)}
-              </strong>
-
-              <Link
-                to={`/housekeepers/${housekeeper.id}`}
-                className="profile-btn"
-              >
-                {t.viewProfile}
-              </Link>
-
-            </div>
-
+            {t.noResults}
           </div>
-        ))}
+        ) : (
+          filteredHousekeepers.map((housekeeper) => {
+            const hasRating =
+              housekeeper.rating !== null &&
+              housekeeper.rating !== undefined &&
+              housekeeper.rating !== "";
 
+            return (
+              <div className="driver-card" key={housekeeper.id}>
+                <div className="driver-avatar">🏠</div>
+
+                <div className="driver-info">
+                  <div className="driver-name">
+                    <h2>{housekeeper.name}</h2>
+
+                    {housekeeper.verified && (
+                      <span className="verified">{t.verified}</span>
+                    )}
+                  </div>
+
+                  <p>📍 {getCityName(housekeeper.cityValue)}</p>
+
+                  <p>
+                    💼 {t.experience}: {housekeeper.experience}
+                  </p>
+
+                  <p>🕒 {getEmploymentName(housekeeper.employmentType)}</p>
+
+                  <p>{hasRating ? `⭐ ${housekeeper.rating}` : t.noReviews}</p>
+                </div>
+
+                <div className="driver-price">
+                  <strong>{getPrice(housekeeper)}</strong>
+
+                  <Link
+                    to={`/housekeepers/${housekeeper.id}`}
+                    className="profile-btn"
+                  >
+                    {t.viewProfile}
+                  </Link>
+                </div>
+              </div>
+            );
+          })
+        )}
       </section>
     </div>
   );

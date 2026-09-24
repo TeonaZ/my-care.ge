@@ -54,16 +54,25 @@ const translations = {
     descriptionPlaceholder:
       "დაწერე რა დახმარება გჭირდება, სამუშაოს პირობები და სხვა მნიშვნელოვანი ინფორმაცია.",
 
+    contactSharing: "საკონტაქტო ინფორმაციის ჩვენება",
+    contactSharingDescription:
+      "აირჩიე რომელი საკონტაქტო ინფორმაცია გინდა გამოჩნდეს ამ განცხადებაში.",
+
+    showEmail: "ჩემი ელ. ფოსტის ჩვენება",
+    showPhone: "ჩემი ტელეფონის ნომრის ჩვენება",
+
+    noPhone: "თქვენს ანგარიშზე ტელეფონის ნომერი მითითებული არ არის.",
+
+    noEmail: "თქვენს ანგარიშზე ელ. ფოსტა მითითებული არ არის.",
+
     publish: "განცხადების გამოქვეყნება",
 
-    loginRequired:
-      "განცხადების დასამატებლად ჯერ უნდა შეხვიდე ანგარიშში.",
+    loginRequired: "განცხადების დასამატებლად ჯერ უნდა შეხვიდე ანგარიშში.",
 
     userNotFound:
       "მომხმარებლის მონაცემები ვერ მოიძებნა. გთხოვ თავიდან შეხვიდე ანგარიშში.",
 
-    success:
-      "განცხადება წარმატებით გამოქვეყნდა!",
+    success: "განცხადება წარმატებით გამოქვეყნდა!",
   },
 
   en: {
@@ -116,16 +125,25 @@ const translations = {
     descriptionPlaceholder:
       "Describe the help you need, working conditions and other important information.",
 
+    contactSharing: "Contact information",
+    contactSharingDescription:
+      "Choose which contact information you want to show in this job post.",
+
+    showEmail: "Show my email address",
+    showPhone: "Show my phone number",
+
+    noPhone: "There is no phone number saved on your account.",
+
+    noEmail: "There is no email address saved on your account.",
+
     publish: "Publish Job",
 
-    loginRequired:
-      "You need to log in before posting a job.",
+    loginRequired: "You need to log in before posting a job.",
 
     userNotFound:
       "Your account information could not be found. Please log in again.",
 
-    success:
-      "Job posted successfully!",
+    success: "Job posted successfully!",
   },
 
   ru: {
@@ -178,16 +196,24 @@ const translations = {
     descriptionPlaceholder:
       "Опишите необходимую помощь, условия работы и другую важную информацию.",
 
+    contactSharing: "Контактная информация",
+    contactSharingDescription:
+      "Выберите, какие контактные данные будут показаны в этом объявлении.",
+
+    showEmail: "Показать мою электронную почту",
+    showPhone: "Показать мой номер телефона",
+
+    noPhone: "В вашем аккаунте не указан номер телефона.",
+
+    noEmail: "В вашем аккаунте не указана электронная почта.",
+
     publish: "Опубликовать",
 
-    loginRequired:
-      "Чтобы разместить объявление, сначала войдите в аккаунт.",
+    loginRequired: "Чтобы разместить объявление, сначала войдите в аккаунт.",
 
-    userNotFound:
-      "Данные аккаунта не найдены. Пожалуйста, войдите снова.",
+    userNotFound: "Данные аккаунта не найдены. Пожалуйста, войдите снова.",
 
-    success:
-      "Объявление успешно опубликовано!",
+    success: "Объявление успешно опубликовано!",
   },
 };
 
@@ -196,33 +222,47 @@ function PostJob() {
 
   const { language } = useLanguage();
 
-  const t =
-    translations[language] ||
-    translations.ka;
+  const t = translations[language] || translations.ka;
 
-  const [service, setService] =
-    useState("");
+  const [service, setService] = useState("");
 
-  const [city, setCity] =
-    useState("");
+  const [city, setCity] = useState("");
 
-  const [
-    employmentType,
-    setEmploymentType,
-  ] = useState("");
+  const [employmentType, setEmploymentType] = useState("");
 
-  const [
-    paymentType,
-    setPaymentType,
-  ] = useState("");
+  const [paymentType, setPaymentType] = useState("");
 
-  const [budget, setBudget] =
-    useState("");
+  const [budget, setBudget] = useState("");
 
-  const [
-    description,
-    setDescription,
-  ] = useState("");
+  const [description, setDescription] = useState("");
+
+  /*
+    თითოეული განცხადებისთვის
+    კონტაქტების ცალკე არჩევანი.
+    ორივე თავიდან გამორთულია.
+  */
+
+  const [shareEmail, setShareEmail] = useState(false);
+
+  const [sharePhone, setSharePhone] = useState(false);
+
+  /*
+    აქტიური მომხმარებელი გვჭირდება,
+    რათა ფორმაშივე ვიცოდეთ აქვს თუ არა
+    Email და ტელეფონის ნომერი.
+  */
+
+  const getCurrentUser = () => {
+    try {
+      const saved = localStorage.getItem("careGeorgiaUser");
+
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const currentUser = getCurrentUser();
 
   const selectStyle = {
     display: "block",
@@ -242,37 +282,20 @@ function PostJob() {
     outline: "none",
   };
 
-  /* =========================
-     LOG USER OUT IF INVALID
-  ========================= */
-
   const clearLogin = () => {
-    localStorage.removeItem(
-      "careGeorgiaLoggedIn"
-    );
+    localStorage.removeItem("careGeorgiaLoggedIn");
 
-    localStorage.removeItem(
-      "careGeorgiaCurrentUserId"
-    );
+    localStorage.removeItem("careGeorgiaCurrentUserId");
 
-    localStorage.removeItem(
-      "careGeorgiaUser"
-    );
+    localStorage.removeItem("careGeorgiaUser");
   };
-
-  /* =========================
-     SUBMIT
-  ========================= */
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     /* CHECK LOGIN */
 
-    const isLoggedIn =
-      localStorage.getItem(
-        "careGeorgiaLoggedIn"
-      ) === "true";
+    const isLoggedIn = localStorage.getItem("careGeorgiaLoggedIn") === "true";
 
     if (!isLoggedIn) {
       alert(t.loginRequired);
@@ -282,24 +305,13 @@ function PostJob() {
       return;
     }
 
-    /* CURRENT USER ID */
+    /* CURRENT USER */
 
-    const currentUserId =
-      localStorage.getItem(
-        "careGeorgiaCurrentUserId"
-      );
+    const currentUserId = localStorage.getItem("careGeorgiaCurrentUserId");
 
-    /* ACTIVE USER */
+    const savedUser = localStorage.getItem("careGeorgiaUser");
 
-    const savedUser =
-      localStorage.getItem(
-        "careGeorgiaUser"
-      );
-
-    if (
-      !savedUser ||
-      !currentUserId
-    ) {
+    if (!savedUser || !currentUserId) {
       alert(t.userNotFound);
 
       clearLogin();
@@ -312,8 +324,7 @@ function PostJob() {
     let user = null;
 
     try {
-      user =
-        JSON.parse(savedUser);
+      user = JSON.parse(savedUser);
     } catch {
       user = null;
     }
@@ -329,16 +340,11 @@ function PostJob() {
     }
 
     /*
-      უსაფრთხოებისთვის ვამოწმებთ,
-      რომ აქტიური user-ის ID და
-      currentUserId ერთმანეთს ემთხვევა.
+      ვამოწმებთ, რომ აქტიური account
+      ემთხვევა currentUserId-ს.
     */
 
-    if (
-      !user.id ||
-      String(user.id) !==
-        String(currentUserId)
-    ) {
+    if (!user.id || String(user.id) !== String(currentUserId)) {
       alert(t.userNotFound);
 
       clearLogin();
@@ -348,81 +354,71 @@ function PostJob() {
       return;
     }
 
-    /* =========================
-       NEW JOB
-    ========================= */
+    /* NEW JOB */
 
     const newJob = {
       id: crypto.randomUUID(),
 
-      /*
-        განცხადება ეკუთვნის ზუსტად
-        ამჟამად შესულ account-ს.
-      */
-
       ownerId: user.id,
 
       service,
+
       city,
+
       employmentType,
+
       paymentType,
 
       budget: Number(budget),
 
-      description:
-        description.trim(),
+      description: description.trim(),
 
-      /* EMPLOYER */
-
-      employerName:
-        `${user.firstName || ""} ${
-          user.lastName || ""
-        }`.trim(),
-
-      employerEmail:
-        user.email || "",
-
-      employerPhone:
-        user.phone || "",
+      employerName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
 
       /*
-        ტელეფონის გამოჩენა დამოკიდებულია
-        პროფილში არჩეულ პარამეტრზე.
+        ახალი სისტემა:
 
-        თუ ძველ account-ს ეს პარამეტრი
-        საერთოდ არ აქვს, ნომერი დამალულია.
+        Email/Phone მხოლოდ მაშინ
+        ინახება განცხადებაში, თუ
+        დამსაქმებელმა კონკრეტულად
+        ამ განცხადებისთვის მონიშნა.
       */
 
-      showPhone:
-        user.showPhone ?? false,
+      showEmployerEmail: shareEmail,
+
+      showEmployerPhone: sharePhone,
+
+      employerEmail: shareEmail ? user.email || "" : "",
+
+      employerPhone: sharePhone ? user.phone || "" : "",
+
+      /*
+        ძველ კოდთან დროებითი
+        compatibility.
+
+        Jobs/MyJobs-ის ძველ ნაწილს
+        შეიძლება ჯერ კიდევ showPhone
+        ჰქონდეს გამოყენებული.
+      */
+
+      showPhone: sharePhone,
 
       status: "active",
 
-      createdAt:
-        new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     };
 
-    /* =========================
-       GET EXISTING JOBS
-    ========================= */
+    /* GET EXISTING JOBS */
 
-    const savedJobs =
-      localStorage.getItem(
-        "careGeorgiaJobs"
-      );
+    const savedJobs = localStorage.getItem("careGeorgiaJobs");
 
     let jobs = [];
 
     if (savedJobs) {
       try {
-        const parsedJobs =
-          JSON.parse(savedJobs);
+        const parsedJobs = JSON.parse(savedJobs);
 
-        if (
-          Array.isArray(
-            parsedJobs
-          )
-        ) {
+        if (Array.isArray(parsedJobs)) {
           jobs = parsedJobs;
         }
       } catch {
@@ -430,16 +426,11 @@ function PostJob() {
       }
     }
 
-    /* =========================
-       SAVE JOB
-    ========================= */
+    /* SAVE JOB */
 
     jobs.push(newJob);
 
-    localStorage.setItem(
-      "careGeorgiaJobs",
-      JSON.stringify(jobs)
-    );
+    localStorage.setItem("careGeorgiaJobs", JSON.stringify(jobs));
 
     alert(t.success);
 
@@ -452,7 +443,8 @@ function PostJob() {
     setBudget("");
     setDescription("");
 
-    /* JOBS PAGE */
+    setShareEmail(false);
+    setSharePhone(false);
 
     navigate("/jobs");
   };
@@ -460,232 +452,131 @@ function PostJob() {
   return (
     <div className="auth-page">
       <div className="auth-container">
-
-        <Link
-          to="/"
-          className="auth-logo"
-        >
+        <Link to="/" className="auth-logo">
           {t.back}
         </Link>
 
         <div className="auth-card">
-
           <div className="auth-heading">
-            <h1>
-              {t.title}
-            </h1>
+            <h1>{t.title}</h1>
 
-            <p>
-              {t.description}
-            </p>
+            <p>{t.description}</p>
           </div>
 
-          <form
-            className="auth-form"
-            onSubmit={handleSubmit}
-          >
-
+          <form className="auth-form" onSubmit={handleSubmit}>
             {/* SERVICE */}
 
             <div className="form-group">
-              <label>
-                {t.service}
-              </label>
+              <label>{t.service}</label>
 
               <select
                 style={selectStyle}
                 value={service}
-                onChange={(e) =>
-                  setService(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setService(e.target.value)}
                 required
               >
-                <option value="">
-                  {t.chooseService}
-                </option>
+                <option value="">{t.chooseService}</option>
 
-                <option value="nanny">
-                  👶 {t.nanny}
-                </option>
+                <option value="nanny">👶 {t.nanny}</option>
 
-                <option value="caregiver">
-                  👵 {t.caregiver}
-                </option>
+                <option value="caregiver">👵 {t.caregiver}</option>
 
-                <option value="driver">
-                  🚗 {t.driver}
-                </option>
+                <option value="driver">🚗 {t.driver}</option>
 
-                <option value="tutor">
-                  📚 {t.tutor}
-                </option>
+                <option value="tutor">📚 {t.tutor}</option>
 
-                <option value="housekeeper">
-                  🏠 {t.housekeeper}
-                </option>
+                <option value="housekeeper">🏠 {t.housekeeper}</option>
 
-                <option value="dogwalker">
-                  🐕 {t.dogWalker}
-                </option>
+                <option value="dogwalker">🐕 {t.dogWalker}</option>
               </select>
             </div>
 
             {/* CITY */}
 
             <div className="form-group">
-              <label>
-                {t.city}
-              </label>
+              <label>{t.city}</label>
 
               <select
                 style={selectStyle}
                 value={city}
-                onChange={(e) =>
-                  setCity(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setCity(e.target.value)}
                 required
               >
-                <option value="">
-                  {t.chooseCity}
-                </option>
+                <option value="">{t.chooseCity}</option>
 
-                <option value="tbilisi">
-                  {t.tbilisi}
-                </option>
+                <option value="tbilisi">{t.tbilisi}</option>
 
-                <option value="batumi">
-                  {t.batumi}
-                </option>
+                <option value="batumi">{t.batumi}</option>
 
-                <option value="kutaisi">
-                  {t.kutaisi}
-                </option>
+                <option value="kutaisi">{t.kutaisi}</option>
 
-                <option value="rustavi">
-                  {t.rustavi}
-                </option>
+                <option value="rustavi">{t.rustavi}</option>
 
-                <option value="gori">
-                  {t.gori}
-                </option>
+                <option value="gori">{t.gori}</option>
 
-                <option value="zugdidi">
-                  {t.zugdidi}
-                </option>
+                <option value="zugdidi">{t.zugdidi}</option>
 
-                <option value="poti">
-                  {t.poti}
-                </option>
+                <option value="poti">{t.poti}</option>
 
-                <option value="telavi">
-                  {t.telavi}
-                </option>
+                <option value="telavi">{t.telavi}</option>
 
-                <option value="other">
-                  {t.other}
-                </option>
+                <option value="other">{t.other}</option>
               </select>
             </div>
 
             {/* EMPLOYMENT */}
 
             <div className="form-group">
-              <label>
-                {t.employment}
-              </label>
+              <label>{t.employment}</label>
 
               <select
                 style={selectStyle}
-                value={
-                  employmentType
-                }
-                onChange={(e) =>
-                  setEmploymentType(
-                    e.target.value
-                  )
-                }
+                value={employmentType}
+                onChange={(e) => setEmploymentType(e.target.value)}
                 required
               >
-                <option value="">
-                  {
-                    t.chooseEmployment
-                  }
-                </option>
+                <option value="">{t.chooseEmployment}</option>
 
-                <option value="full-time">
-                  {t.fullTime}
-                </option>
+                <option value="full-time">{t.fullTime}</option>
 
-                <option value="part-time">
-                  {t.partTime}
-                </option>
+                <option value="part-time">{t.partTime}</option>
               </select>
             </div>
 
             {/* PAYMENT TYPE */}
 
             <div className="form-group">
-              <label>
-                {t.paymentType}
-              </label>
+              <label>{t.paymentType}</label>
 
               <select
                 style={selectStyle}
                 value={paymentType}
-                onChange={(e) =>
-                  setPaymentType(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setPaymentType(e.target.value)}
                 required
               >
-                <option value="">
-                  {
-                    t.choosePaymentType
-                  }
-                </option>
+                <option value="">{t.choosePaymentType}</option>
 
-                <option value="monthly">
-                  {t.monthly}
-                </option>
+                <option value="monthly">{t.monthly}</option>
 
-                <option value="biweekly">
-                  {t.biweekly}
-                </option>
+                <option value="biweekly">{t.biweekly}</option>
 
-                <option value="daily">
-                  {t.daily}
-                </option>
+                <option value="daily">{t.daily}</option>
 
-                <option value="hourly">
-                  {t.hourly}
-                </option>
+                <option value="hourly">{t.hourly}</option>
               </select>
             </div>
 
             {/* BUDGET */}
 
             <div className="form-group">
-              <label>
-                {t.budget}
-              </label>
+              <label>{t.budget}</label>
 
               <input
                 type="number"
                 min="1"
                 value={budget}
-                onChange={(e) =>
-                  setBudget(
-                    e.target.value
-                  )
-                }
-                placeholder={
-                  t.budgetPlaceholder
-                }
+                onChange={(e) => setBudget(e.target.value)}
+                placeholder={t.budgetPlaceholder}
                 required
               />
             </div>
@@ -693,56 +584,132 @@ function PostJob() {
             {/* DESCRIPTION */}
 
             <div className="form-group">
-              <label>
-                {
-                  t.descriptionLabel
-                }
-              </label>
+              <label>{t.descriptionLabel}</label>
 
               <textarea
                 value={description}
-                onChange={(e) =>
-                  setDescription(
-                    e.target.value
-                  )
-                }
-                placeholder={
-                  t.descriptionPlaceholder
-                }
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={t.descriptionPlaceholder}
                 required
                 rows="6"
                 style={{
                   width: "100%",
-                  padding:
-                    "14px 16px",
-                  border:
-                    "1px solid #dbe2ea",
-                  borderRadius:
-                    "10px",
-                  backgroundColor:
-                    "#ffffff",
-                  fontFamily:
-                    "inherit",
-                  fontSize:
-                    "15px",
-                  resize:
-                    "vertical",
-                  boxSizing:
-                    "border-box",
+                  padding: "14px 16px",
+                  border: "1px solid #dbe2ea",
+                  borderRadius: "10px",
+                  backgroundColor: "#ffffff",
+                  fontFamily: "inherit",
+                  fontSize: "15px",
+                  resize: "vertical",
+                  boxSizing: "border-box",
                   outline: "none",
                 }}
               />
             </div>
 
+            {/* CONTACT SHARING */}
+
+            <div
+              style={{
+                padding: "18px",
+                backgroundColor: "#f8fafc",
+                border: "1px solid #dbeafe",
+                borderRadius: "12px",
+                marginBottom: "20px",
+              }}
+            >
+              <strong
+                style={{
+                  display: "block",
+                  marginBottom: "7px",
+                  color: "#1e3a8a",
+                }}
+              >
+                📇 {t.contactSharing}
+              </strong>
+
+              <p
+                style={{
+                  margin: "0 0 15px",
+                  color: "#64748b",
+                  fontSize: "14px",
+                  lineHeight: "1.5",
+                }}
+              >
+                {t.contactSharingDescription}
+              </p>
+
+              {/* EMAIL */}
+
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "12px",
+                  cursor: currentUser?.email ? "pointer" : "not-allowed",
+                  opacity: currentUser?.email ? 1 : 0.55,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={shareEmail}
+                  disabled={!currentUser?.email}
+                  onChange={(e) => setShareEmail(e.target.checked)}
+                />
+                ✉️ {t.showEmail}
+              </label>
+
+              {!currentUser?.email && (
+                <p
+                  style={{
+                    margin: "-5px 0 12px 27px",
+                    color: "#64748b",
+                    fontSize: "13px",
+                  }}
+                >
+                  {t.noEmail}
+                </p>
+              )}
+
+              {/* PHONE */}
+
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  cursor: currentUser?.phone ? "pointer" : "not-allowed",
+                  opacity: currentUser?.phone ? 1 : 0.55,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={sharePhone}
+                  disabled={!currentUser?.phone}
+                  onChange={(e) => setSharePhone(e.target.checked)}
+                />
+                📞 {t.showPhone}
+              </label>
+
+              {!currentUser?.phone && (
+                <p
+                  style={{
+                    margin: "8px 0 0 27px",
+                    color: "#64748b",
+                    fontSize: "13px",
+                  }}
+                >
+                  {t.noPhone}
+                </p>
+              )}
+            </div>
+
             {/* PUBLISH */}
 
-            <button
-              type="submit"
-              className="auth-submit"
-            >
+            <button type="submit" className="auth-submit">
               {t.publish}
             </button>
-
           </form>
         </div>
       </div>

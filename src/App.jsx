@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+} from "react-router-dom";
+
+import Header from "./components/Header";
 
 import Drivers from "./pages/Drivers";
 import DriverProfile from "./pages/DriverProfile";
@@ -25,6 +32,7 @@ import Login from "./pages/Login";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Support from "./pages/Support";
+import About from "./pages/About";
 
 import PostJob from "./pages/CreateJob";
 import Jobs from "./pages/Jobs";
@@ -32,63 +40,83 @@ import MyJobs from "./pages/MyJobs";
 import EditJob from "./pages/EditJob";
 
 import MyProfile from "./pages/MyProfile";
+import CreateSpecialistProfile from "./pages/CreateSpecialistProfile";
+import EditSpecialistProfile from "./pages/EditSpecialistProfile";
 
 import { useLanguage } from "./Context/LanguageContext";
 
 import "./App.css";
 
-/* =========================
-   LANGUAGES
-========================= */
-
 const translations = {
   ka: {
-    home: "მთავარი",
-    findSpecialist: "იპოვე სპეციალისტი",
-    findJob: "იპოვე სამსახური",
-    myJobs: "ჩემი განცხადებები",
-    myProfile: "ჩემი პროფილი",
-    postJob: "განცხადების დამატება",
-    about: "ჩვენ შესახებ",
-    support: "Support",
+    heroSmall:
+      "ზრუნვა იწყება სწორი ადამიანის პოვნით",
 
-    login: "შესვლა",
-    register: "რეგისტრაცია",
-    logout: "გამოსვლა",
-    user: "მომხმარებელი",
+    heroTitle:
+      "იპოვე სანდო ადამიანი",
 
-    heroSmall: "ზრუნვა იწყება სწორი ადამიანის პოვნით",
-
-    heroTitle: "იპოვე სანდო ადამიანი",
-
-    heroTitleBlue: " შენს ოჯახზე ზრუნვისთვის",
+    heroTitleBlue:
+      " შენს ოჯახზე ზრუნვისთვის",
 
     heroDescription:
       "მოძებნე გამოცდილი სპეციალისტები შენს ქალაქში — მარტივად, სწრაფად და უსაფრთხოდ.",
 
-    chooseService: "რას ეძებ?",
-    chooseCity: "აირჩიე ქალაქი",
-    search: "ძიება",
+    chooseService:
+      "რას ეძებ?",
 
-    nanny: "ძიძა",
-    elderly: "ხანდაზმულის მომვლელი",
-    caregiver: "მომვლელი",
-    driver: "მძღოლი",
-    tutor: "ტუტორი / რეპეტიტორი",
-    tutorShort: "ტუტორი",
-    housekeeper: "სახლის დამხმარე",
-    dogWalker: "ძაღლის გამსეირნებელი",
+    chooseCity:
+      "აირჩიე ქალაქი",
 
-    tbilisi: "თბილისი",
-    batumi: "ბათუმი",
-    kutaisi: "ქუთაისი",
-    rustavi: "რუსთავი",
-    gori: "გორი",
-    zugdidi: "ზუგდიდი",
+    search:
+      "ძიება",
 
-    services: "ჩვენი სერვისები",
+    nanny:
+      "ძიძა",
 
-    servicesTitle: "როგორი დახმარება გჭირდება?",
+    elderly:
+      "ხანდაზმულის მომვლელი",
+
+    caregiver:
+      "მომვლელი",
+
+    driver:
+      "მძღოლი",
+
+    tutor:
+      "ტუტორი / რეპეტიტორი",
+
+    tutorShort:
+      "ტუტორი",
+
+    housekeeper:
+      "სახლის დამხმარე",
+
+    dogWalker:
+      "ძაღლის გამსეირნებელი",
+
+    tbilisi:
+      "თბილისი",
+
+    batumi:
+      "ბათუმი",
+
+    kutaisi:
+      "ქუთაისი",
+
+    rustavi:
+      "რუსთავი",
+
+    gori:
+      "გორი",
+
+    zugdidi:
+      "ზუგდიდი",
+
+    services:
+      "ჩვენი სერვისები",
+
+    servicesTitle:
+      "როგორი დახმარება გჭირდება?",
 
     servicesDescription:
       "აირჩიე სასურველი კატეგორია და იპოვე შესაბამისი სპეციალისტი.",
@@ -111,27 +139,14 @@ const translations = {
     dogWalkerDescription:
       "ძაღლის გასეირნება და მოვლა.",
 
-    view: "ნახვა →",
+    view:
+      "ნახვა →",
 
     searchAlert:
       "გთხოვ, აირჩიე მომსახურება და ქალაქი.",
   },
 
   en: {
-    home: "Home",
-    findSpecialist: "Find a Specialist",
-    findJob: "Find a Job",
-    myJobs: "My Jobs",
-    myProfile: "My Profile",
-    postJob: "Post a Job",
-    about: "About Us",
-    support: "Support",
-
-    login: "Login",
-    register: "Register",
-    logout: "Logout",
-    user: "User",
-
     heroSmall:
       "Care starts with finding the right person",
 
@@ -150,25 +165,53 @@ const translations = {
     chooseCity:
       "Choose a city",
 
-    search: "Search",
+    search:
+      "Search",
 
-    nanny: "Nanny",
-    elderly: "Elderly Caregiver",
-    caregiver: "Caregiver",
-    driver: "Driver",
-    tutor: "Tutor / Teacher",
-    tutorShort: "Tutor",
-    housekeeper: "Housekeeper",
-    dogWalker: "Dog Walker",
+    nanny:
+      "Nanny",
 
-    tbilisi: "Tbilisi",
-    batumi: "Batumi",
-    kutaisi: "Kutaisi",
-    rustavi: "Rustavi",
-    gori: "Gori",
-    zugdidi: "Zugdidi",
+    elderly:
+      "Elderly Caregiver",
 
-    services: "Our Services",
+    caregiver:
+      "Caregiver",
+
+    driver:
+      "Driver",
+
+    tutor:
+      "Tutor / Teacher",
+
+    tutorShort:
+      "Tutor",
+
+    housekeeper:
+      "Housekeeper",
+
+    dogWalker:
+      "Dog Walker",
+
+    tbilisi:
+      "Tbilisi",
+
+    batumi:
+      "Batumi",
+
+    kutaisi:
+      "Kutaisi",
+
+    rustavi:
+      "Rustavi",
+
+    gori:
+      "Gori",
+
+    zugdidi:
+      "Zugdidi",
+
+    services:
+      "Our Services",
 
     servicesTitle:
       "What kind of help do you need?",
@@ -194,27 +237,14 @@ const translations = {
     dogWalkerDescription:
       "Dog walking and pet care.",
 
-    view: "View →",
+    view:
+      "View →",
 
     searchAlert:
       "Please choose a service and a city.",
   },
 
   ru: {
-    home: "Главная",
-    findSpecialist: "Найти специалиста",
-    findJob: "Найти работу",
-    myJobs: "Мои объявления",
-    myProfile: "Мой профиль",
-    postJob: "Добавить объявление",
-    about: "О нас",
-    support: "Support",
-
-    login: "Войти",
-    register: "Регистрация",
-    logout: "Выйти",
-    user: "Пользователь",
-
     heroSmall:
       "Забота начинается с поиска подходящего человека",
 
@@ -233,25 +263,53 @@ const translations = {
     chooseCity:
       "Выберите город",
 
-    search: "Поиск",
+    search:
+      "Поиск",
 
-    nanny: "Няня",
-    elderly: "Сиделка для пожилых",
-    caregiver: "Сиделка",
-    driver: "Водитель",
-    tutor: "Репетитор",
-    tutorShort: "Репетитор",
-    housekeeper: "Помощник по дому",
-    dogWalker: "Выгульщик собак",
+    nanny:
+      "Няня",
 
-    tbilisi: "Тбилиси",
-    batumi: "Батуми",
-    kutaisi: "Кутаиси",
-    rustavi: "Рустави",
-    gori: "Гори",
-    zugdidi: "Зугдиди",
+    elderly:
+      "Сиделка для пожилых",
 
-    services: "Наши услуги",
+    caregiver:
+      "Сиделка",
+
+    driver:
+      "Водитель",
+
+    tutor:
+      "Репетитор",
+
+    tutorShort:
+      "Репетитор",
+
+    housekeeper:
+      "Помощник по дому",
+
+    dogWalker:
+      "Выгульщик собак",
+
+    tbilisi:
+      "Тбилиси",
+
+    batumi:
+      "Батуми",
+
+    kutaisi:
+      "Кутаиси",
+
+    rustavi:
+      "Рустави",
+
+    gori:
+      "Гори",
+
+    zugdidi:
+      "Зугдиди",
+
+    services:
+      "Наши услуги",
 
     servicesTitle:
       "Какая помощь вам нужна?",
@@ -277,83 +335,35 @@ const translations = {
     dogWalkerDescription:
       "Выгул собак и уход за питомцами.",
 
-    view: "Посмотреть →",
+    view:
+      "Посмотреть →",
 
     searchAlert:
       "Пожалуйста, выберите услугу и город.",
   },
 };
 
-/* =========================
-   HOME
-========================= */
-
 function Home() {
-  const navigate = useNavigate();
-
-  const [selectedService, setSelectedService] =
-    useState("");
-
-  const [selectedCity, setSelectedCity] =
-    useState("");
-
-  const [isUserMenuOpen, setIsUserMenuOpen] =
-    useState(false);
+  const navigate =
+    useNavigate();
 
   const {
     language,
-    setLanguage,
   } = useLanguage();
 
   const t =
     translations[language] ||
     translations.ka;
 
-  /* =========================
-     LOGIN STATE
-  ========================= */
+  const [
+    selectedService,
+    setSelectedService,
+  ] = useState("");
 
   const [
-    isLoggedIn,
-    setIsLoggedIn,
-  ] = useState(
-    localStorage.getItem(
-      "careGeorgiaLoggedIn"
-    ) === "true"
-  );
-
-  /* =========================
-     USER
-  ========================= */
-
-  const savedUser =
-    localStorage.getItem(
-      "careGeorgiaUser"
-    );
-
-  let user = null;
-
-  if (savedUser) {
-    try {
-      user =
-        JSON.parse(savedUser);
-    } catch {
-      user = null;
-    }
-  }
-
-  /* =========================
-     LANGUAGE
-  ========================= */
-
-  const handleLanguageChange = (e) => {
-    setLanguage(e.target.value);
-    setIsUserMenuOpen(false);
-  };
-
-  /* =========================
-     SEARCH
-  ========================= */
+    selectedCity,
+    setSelectedCity,
+  ] = useState("");
 
   const handleSearch = () => {
     if (
@@ -374,7 +384,9 @@ function Home() {
     };
 
     const route =
-      serviceRoutes[selectedService];
+      serviceRoutes[
+        selectedService
+      ];
 
     if (route) {
       navigate(
@@ -383,303 +395,12 @@ function Home() {
     }
   };
 
-  /* =========================
-     LOGOUT
-  ========================= */
-
-  const handleLogout = () => {
-    localStorage.removeItem(
-      "careGeorgiaLoggedIn"
-    );
-
-    localStorage.removeItem(
-      "careGeorgiaCurrentUserId"
-    );
-
-    /*
-      მხოლოდ აქტიური მომხმარებელი იშლება.
-      careGeorgiaUsers არ იშლება.
-    */
-    localStorage.removeItem(
-      "careGeorgiaUser"
-    );
-
-    setIsUserMenuOpen(false);
-    setIsLoggedIn(false);
-
-    navigate("/");
-  };
-
   return (
     <div className="app">
-
-      {/* =========================
-          HEADER
-      ========================= */}
-
-      <header className="header">
-
-        <div className="logo">
-          🇬🇪 Care Georgia
-        </div>
-
-        <nav className="nav">
-
-          <Link to="/">
-            {t.home}
-          </Link>
-
-          <a href="#services">
-            {t.findSpecialist}
-          </a>
-
-          <Link to="/jobs">
-            {t.findJob}
-          </Link>
-
-          {isLoggedIn && (
-            <Link to="/my-jobs">
-              {t.myJobs}
-            </Link>
-          )}
-
-          <a href="#about">
-            {t.about}
-          </a>
-
-          {/* SUPPORT */}
-
-          <Link to="/support">
-            🛠️ {t.support}
-          </Link>
-
-        </nav>
-
-        <div className="header-buttons">
-
-          {/* LANGUAGE */}
-
-          <select
-            className="language-select"
-            value={language}
-            onChange={
-              handleLanguageChange
-            }
-            aria-label="Language"
-          >
-            <option value="ka">
-              🇬🇪 ქართული
-            </option>
-
-            <option value="en">
-              🇬🇧 English
-            </option>
-
-            <option value="ru">
-              🇷🇺 Русский
-            </option>
-          </select>
-
-          {/* LOGIN / USER */}
-
-          {isLoggedIn ? (
-            <>
-
-              {/* USER DROPDOWN */}
-
-              <div
-                style={{
-                  position: "relative",
-                }}
-              >
-                <button
-                  type="button"
-                  className="user-name"
-                  onClick={() =>
-                    setIsUserMenuOpen(
-                      (previousValue) =>
-                        !previousValue
-                    )
-                  }
-                  style={{
-                    border: "none",
-                    background:
-                      "transparent",
-                    cursor: "pointer",
-                    fontFamily:
-                      "inherit",
-                    fontSize:
-                      "inherit",
-                    color: "inherit",
-                    padding:
-                      "8px 10px",
-                    display: "flex",
-                    alignItems:
-                      "center",
-                    gap: "5px",
-                  }}
-                >
-                  <span>
-                    👤{" "}
-                    {user?.firstName ||
-                      t.user}
-                  </span>
-
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      transform:
-                        isUserMenuOpen
-                          ? "rotate(180deg)"
-                          : "rotate(0deg)",
-                      transition:
-                        "transform 0.2s ease",
-                    }}
-                  >
-                    ▼
-                  </span>
-                </button>
-
-                {/* DROPDOWN */}
-
-                {isUserMenuOpen && (
-                  <div
-                    style={{
-                      position:
-                        "absolute",
-                      top:
-                        "calc(100% + 8px)",
-                      right: "0",
-                      width: "230px",
-                      backgroundColor:
-                        "#ffffff",
-                      border:
-                        "1px solid #e2e8f0",
-                      borderRadius:
-                        "12px",
-                      boxShadow:
-                        "0 12px 35px rgba(0, 0, 0, 0.14)",
-                      padding: "8px",
-                      zIndex: "1000",
-                    }}
-                  >
-
-                    {/* PROFILE */}
-
-                    <Link
-                      to="/my-profile"
-                      onClick={() =>
-                        setIsUserMenuOpen(
-                          false
-                        )
-                      }
-                      style={{
-                        display:
-                          "flex",
-                        alignItems:
-                          "center",
-                        gap: "10px",
-                        padding:
-                          "12px 14px",
-                        borderRadius:
-                          "8px",
-                        textDecoration:
-                          "none",
-                        color:
-                          "#1e293b",
-                        fontWeight:
-                          "600",
-                      }}
-                    >
-                      <span>👤</span>
-
-                      <span>
-                        {t.myProfile}
-                      </span>
-                    </Link>
-
-                    {/* MY JOBS */}
-
-                    <Link
-                      to="/my-jobs"
-                      onClick={() =>
-                        setIsUserMenuOpen(
-                          false
-                        )
-                      }
-                      style={{
-                        display:
-                          "flex",
-                        alignItems:
-                          "center",
-                        gap: "10px",
-                        padding:
-                          "12px 14px",
-                        borderRadius:
-                          "8px",
-                        textDecoration:
-                          "none",
-                        color:
-                          "#1e293b",
-                        fontWeight:
-                          "600",
-                      }}
-                    >
-                      <span>📋</span>
-
-                      <span>
-                        {t.myJobs}
-                      </span>
-                    </Link>
-
-                  </div>
-                )}
-              </div>
-
-              {/* LOGOUT */}
-
-              <button
-                type="button"
-                className="login-btn"
-                onClick={
-                  handleLogout
-                }
-              >
-                {t.logout}
-              </button>
-
-            </>
-          ) : (
-            <>
-
-              <Link
-                to="/login"
-                className="login-btn"
-              >
-                {t.login}
-              </Link>
-
-              <Link
-                to="/register"
-                className="register-btn"
-              >
-                {t.register}
-              </Link>
-
-            </>
-          )}
-
-        </div>
-      </header>
-
-      {/* =========================
-          HERO
-      ========================= */}
+      {/* HERO */}
 
       <main className="hero">
-
         <div className="hero-content">
-
           <p className="hero-small">
             {t.heroSmall}
           </p>
@@ -699,7 +420,6 @@ function Home() {
           {/* SEARCH */}
 
           <div className="search-box">
-
             <select
               value={
                 selectedService
@@ -741,8 +461,6 @@ function Home() {
                 🐕 {t.dogWalker}
               </option>
             </select>
-
-            {/* CITY */}
 
             <select
               value={
@@ -794,22 +512,17 @@ function Home() {
             >
               {t.search}
             </button>
-
           </div>
         </div>
       </main>
 
-      {/* =========================
-          SERVICES
-      ========================= */}
+      {/* SERVICES */}
 
       <section
         className="services"
         id="services"
       >
-
         <div className="services-title">
-
           <p>
             {t.services}
           </p>
@@ -821,15 +534,12 @@ function Home() {
           <span>
             {t.servicesDescription}
           </span>
-
         </div>
 
         <div className="service-cards">
-
           {/* NANNY */}
 
           <div className="service-card">
-
             <div className="service-icon">
               👶
             </div>
@@ -848,13 +558,11 @@ function Home() {
             >
               {t.view}
             </Link>
-
           </div>
 
           {/* CAREGIVER */}
 
           <div className="service-card">
-
             <div className="service-icon">
               👵
             </div>
@@ -873,13 +581,11 @@ function Home() {
             >
               {t.view}
             </Link>
-
           </div>
 
           {/* DRIVER */}
 
           <div className="service-card">
-
             <div className="service-icon">
               🚗
             </div>
@@ -898,13 +604,11 @@ function Home() {
             >
               {t.view}
             </Link>
-
           </div>
 
           {/* TUTOR */}
 
           <div className="service-card">
-
             <div className="service-icon">
               📚
             </div>
@@ -923,13 +627,11 @@ function Home() {
             >
               {t.view}
             </Link>
-
           </div>
 
           {/* HOUSEKEEPER */}
 
           <div className="service-card">
-
             <div className="service-icon">
               🏠
             </div>
@@ -948,13 +650,11 @@ function Home() {
             >
               {t.view}
             </Link>
-
           </div>
 
           {/* DOG WALKER */}
 
           <div className="service-card">
-
             <div className="service-icon">
               🐕
             </div>
@@ -973,180 +673,182 @@ function Home() {
             >
               {t.view}
             </Link>
-
           </div>
-
         </div>
       </section>
-
     </div>
   );
 }
 
-/* =========================
-   APP ROUTES
-========================= */
-
 function App() {
   return (
-    <Routes>
+    <>
+      {/* COMMON HEADER */}
 
-      {/* HOME */}
+      <Header />
 
-      <Route
-        path="/"
-        element={<Home />}
-      />
+      {/* ALL ROUTES */}
 
-      {/* DRIVERS */}
+      <Routes>
+        <Route
+          path="/"
+          element={<Home />}
+        />
 
-      <Route
-        path="/drivers"
-        element={<Drivers />}
-      />
+        {/* DRIVERS */}
 
-      <Route
-        path="/drivers/:id"
-        element={
-          <DriverProfile />
-        }
-      />
+        <Route
+          path="/drivers"
+          element={<Drivers />}
+        />
 
-      {/* TUTORS */}
+        <Route
+          path="/drivers/:id"
+          element={<DriverProfile />}
+        />
 
-      <Route
-        path="/tutors"
-        element={<Tutors />}
-      />
+        {/* TUTORS */}
 
-      <Route
-        path="/tutors/:id"
-        element={
-          <TutorProfile />
-        }
-      />
+        <Route
+          path="/tutors"
+          element={<Tutors />}
+        />
 
-      {/* NANNIES */}
+        <Route
+          path="/tutors/:id"
+          element={<TutorProfile />}
+        />
 
-      <Route
-        path="/nannies"
-        element={<Nannies />}
-      />
+        {/* NANNIES */}
 
-      <Route
-        path="/nannies/:id"
-        element={
-          <NannyProfile />
-        }
-      />
+        <Route
+          path="/nannies"
+          element={<Nannies />}
+        />
 
-      {/* CAREGIVERS */}
+        <Route
+          path="/nannies/:id"
+          element={<NannyProfile />}
+        />
 
-      <Route
-        path="/caregivers"
-        element={<Caregivers />}
-      />
+        {/* CAREGIVERS */}
 
-      <Route
-        path="/caregivers/:id"
-        element={
-          <CaregiverProfile />
-        }
-      />
+        <Route
+          path="/caregivers"
+          element={<Caregivers />}
+        />
 
-      {/* HOUSEKEEPERS */}
+        <Route
+          path="/caregivers/:id"
+          element={<CaregiverProfile />}
+        />
 
-      <Route
-        path="/housekeepers"
-        element={
-          <Housekeepers />
-        }
-      />
+        {/* HOUSEKEEPERS */}
 
-      <Route
-        path="/housekeepers/:id"
-        element={
-          <HousekeeperProfile />
-        }
-      />
+        <Route
+          path="/housekeepers"
+          element={<Housekeepers />}
+        />
 
-      {/* DOG WALKERS */}
+        <Route
+          path="/housekeepers/:id"
+          element={<HousekeeperProfile />}
+        />
 
-      <Route
-        path="/dogwalker"
-        element={
-          <DogWalkers />
-        }
-      />
+        {/* DOG WALKERS */}
 
-      <Route
-        path="/dogwalker/:id"
-        element={
-          <DogWalkerProfile />
-        }
-      />
+        <Route
+          path="/dogwalker"
+          element={<DogWalkers />}
+        />
 
-      {/* JOBS */}
+        <Route
+          path="/dogwalker/:id"
+          element={<DogWalkerProfile />}
+        />
 
-      <Route
-        path="/post-job"
-        element={<PostJob />}
-      />
+        {/* JOBS */}
 
-      <Route
-        path="/jobs"
-        element={<Jobs />}
-      />
+        <Route
+          path="/post-job"
+          element={<PostJob />}
+        />
 
-      <Route
-        path="/my-jobs"
-        element={<MyJobs />}
-      />
+        <Route
+          path="/jobs"
+          element={<Jobs />}
+        />
 
-      <Route
-        path="/edit-job/:id"
-        element={<EditJob />}
-      />
+        <Route
+          path="/my-jobs"
+          element={<MyJobs />}
+        />
 
-      {/* USER PROFILE */}
+        <Route
+          path="/edit-job/:id"
+          element={<EditJob />}
+        />
 
-      <Route
-        path="/my-profile"
-        element={<MyProfile />}
-      />
+        {/* USER */}
 
-      {/* AUTHENTICATION */}
+        <Route
+          path="/my-profile"
+          element={<MyProfile />}
+        />
 
-      <Route
-        path="/register"
-        element={<Register />}
-      />
+        <Route
+          path="/create-specialist-profile"
+          element={
+            <CreateSpecialistProfile />
+          }
+        />
 
-      <Route
-        path="/login"
-        element={<Login />}
-      />
+        <Route
+          path="/edit-specialist/:id"
+          element={
+            <EditSpecialistProfile />
+          }
+        />
 
-      {/* LEGAL */}
+        {/* AUTH */}
 
-      <Route
-        path="/terms"
-        element={<Terms />}
-      />
+        <Route
+          path="/register"
+          element={<Register />}
+        />
 
-      <Route
-        path="/privacy"
-        element={<Privacy />}
-      />
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
-      {/* SUPPORT */}
+        {/* ABOUT */}
 
-      <Route
-        path="/support"
-        element={<Support />}
-      />
+        <Route
+          path="/about"
+          element={<About />}
+        />
 
-    </Routes>
+        {/* LEGAL */}
+
+        <Route
+          path="/terms"
+          element={<Terms />}
+        />
+
+        <Route
+          path="/privacy"
+          element={<Privacy />}
+        />
+
+        {/* SUPPORT */}
+
+        <Route
+          path="/support"
+          element={<Support />}
+        />
+      </Routes>
+    </>
   );
 }
 

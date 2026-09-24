@@ -14,6 +14,7 @@ const translations = {
     math: "მათემატიკა",
     georgian: "ქართული",
     history: "ისტორია",
+    subjectNotSpecified: "საგანი არ არის მითითებული",
 
     allCities: "ყველა ქალაქი",
     tbilisi: "თბილისი",
@@ -22,6 +23,7 @@ const translations = {
     rustavi: "რუსთავი",
     gori: "გორი",
     zugdidi: "ზუგდიდი",
+    other: "სხვა",
 
     allPrices: "ყველა ფასი",
     under20: "20 ₾-მდე",
@@ -43,9 +45,16 @@ const translations = {
     englishLanguage: "ინგლისური ენა",
     mathSubject: "მათემატიკა",
     georgianLanguage: "ქართული ენა",
+    historySubject: "ისტორია",
 
     currency: "₾",
-    perHour: "საათი",
+
+    hourly: "საათი",
+    daily: "დღე",
+    biweekly: "2 კვირა",
+    monthly: "თვე",
+
+    noResults: "ამ ფილტრებით ტუტორი ვერ მოიძებნა.",
   },
 
   en: {
@@ -58,6 +67,7 @@ const translations = {
     math: "Mathematics",
     georgian: "Georgian",
     history: "History",
+    subjectNotSpecified: "Subject not specified",
 
     allCities: "All cities",
     tbilisi: "Tbilisi",
@@ -66,6 +76,7 @@ const translations = {
     rustavi: "Rustavi",
     gori: "Gori",
     zugdidi: "Zugdidi",
+    other: "Other",
 
     allPrices: "All prices",
     under20: "Up to 20 GEL",
@@ -87,9 +98,16 @@ const translations = {
     englishLanguage: "English",
     mathSubject: "Mathematics",
     georgianLanguage: "Georgian",
+    historySubject: "History",
 
     currency: "GEL",
-    perHour: "hour",
+
+    hourly: "hour",
+    daily: "day",
+    biweekly: "2 weeks",
+    monthly: "month",
+
+    noResults: "No tutors were found with these filters.",
   },
 
   ru: {
@@ -102,6 +120,7 @@ const translations = {
     math: "Математика",
     georgian: "Грузинский",
     history: "История",
+    subjectNotSpecified: "Предмет не указан",
 
     allCities: "Все города",
     tbilisi: "Тбилиси",
@@ -110,6 +129,7 @@ const translations = {
     rustavi: "Рустави",
     gori: "Гори",
     zugdidi: "Зугдиди",
+    other: "Другой",
 
     allPrices: "Все цены",
     under20: "До 20 GEL",
@@ -131,9 +151,16 @@ const translations = {
     englishLanguage: "Английский язык",
     mathSubject: "Математика",
     georgianLanguage: "Грузинский язык",
+    historySubject: "История",
 
     currency: "GEL",
-    perHour: "час",
+
+    hourly: "час",
+    daily: "день",
+    biweekly: "2 недели",
+    monthly: "месяц",
+
+    noResults: "По этим фильтрам репетиторы не найдены.",
   },
 };
 
@@ -152,40 +179,125 @@ function Tutors() {
   const [appliedSubject, setAppliedSubject] = useState("");
   const [appliedPrice, setAppliedPrice] = useState("");
 
-  const tutors = [
+  // ძველი სატესტო ტუტორები
+  const defaultTutors = [
     {
-      id: 1,
+      id: "1",
       name: t.name1,
       subjectValue: "english",
       cityValue: "tbilisi",
       experience: t.years6,
+      paymentType: "hourly",
       priceValue: 30,
       rating: "⭐ 4.9",
+      verified: true,
     },
+
     {
-      id: 2,
+      id: "2",
       name: t.name2,
       subjectValue: "math",
       cityValue: "tbilisi",
       experience: t.years4,
+      paymentType: "hourly",
       priceValue: 25,
       rating: "⭐ 4.8",
+      verified: true,
     },
+
     {
-      id: 3,
+      id: "3",
       name: t.name3,
       subjectValue: "georgian",
       cityValue: "batumi",
       experience: t.years5,
+      paymentType: "hourly",
       priceValue: 25,
       rating: "⭐ 4.7",
+      verified: false,
     },
+  ];
+
+  // localStorage-დან სპეციალისტების წამოღება
+  const getSavedSpecialists = () => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("careGeorgiaSpecialists")
+      );
+
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const savedSpecialists = getSavedSpecialists();
+
+  // მომხმარებლების მიერ შექმნილი აქტიური ტუტორები
+  const customTutors = savedSpecialists
+    .filter(
+      (profile) =>
+        profile.profession === "tutor" &&
+        profile.status !== "inactive"
+    )
+    .map((profile) => {
+      const firstName = profile.firstName || "";
+      const lastName = profile.lastName || "";
+
+      const lastInitial = lastName
+        ? `${lastName.charAt(0)}.`
+        : "";
+
+      const safeName =
+        `${firstName} ${lastInitial}`.trim() ||
+        (language === "ka"
+          ? "ტუტორი"
+          : language === "ru"
+          ? "Репетитор"
+          : "Tutor");
+
+      return {
+        id: String(profile.id),
+
+        name: safeName,
+
+        subjectValue:
+          profile.subject || "",
+
+        cityValue:
+          profile.city || "other",
+
+        experience:
+          profile.experience || "",
+
+        paymentType:
+          profile.paymentType || "hourly",
+
+        priceValue:
+          Number(profile.priceValue) || 0,
+
+        rating:
+          profile.rating !== null &&
+          profile.rating !== undefined
+            ? `⭐ ${profile.rating}`
+            : "",
+
+        verified:
+          profile.verified === true,
+      };
+    });
+
+  // ძველი + მომხმარებლების ტუტორები
+  const tutors = [
+    ...defaultTutors,
+    ...customTutors,
   ];
 
   const subjectNames = {
     english: t.englishLanguage,
     math: t.mathSubject,
     georgian: t.georgianLanguage,
+    history: t.historySubject,
   };
 
   const cityNames = {
@@ -195,6 +307,23 @@ function Tutors() {
     rustavi: t.rustavi,
     gori: t.gori,
     zugdidi: t.zugdidi,
+    other: t.other,
+  };
+
+  const getPaymentTypeName = (paymentType) => {
+    if (paymentType === "monthly") {
+      return t.monthly;
+    }
+
+    if (paymentType === "biweekly") {
+      return t.biweekly;
+    }
+
+    if (paymentType === "daily") {
+      return t.daily;
+    }
+
+    return t.hourly;
   };
 
   const filteredTutors = tutors.filter((tutor) => {
@@ -230,26 +359,38 @@ function Tutors() {
   });
 
   const getPrice = (tutor) => {
-    return `${tutor.priceValue} ${t.currency} / ${t.perHour}`;
+    return `${tutor.priceValue} ${
+      t.currency
+    } / ${getPaymentTypeName(tutor.paymentType)}`;
+  };
+
+  const getSubjectName = (subjectValue) => {
+    if (!subjectValue) {
+      return t.subjectNotSpecified;
+    }
+
+    return (
+      subjectNames[subjectValue] ||
+      subjectValue
+    );
   };
 
   return (
     <div className="drivers-page">
-
       <header className="drivers-header">
-
-        <Link to="/" className="back-link">
+        <Link
+          to="/"
+          className="back-link"
+        >
           ← Care Georgia
         </Link>
 
         <h1>{t.title}</h1>
 
         <p>{t.description}</p>
-
       </header>
 
       <div className="driver-filters">
-
         {/* SUBJECT */}
 
         <select
@@ -320,6 +461,10 @@ function Tutors() {
           <option value="zugdidi">
             {t.zugdidi}
           </option>
+
+          <option value="other">
+            {t.other}
+          </option>
         </select>
 
         {/* PRICE */}
@@ -357,76 +502,87 @@ function Tutors() {
         >
           {t.search}
         </button>
-
       </div>
 
       {/* TUTORS */}
 
       <section className="drivers-list">
-
-        {filteredTutors.map((tutor) => (
+        {filteredTutors.length === 0 ? (
           <div
             className="driver-card"
-            key={tutor.id}
+            style={{
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "40px",
+            }}
           >
-
-            <div className="driver-avatar">
-              📚
-            </div>
-
-            <div className="driver-info">
-
-              <div className="driver-name">
-                <h2>
-                  {tutor.name}
-                </h2>
+            <p>{t.noResults}</p>
+          </div>
+        ) : (
+          filteredTutors.map((tutor) => (
+            <div
+              className="driver-card"
+              key={tutor.id}
+            >
+              <div className="driver-avatar">
+                📚
               </div>
 
-              <p>
-                📖{" "}
-                {subjectNames[
-                  tutor.subjectValue
-                ]}
-              </p>
+              <div className="driver-info">
+                <div className="driver-name">
+                  <h2>
+                    {tutor.name}
+                  </h2>
 
-              <p>
-                📍{" "}
-                {cityNames[
-                  tutor.cityValue
-                ]}
-              </p>
+                  {tutor.verified && (
+                    <span className="verified">
+                      ✓
+                    </span>
+                  )}
+                </div>
 
-              <p>
-                🎓 {t.experience}:{" "}
-                {tutor.experience}
-              </p>
+                <p>
+                  📖{" "}
+                  {getSubjectName(
+                    tutor.subjectValue
+                  )}
+                </p>
 
-              <p>
-                {tutor.rating}
-              </p>
+                <p>
+                  📍{" "}
+                  {cityNames[
+                    tutor.cityValue
+                  ] || tutor.cityValue}
+                </p>
 
+                <p>
+                  🎓 {t.experience}:{" "}
+                  {tutor.experience}
+                </p>
+
+                {tutor.rating && (
+                  <p>
+                    {tutor.rating}
+                  </p>
+                )}
+              </div>
+
+              <div className="driver-price">
+                <strong>
+                  {getPrice(tutor)}
+                </strong>
+
+                <Link
+                  to={`/tutors/${tutor.id}`}
+                  className="profile-btn"
+                >
+                  {t.viewProfile}
+                </Link>
+              </div>
             </div>
-
-            <div className="driver-price">
-
-              <strong>
-                {getPrice(tutor)}
-              </strong>
-
-              <Link
-                to={`/tutors/${tutor.id}`}
-                className="profile-btn"
-              >
-                {t.viewProfile}
-              </Link>
-
-            </div>
-
-          </div>
-        ))}
-
+          ))
+        )}
       </section>
-
     </div>
   );
 }
