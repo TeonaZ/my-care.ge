@@ -48,12 +48,10 @@ const translations = {
     email: "ელ. ფოსტა",
 
     phone: "ტელეფონის ნომერი (არასავალდებულო)",
-    phoneTitle:
-      "თუ ნომერს უთითებ, ჩაწერე ფორმატით: 555 12 34 56",
+    phoneTitle: "თუ ნომერს უთითებ, ჩაწერე ფორმატით: 555 12 34 56",
 
     password: "პაროლი",
-    passwordPlaceholder:
-      "მინ. 8 სიმბოლო, 1 დიდი ასო და 1 ციფრი",
+    passwordPlaceholder: "მინ. 8 სიმბოლო, 1 დიდი ასო და 1 ციფრი",
 
     passwordError:
       "პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს, 1 დიდ ასოს და 1 ციფრს.",
@@ -61,11 +59,9 @@ const translations = {
     confirmPassword: "გაიმეორე პაროლი",
     confirmPasswordPlaceholder: "გაიმეორე პაროლი",
 
-    passwordsDoNotMatch:
-      "პაროლები ერთმანეთს არ ემთხვევა.",
+    passwordsDoNotMatch: "პაროლები ერთმანეთს არ ემთხვევა.",
 
-    emailExists:
-      "ამ ელ. ფოსტით ანგარიში უკვე არსებობს.",
+    emailExists: "ამ ელ. ფოსტით ანგარიში უკვე არსებობს.",
 
     agree: "ვეთანხმები",
     terms: "წესებს",
@@ -73,25 +69,25 @@ const translations = {
     privacy: "კონფიდენციალურობის პოლიტიკას",
 
     register: "რეგისტრაცია",
+    registering: "რეგისტრაცია...",
+
     alreadyHaveAccount: "უკვე გაქვს ანგარიში?",
     login: "შესვლა",
 
-    registrationSuccess:
-      "რეგისტრაცია წარმატებულია!",
+    registrationSuccess: "რეგისტრაცია წარმატებულია!",
+    serverError: "სერვერთან დაკავშირება ვერ მოხერხდა. სცადე თავიდან.",
   },
 
   en: {
     title: "Create an Account",
-    description:
-      "Join Care Georgia to find help or offer your services.",
+    description: "Join Care Georgia to find help or offer your services.",
 
     clientTitle: "I'm looking for help",
     clientDescription: "I want to find a specialist",
     providerTitle: "I'm looking for work",
     providerDescription: "I want to offer my services",
 
-    lookingFor:
-      "What type of help are you looking for?",
+    lookingFor: "What type of help are you looking for?",
     chooseHelp: "Choose a type of help",
 
     offering: "What service do you offer?",
@@ -125,12 +121,10 @@ const translations = {
     email: "Email",
 
     phone: "Phone number (optional)",
-    phoneTitle:
-      "If you enter a phone number, use this format: 555 12 34 56",
+    phoneTitle: "If you enter a phone number, use this format: 555 12 34 56",
 
     password: "Password",
-    passwordPlaceholder:
-      "Min. 8 characters, 1 uppercase letter and 1 number",
+    passwordPlaceholder: "Min. 8 characters, 1 uppercase letter and 1 number",
 
     passwordError:
       "Password must contain at least 8 characters, 1 uppercase letter and 1 number.",
@@ -138,11 +132,9 @@ const translations = {
     confirmPassword: "Confirm Password",
     confirmPasswordPlaceholder: "Confirm your password",
 
-    passwordsDoNotMatch:
-      "Passwords do not match.",
+    passwordsDoNotMatch: "Passwords do not match.",
 
-    emailExists:
-      "An account with this email already exists.",
+    emailExists: "An account with this email already exists.",
 
     agree: "I agree to the",
     terms: "Terms",
@@ -150,11 +142,13 @@ const translations = {
     privacy: "Privacy Policy",
 
     register: "Register",
+    registering: "Registering...",
+
     alreadyHaveAccount: "Already have an account?",
     login: "Login",
 
-    registrationSuccess:
-      "Registration successful!",
+    registrationSuccess: "Registration successful!",
+    serverError: "Could not connect to the server. Please try again.",
   },
 
   ru: {
@@ -201,12 +195,10 @@ const translations = {
     email: "Эл. почта",
 
     phone: "Номер телефона (необязательно)",
-    phoneTitle:
-      "Если указываете номер, используйте формат: 555 12 34 56",
+    phoneTitle: "Если указываете номер, используйте формат: 555 12 34 56",
 
     password: "Пароль",
-    passwordPlaceholder:
-      "Мин. 8 символов, 1 заглавная буква и 1 цифра",
+    passwordPlaceholder: "Мин. 8 символов, 1 заглавная буква и 1 цифра",
 
     passwordError:
       "Пароль должен содержать минимум 8 символов, 1 заглавную букву и 1 цифру.",
@@ -214,11 +206,9 @@ const translations = {
     confirmPassword: "Повторите пароль",
     confirmPasswordPlaceholder: "Повторите пароль",
 
-    passwordsDoNotMatch:
-      "Пароли не совпадают.",
+    passwordsDoNotMatch: "Пароли не совпадают.",
 
-    emailExists:
-      "Аккаунт с этой электронной почтой уже существует.",
+    emailExists: "Аккаунт с этой электронной почтой уже существует.",
 
     agree: "Я принимаю",
     terms: "Условия",
@@ -226,11 +216,13 @@ const translations = {
     privacy: "Политику конфиденциальности",
 
     register: "Регистрация",
+    registering: "Регистрация...",
+
     alreadyHaveAccount: "Уже есть аккаунт?",
     login: "Войти",
 
-    registrationSuccess:
-      "Регистрация прошла успешно!",
+    registrationSuccess: "Регистрация прошла успешно!",
+    serverError: "Не удалось подключиться к серверу. Попробуйте снова.",
   },
 };
 
@@ -238,29 +230,16 @@ function Register() {
   const navigate = useNavigate();
 
   const { language } = useLanguage();
-  const t =
-    translations[language] ||
-    translations.ka;
+  const t = translations[language] || translations.ka;
 
-  const [
-    accountType,
-    setAccountType,
-  ] = useState("client");
+  const [accountType, setAccountType] = useState("client");
 
-  const [
-    password,
-    setPassword,
-  ] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
-  const [
-    passwordError,
-    setPasswordError,
-  ] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [
-    confirmPassword,
-    setConfirmPassword,
-  ] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectStyle = {
     width: "100%",
@@ -277,280 +256,102 @@ function Register() {
     outline: "none",
   };
 
-  /* =========================
-     GET ALL USERS
-  ========================= */
+  // =========================
+  // REGISTER THROUGH BACKEND
+  // =========================
 
-  const getUsers = () => {
-    const savedUsers =
-      localStorage.getItem(
-        "careGeorgiaUsers"
-      );
-
-    if (!savedUsers) {
-      return [];
-    }
-
-    try {
-      const parsedUsers =
-        JSON.parse(savedUsers);
-
-      return Array.isArray(
-        parsedUsers
-      )
-        ? parsedUsers
-        : [];
-    } catch {
-      return [];
-    }
-  };
-
-  /* =========================
-     REGISTER
-  ========================= */
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const hasEightCharacters =
-      password.length >= 8;
+    const hasEightCharacters = password.length >= 8;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
 
-    const hasUppercase =
-      /[A-Z]/.test(password);
-
-    const hasNumber =
-      /[0-9]/.test(password);
-
-    if (
-      !hasEightCharacters ||
-      !hasUppercase ||
-      !hasNumber
-    ) {
-      setPasswordError(
-        t.passwordError
-      );
-
+    if (!hasEightCharacters || !hasUppercase || !hasNumber) {
+      setPasswordError(t.passwordError);
       return;
     }
 
-    if (
-      password !==
-      confirmPassword
-    ) {
-      alert(
-        t.passwordsDoNotMatch
-      );
-
+    if (password !== confirmPassword) {
+      alert(t.passwordsDoNotMatch);
       return;
     }
 
     setPasswordError("");
 
-    const formData =
-      new FormData(e.target);
+    const formData = new FormData(e.target);
 
-    const email = String(
-      formData.get("email") || ""
-    )
+    const firstName = String(formData.get("firstName") || "").trim();
+
+    const lastName = String(formData.get("lastName") || "").trim();
+
+    const email = String(formData.get("email") || "")
       .trim()
       .toLowerCase();
 
-    /* GET EXISTING USERS */
+    const service = String(formData.get("service") || "");
 
-    const users = getUsers();
+    const city = String(formData.get("city") || "");
 
-    /* =========================
-       MIGRATE OLD USER
+    const phoneValue = String(formData.get("phone") || "").trim();
 
-       თუ ძველი სისტემა გვქონდა,
-       careGeorgiaUser-იდან
-       მომხმარებელს სიაში გადავიტანთ.
-    ========================= */
+    const phone = phoneValue ? `+995 ${phoneValue}` : "";
 
-    const oldUserString =
-      localStorage.getItem(
-        "careGeorgiaUser"
-      );
+    try {
+      setIsSubmitting(true);
 
-    if (oldUserString) {
-      try {
-        const oldUser =
-          JSON.parse(
-            oldUserString
-          );
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          phone,
+          password,
+          accountType,
+          service,
+          city,
+        }),
+      });
 
-        if (
-          oldUser &&
-          oldUser.email
-        ) {
-          const oldEmail =
-            String(
-              oldUser.email
-            )
-              .trim()
-              .toLowerCase();
+      const data = await response.json();
 
-          const oldUserExists =
-            users.some(
-              (savedUser) =>
-                String(
-                  savedUser.email ||
-                    ""
-                )
-                  .trim()
-                  .toLowerCase() ===
-                oldEmail
-            );
-
-          if (!oldUserExists) {
-            users.push({
-              ...oldUser,
-
-              id:
-                oldUser.id ||
-                crypto.randomUUID(),
-
-              email: oldEmail,
-
-              showPhone:
-                oldUser.showPhone ??
-                false,
-            });
-          }
+      if (!response.ok) {
+        if (response.status === 409) {
+          alert(t.emailExists);
+          return;
         }
-      } catch {
-        // ძველი მონაცემი დაზიანებულია
+
+        alert(data.message || t.serverError);
+        return;
       }
+
+      alert(t.registrationSuccess);
+
+      navigate("/login");
+    } catch (error) {
+      console.error("Registration error:", error);
+
+      alert(t.serverError);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    /* =========================
-       CHECK EMAIL
-    ========================= */
-
-    const emailAlreadyExists =
-      users.some(
-        (savedUser) =>
-          String(
-            savedUser.email || ""
-          )
-            .trim()
-            .toLowerCase() ===
-          email
-      );
-
-    if (
-      emailAlreadyExists
-    ) {
-      /* migration-ის შენახვა */
-
-      localStorage.setItem(
-        "careGeorgiaUsers",
-        JSON.stringify(users)
-      );
-
-      alert(t.emailExists);
-
-      return;
-    }
-
-    /* =========================
-       CREATE NEW USER
-    ========================= */
-
-    const phone =
-      formData.get("phone");
-
-    const newUser = {
-      id: crypto.randomUUID(),
-
-      accountType,
-
-      service:
-        formData.get(
-          "service"
-        ),
-
-      city:
-        formData.get("city"),
-
-      firstName:
-        String(
-          formData.get(
-            "firstName"
-          ) || ""
-        ).trim(),
-
-      lastName:
-        String(
-          formData.get(
-            "lastName"
-          ) || ""
-        ).trim(),
-
-      email,
-
-      phone: phone
-        ? `+995 ${phone}`
-        : "",
-
-      showPhone: false,
-
-      password,
-
-      createdAt:
-        new Date().toISOString(),
-    };
-
-    /* =========================
-       ADD USER TO ARRAY
-    ========================= */
-
-    users.push(newUser);
-
-    localStorage.setItem(
-      "careGeorgiaUsers",
-      JSON.stringify(users)
-    );
-
-    /*
-      ეს დროებით შევინარჩუნოთ
-      სხვა არსებული გვერდებისთვის.
-
-      Login-ის შემდეგ აქ ყოველთვის
-      აქტიური მომხმარებელი ჩაიწერება.
-    */
-
-    localStorage.setItem(
-      "careGeorgiaUser",
-      JSON.stringify(newUser)
-    );
-
-    alert(
-      t.registrationSuccess
-    );
-
-    navigate("/login");
   };
 
   return (
     <div className="auth-page">
       <div className="auth-container">
-        <Link
-          to="/"
-          className="auth-logo"
-        >
+        <Link to="/" className="auth-logo">
           🇬🇪 Care Georgia
         </Link>
 
         <div className="auth-card">
           <div className="auth-heading">
-            <h1>
-              {t.title}
-            </h1>
-
-            <p>
-              {t.description}
-            </p>
+            <h1>{t.title}</h1>
+            <p>{t.description}</p>
           </div>
 
           {/* ACCOUNT TYPE */}
@@ -559,180 +360,95 @@ function Register() {
             <button
               type="button"
               className={`account-type ${
-                accountType ===
-                "client"
-                  ? "active"
-                  : ""
+                accountType === "client" ? "active" : ""
               }`}
-              onClick={() =>
-                setAccountType(
-                  "client"
-                )
-              }
+              onClick={() => setAccountType("client")}
             >
-              <span>
-                🔎
-              </span>
+              <span>🔎</span>
 
               <div>
-                <strong>
-                  {t.clientTitle}
-                </strong>
-
-                <p>
-                  {
-                    t.clientDescription
-                  }
-                </p>
+                <strong>{t.clientTitle}</strong>
+                <p>{t.clientDescription}</p>
               </div>
             </button>
 
             <button
               type="button"
               className={`account-type ${
-                accountType ===
-                "provider"
-                  ? "active"
-                  : ""
+                accountType === "provider" ? "active" : ""
               }`}
-              onClick={() =>
-                setAccountType(
-                  "provider"
-                )
-              }
+              onClick={() => setAccountType("provider")}
             >
-              <span>
-                💼
-              </span>
+              <span>💼</span>
 
               <div>
-                <strong>
-                  {t.providerTitle}
-                </strong>
-
-                <p>
-                  {
-                    t.providerDescription
-                  }
-                </p>
+                <strong>{t.providerTitle}</strong>
+                <p>{t.providerDescription}</p>
               </div>
             </button>
           </div>
 
           {/* FORM */}
 
-          <form
-            className="auth-form"
-            onSubmit={
-              handleSubmit
-            }
-          >
+          <form className="auth-form" onSubmit={handleSubmit}>
             {/* CLIENT SERVICE */}
 
-            {accountType ===
-              "client" && (
+            {accountType === "client" && (
               <div className="form-group service-select-group">
-                <label>
-                  {t.lookingFor}
-                </label>
+                <label>{t.lookingFor}</label>
 
                 <select
                   name="service"
                   defaultValue=""
                   required
-                  style={
-                    selectStyle
-                  }
+                  style={selectStyle}
                 >
-                  <option
-                    value=""
-                    disabled
-                  >
+                  <option value="" disabled>
                     {t.chooseHelp}
                   </option>
 
-                  <option value="nanny">
-                    👶 {t.nanny}
-                  </option>
+                  <option value="nanny">👶 {t.nanny}</option>
 
-                  <option value="caregiver">
-                    👵{" "}
-                    {t.caregiver}
-                  </option>
+                  <option value="caregiver">👵 {t.caregiver}</option>
 
-                  <option value="driver">
-                    🚗 {t.driver}
-                  </option>
+                  <option value="driver">🚗 {t.driver}</option>
 
-                  <option value="tutor">
-                    📚 {t.tutor}
-                  </option>
+                  <option value="tutor">📚 {t.tutor}</option>
 
-                  <option value="housekeeper">
-                    🏠{" "}
-                    {t.housekeeper}
-                  </option>
+                  <option value="housekeeper">🏠 {t.housekeeper}</option>
 
-                  <option value="dogwalker">
-                    🐕{" "}
-                    {t.dogWalker}
-                  </option>
+                  <option value="dogwalker">🐕 {t.dogWalker}</option>
                 </select>
               </div>
             )}
 
             {/* PROVIDER SERVICE */}
 
-            {accountType ===
-              "provider" && (
+            {accountType === "provider" && (
               <div className="form-group service-select-group">
-                <label>
-                  {t.offering}
-                </label>
+                <label>{t.offering}</label>
 
                 <select
                   name="service"
                   defaultValue=""
                   required
-                  style={
-                    selectStyle
-                  }
+                  style={selectStyle}
                 >
-                  <option
-                    value=""
-                    disabled
-                  >
-                    {
-                      t.chooseService
-                    }
+                  <option value="" disabled>
+                    {t.chooseService}
                   </option>
 
-                  <option value="nanny">
-                    👶 {t.nanny}
-                  </option>
+                  <option value="nanny">👶 {t.nanny}</option>
 
-                  <option value="caregiver">
-                    👵{" "}
-                    {t.caregiver}
-                  </option>
+                  <option value="caregiver">👵 {t.caregiver}</option>
 
-                  <option value="driver">
-                    🚗 {t.driver}
-                  </option>
+                  <option value="driver">🚗 {t.driver}</option>
 
-                  <option value="tutor">
-                    📚 {t.tutor}
-                  </option>
+                  <option value="tutor">📚 {t.tutor}</option>
 
-                  <option value="housekeeper">
-                    🏠{" "}
-                    {t.housekeeper}
-                  </option>
+                  <option value="housekeeper">🏠 {t.housekeeper}</option>
 
-                  <option value="dogwalker">
-                    🐕{" "}
-                    {t.dogWalker}
-                  </option>
+                  <option value="dogwalker">🐕 {t.dogWalker}</option>
                 </select>
               </div>
             )}
@@ -740,62 +456,30 @@ function Register() {
             {/* CITY */}
 
             <div className="form-group">
-              <label>
-                {t.city}
-              </label>
+              <label>{t.city}</label>
 
-              <select
-                name="city"
-                defaultValue=""
-                required
-                style={
-                  selectStyle
-                }
-              >
-                <option
-                  value=""
-                  disabled
-                >
-                  {
-                    t.chooseCity
-                  }
+              <select name="city" defaultValue="" required style={selectStyle}>
+                <option value="" disabled>
+                  {t.chooseCity}
                 </option>
 
-                <option value="tbilisi">
-                  {t.tbilisi}
-                </option>
+                <option value="tbilisi">{t.tbilisi}</option>
 
-                <option value="batumi">
-                  {t.batumi}
-                </option>
+                <option value="batumi">{t.batumi}</option>
 
-                <option value="kutaisi">
-                  {t.kutaisi}
-                </option>
+                <option value="kutaisi">{t.kutaisi}</option>
 
-                <option value="rustavi">
-                  {t.rustavi}
-                </option>
+                <option value="rustavi">{t.rustavi}</option>
 
-                <option value="gori">
-                  {t.gori}
-                </option>
+                <option value="gori">{t.gori}</option>
 
-                <option value="zugdidi">
-                  {t.zugdidi}
-                </option>
+                <option value="zugdidi">{t.zugdidi}</option>
 
-                <option value="poti">
-                  {t.poti}
-                </option>
+                <option value="poti">{t.poti}</option>
 
-                <option value="telavi">
-                  {t.telavi}
-                </option>
+                <option value="telavi">{t.telavi}</option>
 
-                <option value="other">
-                  {t.other}
-                </option>
+                <option value="other">{t.other}</option>
               </select>
             </div>
 
@@ -803,31 +487,23 @@ function Register() {
 
             <div className="form-row">
               <div className="form-group">
-                <label>
-                  {t.firstName}
-                </label>
+                <label>{t.firstName}</label>
 
                 <input
                   type="text"
                   name="firstName"
-                  placeholder={
-                    t.firstNamePlaceholder
-                  }
+                  placeholder={t.firstNamePlaceholder}
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label>
-                  {t.lastName}
-                </label>
+                <label>{t.lastName}</label>
 
                 <input
                   type="text"
                   name="lastName"
-                  placeholder={
-                    t.lastNamePlaceholder
-                  }
+                  placeholder={t.lastNamePlaceholder}
                   required
                 />
               </div>
@@ -836,9 +512,7 @@ function Register() {
             {/* EMAIL */}
 
             <div className="form-group">
-              <label>
-                {t.email}
-              </label>
+              <label>{t.email}</label>
 
               <input
                 type="email"
@@ -851,27 +525,19 @@ function Register() {
             {/* PHONE */}
 
             <div className="form-group">
-              <label>
-                {t.phone}
-              </label>
+              <label>{t.phone}</label>
 
               <div
                 style={{
                   width: "100%",
                   height: "50px",
                   display: "flex",
-                  flexDirection:
-                    "row",
-                  alignItems:
-                    "center",
-                  border:
-                    "1px solid #dbe2ea",
-                  borderRadius:
-                    "9px",
-                  overflow:
-                    "hidden",
-                  backgroundColor:
-                    "white",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  border: "1px solid #dbe2ea",
+                  borderRadius: "9px",
+                  overflow: "hidden",
+                  backgroundColor: "white",
                 }}
               >
                 <div
@@ -879,17 +545,12 @@ function Register() {
                     width: "75px",
                     height: "100%",
                     display: "flex",
-                    alignItems:
-                      "center",
-                    justifyContent:
-                      "center",
+                    alignItems: "center",
+                    justifyContent: "center",
                     flexShrink: 0,
-                    borderRight:
-                      "1px solid #dbe2ea",
-                    backgroundColor:
-                      "#f8fafc",
-                    fontWeight:
-                      "600",
+                    borderRight: "1px solid #dbe2ea",
+                    backgroundColor: "#f8fafc",
+                    fontWeight: "600",
                   }}
                 >
                   +995
@@ -900,18 +561,14 @@ function Register() {
                   name="phone"
                   placeholder="555 12 34 56"
                   pattern="5[0-9]{2} [0-9]{2} [0-9]{2} [0-9]{2}"
-                  title={
-                    t.phoneTitle
-                  }
+                  title={t.phoneTitle}
                   style={{
                     flex: "1",
                     width: "100%",
                     height: "100%",
                     border: "none",
-                    borderRadius:
-                      "0",
-                    padding:
-                      "0 14px",
+                    borderRadius: "0",
+                    padding: "0 14px",
                     outline: "none",
                   }}
                 />
@@ -921,52 +578,31 @@ function Register() {
             {/* PASSWORD */}
 
             <div className="form-group">
-              <label>
-                {t.password}
-              </label>
+              <label>{t.password}</label>
 
               <input
                 type="password"
-                placeholder={
-                  t.passwordPlaceholder
-                }
+                placeholder={t.passwordPlaceholder}
                 value={password}
                 required
                 onChange={(e) => {
-                  const newPassword =
-                    e.target.value;
+                  const newPassword = e.target.value;
 
-                  setPassword(
-                    newPassword
-                  );
+                  setPassword(newPassword);
 
-                  const hasEightCharacters =
-                    newPassword.length >=
-                    8;
+                  const hasEightCharacters = newPassword.length >= 8;
 
-                  const hasUppercase =
-                    /[A-Z]/.test(
-                      newPassword
-                    );
+                  const hasUppercase = /[A-Z]/.test(newPassword);
 
-                  const hasNumber =
-                    /[0-9]/.test(
-                      newPassword
-                    );
+                  const hasNumber = /[0-9]/.test(newPassword);
 
                   if (
                     newPassword &&
-                    (!hasEightCharacters ||
-                      !hasUppercase ||
-                      !hasNumber)
+                    (!hasEightCharacters || !hasUppercase || !hasNumber)
                   ) {
-                    setPasswordError(
-                      t.passwordError
-                    );
+                    setPasswordError(t.passwordError);
                   } else {
-                    setPasswordError(
-                      ""
-                    );
+                    setPasswordError("");
                   }
                 }}
               />
@@ -975,15 +611,11 @@ function Register() {
                 <p
                   style={{
                     color: "red",
-                    fontSize:
-                      "14px",
-                    marginTop:
-                      "5px",
+                    fontSize: "14px",
+                    marginTop: "5px",
                   }}
                 >
-                  {
-                    passwordError
-                  }
+                  {passwordError}
                 </p>
               )}
             </div>
@@ -991,87 +623,51 @@ function Register() {
             {/* CONFIRM PASSWORD */}
 
             <div className="form-group">
-              <label>
-                {
-                  t.confirmPassword
-                }
-              </label>
+              <label>{t.confirmPassword}</label>
 
               <input
                 type="password"
-                placeholder={
-                  t.confirmPasswordPlaceholder
-                }
-                value={
-                  confirmPassword
-                }
+                placeholder={t.confirmPasswordPlaceholder}
+                value={confirmPassword}
                 required
-                onChange={(e) =>
-                  setConfirmPassword(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
 
-              {confirmPassword &&
-                password !==
-                  confirmPassword && (
-                  <p
-                    style={{
-                      color:
-                        "red",
-                      fontSize:
-                        "14px",
-                      marginTop:
-                        "5px",
-                    }}
-                  >
-                    {
-                      t.passwordsDoNotMatch
-                    }
-                  </p>
-                )}
+              {confirmPassword && password !== confirmPassword && (
+                <p
+                  style={{
+                    color: "red",
+                    fontSize: "14px",
+                    marginTop: "5px",
+                  }}
+                >
+                  {t.passwordsDoNotMatch}
+                </p>
+              )}
             </div>
 
             {/* TERMS */}
 
             <label className="terms-check">
-              <input
-                type="checkbox"
-                required
-              />
+              <input type="checkbox" required />
 
               <span>
-                {t.agree}{" "}
-
-                <Link to="/terms">
-                  {t.terms}
-                </Link>{" "}
-
-                {t.and}{" "}
-
-                <Link to="/privacy">
-                  {t.privacy}
-                </Link>
+                {t.agree} <Link to="/terms">{t.terms}</Link> {t.and}{" "}
+                <Link to="/privacy">{t.privacy}</Link>
               </span>
             </label>
 
             <button
               type="submit"
               className="auth-submit"
+              disabled={isSubmitting}
             >
-              {t.register}
+              {isSubmitting ? t.registering : t.register}
             </button>
           </form>
 
           <p className="auth-bottom">
-            {
-              t.alreadyHaveAccount
-            }{" "}
-
-            <Link to="/login">
-              {t.login}
-            </Link>
+            {t.alreadyHaveAccount} <Link to="/login">{t.login}</Link>
           </p>
         </div>
       </div>

@@ -6,51 +6,44 @@ import "./Auth.css";
 const translations = {
   ka: {
     title: "შესვლა",
-    description:
-      "შედი შენს ანგარიშში და გააგრძელე Care Georgia-ს გამოყენება.",
+    description: "შედი შენს ანგარიშში და გააგრძელე Care Georgia-ს გამოყენება.",
 
     email: "ელ. ფოსტა",
     password: "პაროლი",
     passwordPlaceholder: "შენი პაროლი",
 
     login: "შესვლა",
+    loggingIn: "შესვლა...",
 
     noAccount: "ჯერ არ გაქვს ანგარიში?",
     register: "რეგისტრაცია",
 
-    accountNotFound:
-      "ანგარიში ვერ მოიძებნა. გთხოვ ჯერ გაიარო რეგისტრაცია.",
+    wrongCredentials: "ელ. ფოსტა ან პაროლი არასწორია.",
 
-    wrongCredentials:
-      "ელ. ფოსტა ან პაროლი არასწორია.",
+    loginSuccess: "შესვლა წარმატებულია!",
 
-    loginSuccess:
-      "შესვლა წარმატებულია!",
+    serverError: "სერვერთან დაკავშირება ვერ მოხერხდა. სცადე თავიდან.",
   },
 
   en: {
     title: "Login",
-    description:
-      "Log in to your account and continue using Care Georgia.",
+    description: "Log in to your account and continue using Care Georgia.",
 
     email: "Email",
     password: "Password",
     passwordPlaceholder: "Your password",
 
     login: "Login",
+    loggingIn: "Logging in...",
 
-    noAccount:
-      "Don't have an account yet?",
+    noAccount: "Don't have an account yet?",
     register: "Register",
 
-    accountNotFound:
-      "Account not found. Please register first.",
+    wrongCredentials: "Email or password is incorrect.",
 
-    wrongCredentials:
-      "Email or password is incorrect.",
+    loginSuccess: "Login successful!",
 
-    loginSuccess:
-      "Login successful!",
+    serverError: "Could not connect to the server. Please try again.",
   },
 
   ru: {
@@ -63,336 +56,140 @@ const translations = {
     passwordPlaceholder: "Ваш пароль",
 
     login: "Войти",
+    loggingIn: "Вход...",
 
-    noAccount:
-      "Еще нет аккаунта?",
+    noAccount: "Еще нет аккаунта?",
     register: "Регистрация",
 
-    accountNotFound:
-      "Аккаунт не найден. Пожалуйста, сначала зарегистрируйтесь.",
+    wrongCredentials: "Неверная эл. почта или пароль.",
 
-    wrongCredentials:
-      "Неверная эл. почта или пароль.",
+    loginSuccess: "Вход выполнен успешно!",
 
-    loginSuccess:
-      "Вход выполнен успешно!",
+    serverError: "Не удалось подключиться к серверу. Попробуйте снова.",
   },
 };
 
 function Login() {
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
-  const { language } =
-    useLanguage();
+  const { language } = useLanguage();
 
-  const t =
-    translations[language] ||
-    translations.ka;
+  const t = translations[language] || translations.ka;
 
-  const [
-    email,
-    setEmail,
-  ] = useState("");
+  const [email, setEmail] = useState("");
 
-  const [
-    password,
-    setPassword,
-  ] = useState("");
+  const [password, setPassword] = useState("");
 
-  const [
-    loginError,
-    setLoginError,
-  ] = useState("");
+  const [loginError, setLoginError] = useState("");
 
-  /* =========================
-     GET USERS
-  ========================= */
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const getUsers = () => {
-    const savedUsers =
-      localStorage.getItem(
-        "careGeorgiaUsers"
-      );
+  // =========================
+  // LOGIN THROUGH BACKEND
+  // =========================
 
-    if (!savedUsers) {
-      return [];
-    }
-
-    try {
-      const parsedUsers =
-        JSON.parse(savedUsers);
-
-      if (
-        Array.isArray(
-          parsedUsers
-        )
-      ) {
-        return parsedUsers;
-      }
-
-      return [];
-    } catch {
-      return [];
-    }
-  };
-
-  /* =========================
-     MIGRATE OLD USER
-  ========================= */
-
-  const migrateOldUser = (
-    users
-  ) => {
-    const oldUserString =
-      localStorage.getItem(
-        "careGeorgiaUser"
-      );
-
-    if (!oldUserString) {
-      return users;
-    }
-
-    try {
-      const oldUser =
-        JSON.parse(
-          oldUserString
-        );
-
-      if (
-        !oldUser ||
-        !oldUser.email
-      ) {
-        return users;
-      }
-
-      const oldEmail =
-        String(oldUser.email)
-          .trim()
-          .toLowerCase();
-
-      const alreadyExists =
-        users.some(
-          (user) =>
-            String(
-              user.email || ""
-            )
-              .trim()
-              .toLowerCase() ===
-            oldEmail
-        );
-
-      if (!alreadyExists) {
-        users.push({
-          ...oldUser,
-
-          id:
-            oldUser.id ||
-            crypto.randomUUID(),
-
-          email: oldEmail,
-
-          showPhone:
-            oldUser.showPhone ??
-            false,
-        });
-
-        localStorage.setItem(
-          "careGeorgiaUsers",
-          JSON.stringify(users)
-        );
-      }
-
-      return users;
-    } catch {
-      return users;
-    }
-  };
-
-  /* =========================
-     LOGIN
-  ========================= */
-
-  const handleSubmit = (
-    e
-  ) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     setLoginError("");
 
-    /* GET ALL USERS */
+    const normalizedEmail = email.trim().toLowerCase();
 
-    let users = getUsers();
+    try {
+      setIsSubmitting(true);
 
-    /*
-      ძველი სისტემიდან დარჩენილი
-      account თუ არსებობს,
-      გადავიტანოთ ახალ სიაში.
-    */
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          password,
+        }),
+      });
 
-    users =
-      migrateOldUser(users);
+      const data = await response.json();
+      console.log("LOGIN STATUS:", response.status);
+console.log("LOGIN EMAIL:", normalizedEmail);
+console.log("PASSWORD LENGTH:", password.length);
+console.log("LOGIN RESPONSE:", data);
 
-    if (users.length === 0) {
-      setLoginError(
-        t.accountNotFound
-      );
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 400) {
+          setLoginError(t.wrongCredentials);
+        } else {
+          setLoginError(data.message || t.serverError);
+        }
 
-      return;
+        return;
+      }
+
+      if (!data.user || !data.token) {
+        setLoginError(t.serverError);
+
+        return;
+      }
+
+      // =========================
+      // SAVE JWT TOKEN
+      // =========================
+
+      localStorage.setItem("careGeorgiaToken", data.token);
+
+      // =========================
+      // ACTIVE USER
+      //
+      // ამას დროებით ვინარჩუნებთ,
+      // რადგან საიტის სხვა გვერდები
+      // careGeorgiaUser-ს იყენებენ.
+      // =========================
+
+      localStorage.setItem("careGeorgiaUser", JSON.stringify(data.user));
+
+      // =========================
+      // LOGGED IN
+      // =========================
+
+      localStorage.setItem("careGeorgiaLoggedIn", "true");
+
+      // =========================
+      // CURRENT USER ID
+      // =========================
+
+      localStorage.setItem("careGeorgiaCurrentUserId", String(data.user.id));
+
+      alert(t.loginSuccess);
+
+      navigate("/");
+    } catch (error) {
+      console.error("Login error:", error);
+
+      setLoginError(t.serverError);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    /* NORMALIZE EMAIL */
-
-    const enteredEmail =
-      email
-        .trim()
-        .toLowerCase();
-
-    /* FIND USER BY EMAIL */
-
-    const foundUser =
-      users.find(
-        (user) =>
-          String(
-            user.email || ""
-          )
-            .trim()
-            .toLowerCase() ===
-          enteredEmail
-      );
-
-    /* EMAIL NOT FOUND */
-
-    if (!foundUser) {
-      setLoginError(
-        t.wrongCredentials
-      );
-
-      return;
-    }
-
-    /* PASSWORD CHECK */
-
-    if (
-      foundUser.password !==
-      password
-    ) {
-      setLoginError(
-        t.wrongCredentials
-      );
-
-      return;
-    }
-
-    /* =========================
-       MAKE SURE USER HAS ID
-    ========================= */
-
-    let currentUser = {
-      ...foundUser,
-    };
-
-    if (!currentUser.id) {
-      currentUser.id =
-        crypto.randomUUID();
-
-      users =
-        users.map((user) => {
-          const userEmail =
-            String(
-              user.email || ""
-            )
-              .trim()
-              .toLowerCase();
-
-          if (
-            userEmail ===
-            enteredEmail
-          ) {
-            return currentUser;
-          }
-
-          return user;
-        });
-
-      localStorage.setItem(
-        "careGeorgiaUsers",
-        JSON.stringify(users)
-      );
-    }
-
-    /* =========================
-       ACTIVE USER
-
-       careGeorgiaUser-ში
-       ყოველთვის ის მომხმარებელი
-       ჩაიწერება, რომელიც ახლა შევიდა.
-    ========================= */
-
-    localStorage.setItem(
-      "careGeorgiaUser",
-      JSON.stringify(
-        currentUser
-      )
-    );
-
-    /* LOGGED IN */
-
-    localStorage.setItem(
-      "careGeorgiaLoggedIn",
-      "true"
-    );
-
-    /* CURRENT USER ID */
-
-    localStorage.setItem(
-      "careGeorgiaCurrentUserId",
-      currentUser.id
-    );
-
-    alert(
-      t.loginSuccess
-    );
-
-    navigate("/");
   };
 
   return (
     <div className="auth-page">
       <div className="auth-container">
-
-        <Link
-          to="/"
-          className="auth-logo"
-        >
+        <Link to="/" className="auth-logo">
           🇬🇪 Care Georgia
         </Link>
 
         <div className="auth-card">
-
           <div className="auth-heading">
-            <h1>
-              {t.title}
-            </h1>
+            <h1>{t.title}</h1>
 
-            <p>
-              {t.description}
-            </p>
+            <p>{t.description}</p>
           </div>
 
-          <form
-            className="auth-form"
-            onSubmit={
-              handleSubmit
-            }
-          >
-
+          <form className="auth-form" onSubmit={handleSubmit}>
             {/* EMAIL */}
 
             <div className="form-group">
-              <label>
-                {t.email}
-              </label>
+              <label>{t.email}</label>
 
               <input
                 type="email"
@@ -400,13 +197,9 @@ function Login() {
                 value={email}
                 autoComplete="email"
                 onChange={(e) => {
-                  setEmail(
-                    e.target.value
-                  );
+                  setEmail(e.target.value);
 
-                  setLoginError(
-                    ""
-                  );
+                  setLoginError("");
                 }}
                 required
               />
@@ -415,25 +208,17 @@ function Login() {
             {/* PASSWORD */}
 
             <div className="form-group">
-              <label>
-                {t.password}
-              </label>
+              <label>{t.password}</label>
 
               <input
                 type="password"
-                placeholder={
-                  t.passwordPlaceholder
-                }
+                placeholder={t.passwordPlaceholder}
                 value={password}
                 autoComplete="current-password"
                 onChange={(e) => {
-                  setPassword(
-                    e.target.value
-                  );
+                  setPassword(e.target.value);
 
-                  setLoginError(
-                    ""
-                  );
+                  setLoginError("");
                 }}
                 required
               />
@@ -444,19 +229,13 @@ function Login() {
             {loginError && (
               <p
                 style={{
-                  color:
-                    "#dc2626",
-                  fontSize:
-                    "14px",
+                  color: "#dc2626",
+                  fontSize: "14px",
                   margin: "0",
-                  padding:
-                    "10px 12px",
-                  backgroundColor:
-                    "#fef2f2",
-                  border:
-                    "1px solid #fecaca",
-                  borderRadius:
-                    "8px",
+                  padding: "10px 12px",
+                  backgroundColor: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  borderRadius: "8px",
                 }}
               >
                 {loginError}
@@ -466,20 +245,15 @@ function Login() {
             <button
               type="submit"
               className="auth-submit"
+              disabled={isSubmitting}
             >
-              {t.login}
+              {isSubmitting ? t.loggingIn : t.login}
             </button>
-
           </form>
 
           <p className="auth-bottom">
-            {t.noAccount}{" "}
-
-            <Link to="/register">
-              {t.register}
-            </Link>
+            {t.noAccount} <Link to="/register">{t.register}</Link>
           </p>
-
         </div>
       </div>
     </div>
