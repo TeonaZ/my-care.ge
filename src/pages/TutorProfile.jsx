@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./DriverProfile.css";
@@ -409,9 +409,8 @@ const translations = {
 function TutorProfile() {
   const { id } = useParams();
 
-  
   const location = useLocation();
-const { language } = useLanguage();
+  const { language } = useLanguage();
 
   const t = translations[language] || translations.ka;
 
@@ -622,15 +621,36 @@ const { language } = useLanguage();
      SAVED JOBS
   ========================= */
 
-  const getSavedJobs = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaJobs"));
+  // ========================================
+  // JOBS FROM POSTGRESQL
+  // ========================================
 
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
-  };
+  const [savedJobs, setSavedJobs] = useState([]);
+  const [jobsLoading, setJobsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadJobs = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/jobs");
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error("Load jobs error:", data);
+          setSavedJobs([]);
+          return;
+        }
+
+        setSavedJobs(Array.isArray(data.jobs) ? data.jobs : []);
+      } catch (error) {
+        console.error("Load jobs error:", error);
+        setSavedJobs([]);
+      } finally {
+        setJobsLoading(false);
+      }
+    };
+
+    loadJobs();
+  }, []);
 
   /* =========================
      SAVED INTERESTS
@@ -719,13 +739,11 @@ const { language } = useLanguage();
      MATCHING JOBS
   ========================= */
 
-  const savedJobs = getSavedJobs();
-
   const myMatchingJobs = savedJobs.filter(
     (job) =>
       String(job.ownerId) === String(currentUserId) &&
       job.service === "tutor" &&
-      job.status !== "closed",
+      job.status === "active",
   );
 
   const employerApplications = applications.filter(
@@ -957,9 +975,7 @@ const { language } = useLanguage();
       JSON.stringify(updatedInterests),
     );
 
-    window.dispatchEvent(
-      new Event("careGeorgiaInterestsUpdated"),
-    );
+    window.dispatchEvent(new Event("careGeorgiaInterestsUpdated"));
 
     setShowInterestBox(false);
 
@@ -971,7 +987,9 @@ const { language } = useLanguage();
   return (
     <div className="profile-page">
       <div className="profile-container">
-        <Link to={backPath} className="profile-back">{backText}</Link>
+        <Link to={backPath} className="profile-back">
+          {backText}
+        </Link>
 
         {/* =========================
             MAIN PROFILE
@@ -1391,6 +1409,8 @@ const { language } = useLanguage();
                 >
                   {t.clientOnly}
                 </p>
+              ) : jobsLoading ? (
+                <p style={{ color: "#64748b" }}>...</p>
               ) : myMatchingJobs.length === 0 ? (
                 <div>
                   <p

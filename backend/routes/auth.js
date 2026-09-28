@@ -46,6 +46,7 @@ router.post("/register", async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
+    // Email უკვე გამოყენებულია?
     const existingUser = await pool.query(
       "SELECT id FROM users WHERE email = $1",
       [normalizedEmail]
@@ -58,6 +59,7 @@ router.post("/register", async (req, res) => {
       });
     }
 
+    // პაროლის უსაფრთხო hash
     const passwordHash = await bcrypt.hash(password, 12);
     const userId = crypto.randomUUID();
 
@@ -121,7 +123,7 @@ router.post("/register", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("REGISTER ERROR:", error);
+    console.error("Register error:", error);
 
     return res.status(500).json({
       success: false,
@@ -137,17 +139,7 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log("\n========== LOGIN REQUEST ==========");
-    console.log("Email received:", email);
-    console.log(
-      "Password length:",
-      typeof password === "string" ? password.length : "not a string"
-    );
-
     if (!email || !password) {
-      console.log("RESULT: Email or password missing");
-      console.log("===================================\n");
-
       return res.status(400).json({
         success: false,
         message: "ელ. ფოსტა და პაროლი აუცილებელია.",
@@ -155,8 +147,6 @@ router.post("/login", async (req, res) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-
-    console.log("Normalized email:", normalizedEmail);
 
     const result = await pool.query(
       `SELECT
@@ -177,12 +167,7 @@ router.post("/login", async (req, res) => {
       [normalizedEmail]
     );
 
-    console.log("Users found:", result.rows.length);
-
     if (result.rows.length === 0) {
-      console.log("RESULT: USER NOT FOUND");
-      console.log("===================================\n");
-
       return res.status(401).json({
         success: false,
         message: "ელ. ფოსტა ან პაროლი არასწორია.",
@@ -191,25 +176,19 @@ router.post("/login", async (req, res) => {
 
     const user = result.rows[0];
 
-    console.log("Database email:", user.email);
-
     const passwordMatches = await bcrypt.compare(
       password,
       user.password_hash
     );
 
-    console.log("Password matches:", passwordMatches);
-
     if (!passwordMatches) {
-      console.log("RESULT: PASSWORD DOES NOT MATCH");
-      console.log("===================================\n");
-
       return res.status(401).json({
         success: false,
         message: "ელ. ფოსტა ან პაროლი არასწორია.",
       });
     }
 
+    // JWT token - მოქმედებს 7 დღე
     const token = jwt.sign(
       {
         userId: user.id,
@@ -220,9 +199,6 @@ router.post("/login", async (req, res) => {
         expiresIn: "7d",
       }
     );
-
-    console.log("RESULT: LOGIN SUCCESS");
-    console.log("===================================\n");
 
     return res.json({
       success: true,
@@ -243,7 +219,7 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("LOGIN ERROR:", error);
+    console.error("Login error:", error);
 
     return res.status(500).json({
       success: false,

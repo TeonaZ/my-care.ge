@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./DriverProfile.css";
@@ -110,21 +110,26 @@ const translations = {
     noEmail: "თქვენს ანგარიშზე ელ. ფოსტა მითითებული არ არის.",
 
     applicationManagement: "კანდიდატის განაცხადის მართვა",
-    applicationDescription: "ამ ძაღლის გამსეირნებელმა თქვენს სამუშაო განცხადებაზე განაცხადი გამოგიგზავნათ.",
+    applicationDescription:
+      "ამ ძაღლის გამსეირნებელმა თქვენს სამუშაო განცხადებაზე განაცხადი გამოგიგზავნათ.",
     applicationJob: "სამუშაო",
     applicationStatus: "განაცხადის სტატუსი",
     applicationSent: "განაცხადი გაგზავნილია",
     applicationReviewed: "დამსაქმებელმა განიხილა კანდიდატის განაცხადი.",
     applicationNextStage: "კანდიდატი გადავიდა შერჩევის შემდეგ ეტაპზე.",
-    applicationNotSelected: "ამ ეტაპზე გასაუბრებები გაგრძელდება სხვა კანდიდატებთან.",
+    applicationNotSelected:
+      "ამ ეტაპზე გასაუბრებები გაგრძელდება სხვა კანდიდატებთან.",
     applicationCompleted: "განაცხადის განხილვა დასრულებულია.",
     markReviewed: "განხილულად მონიშვნა",
     moveNextStage: "შემდეგ ეტაპზე გადაყვანა",
     continueOthers: "სხვა კანდიდატებთან გაგრძელება",
     completeReview: "განხილვის დასრულება",
-    reviewedHelp: "განაცხადის განხილვის შემდეგ შეგიძლიათ კანდიდატი გადაიყვანოთ შემდეგ ეტაპზე ან გააგრძელოთ გასაუბრებები სხვა კანდიდატებთან.",
-    nextStageHelp: "კანდიდატი შერჩევის შემდეგ ეტაპზეა. საჭიროების შემთხვევაში შეგიძლიათ დაუკავშირდეთ.",
-    notSelectedHelp: "მადლობა დაინტერესებისა და განაცხადისთვის. ამ ეტაპზე დამსაქმებელი გასაუბრებებს სხვა კანდიდატებთან აგრძელებს. წარმატებებს გისურვებთ შემდეგ შესაძლებლობებში!",
+    reviewedHelp:
+      "განაცხადის განხილვის შემდეგ შეგიძლიათ კანდიდატი გადაიყვანოთ შემდეგ ეტაპზე ან გააგრძელოთ გასაუბრებები სხვა კანდიდატებთან.",
+    nextStageHelp:
+      "კანდიდატი შერჩევის შემდეგ ეტაპზეა. საჭიროების შემთხვევაში შეგიძლიათ დაუკავშირდეთ.",
+    notSelectedHelp:
+      "მადლობა დაინტერესებისა და განაცხადისთვის. ამ ეტაპზე დამსაქმებელი გასაუბრებებს სხვა კანდიდატებთან აგრძელებს. წარმატებებს გისურვებთ შემდეგ შესაძლებლობებში!",
     completedHelp: "ამ კანდიდატის განაცხადის განხილვა დასრულებულია.",
   },
 
@@ -232,22 +237,29 @@ const translations = {
     noEmail: "There is no email address saved on your account.",
 
     applicationManagement: "Manage Candidate Application",
-    applicationDescription: "This dog walker has applied to one of your job posts.",
+    applicationDescription:
+      "This dog walker has applied to one of your job posts.",
     applicationJob: "Job",
     applicationStatus: "Application status",
     applicationSent: "Application sent",
-    applicationReviewed: "The employer has reviewed the candidate's application.",
+    applicationReviewed:
+      "The employer has reviewed the candidate's application.",
     applicationNextStage: "The candidate has moved to the next stage.",
-    applicationNotSelected: "At this stage, interviews will continue with other candidates.",
+    applicationNotSelected:
+      "At this stage, interviews will continue with other candidates.",
     applicationCompleted: "Application review has been completed.",
     markReviewed: "Mark as reviewed",
     moveNextStage: "Move to next stage",
     continueOthers: "Continue with other candidates",
     completeReview: "Complete review",
-    reviewedHelp: "After reviewing the application, you can move the candidate to the next stage or continue interviews with other candidates.",
-    nextStageHelp: "The candidate is in the next stage of the selection process. You can contact them if needed.",
-    notSelectedHelp: "Thank you for your interest and application. At this stage, the employer is continuing interviews with other candidates. We wish you success with future opportunities!",
-    completedHelp: "The review of this candidate's application has been completed.",
+    reviewedHelp:
+      "After reviewing the application, you can move the candidate to the next stage or continue interviews with other candidates.",
+    nextStageHelp:
+      "The candidate is in the next stage of the selection process. You can contact them if needed.",
+    notSelectedHelp:
+      "Thank you for your interest and application. At this stage, the employer is continuing interviews with other candidates. We wish you success with future opportunities!",
+    completedHelp:
+      "The review of this candidate's application has been completed.",
   },
 
   ru: {
@@ -355,21 +367,26 @@ const translations = {
     noEmail: "В вашем аккаунте не указан адрес электронной почты.",
 
     applicationManagement: "Управление заявкой кандидата",
-    applicationDescription: "Этот выгульщик собак отправил заявку на одно из ваших объявлений.",
+    applicationDescription:
+      "Этот выгульщик собак отправил заявку на одно из ваших объявлений.",
     applicationJob: "Работа",
     applicationStatus: "Статус заявки",
     applicationSent: "Заявка отправлена",
     applicationReviewed: "Работодатель рассмотрел заявку кандидата.",
     applicationNextStage: "Кандидат перешел на следующий этап отбора.",
-    applicationNotSelected: "На этом этапе собеседования продолжатся с другими кандидатами.",
+    applicationNotSelected:
+      "На этом этапе собеседования продолжатся с другими кандидатами.",
     applicationCompleted: "Рассмотрение заявки завершено.",
     markReviewed: "Отметить как рассмотренную",
     moveNextStage: "Перевести на следующий этап",
     continueOthers: "Продолжить с другими кандидатами",
     completeReview: "Завершить рассмотрение",
-    reviewedHelp: "После рассмотрения заявки можно перевести кандидата на следующий этап или продолжить собеседования с другими кандидатами.",
-    nextStageHelp: "Кандидат находится на следующем этапе отбора. При необходимости вы можете связаться с ним.",
-    notSelectedHelp: "Спасибо за интерес и заявку. На этом этапе работодатель продолжает собеседования с другими кандидатами. Желаем успехов в следующих возможностях!",
+    reviewedHelp:
+      "После рассмотрения заявки можно перевести кандидата на следующий этап или продолжить собеседования с другими кандидатами.",
+    nextStageHelp:
+      "Кандидат находится на следующем этапе отбора. При необходимости вы можете связаться с ним.",
+    notSelectedHelp:
+      "Спасибо за интерес и заявку. На этом этапе работодатель продолжает собеседования с другими кандидатами. Желаем успехов в следующих возможностях!",
     completedHelp: "Рассмотрение заявки этого кандидата завершено.",
   },
 };
@@ -586,15 +603,36 @@ function DogWalkerProfile() {
      JOBS
   ========================= */
 
-  const getSavedJobs = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaJobs"));
+  // ========================================
+  // JOBS FROM POSTGRESQL
+  // ========================================
 
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
-  };
+  const [savedJobs, setSavedJobs] = useState([]);
+  const [jobsLoading, setJobsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadJobs = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/jobs");
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error("Load jobs error:", data);
+          setSavedJobs([]);
+          return;
+        }
+
+        setSavedJobs(Array.isArray(data.jobs) ? data.jobs : []);
+      } catch (error) {
+        console.error("Load jobs error:", error);
+        setSavedJobs([]);
+      } finally {
+        setJobsLoading(false);
+      }
+    };
+
+    loadJobs();
+  }, []);
 
   /* =========================
      INTERESTS
@@ -699,13 +737,11 @@ function DogWalkerProfile() {
      "dogwalker"
   ========================= */
 
-  const savedJobs = getSavedJobs();
-
   const myMatchingJobs = savedJobs.filter(
     (job) =>
       String(job.ownerId) === String(currentUserId) &&
       (job.service === "dogwalker" || job.service === "dog-walker") &&
-      job.status !== "closed",
+      job.status === "active",
   );
 
   const employerApplications = applications.filter(
@@ -731,11 +767,50 @@ function DogWalkerProfile() {
 
   const getApplicationStatusInfo = (application) => {
     const status = normalizeApplicationStatus(application?.status);
-    if (status === "reviewed") return { icon: "👀", text: t.applicationReviewed, help: t.reviewedHelp, bg: "#eff6ff", border: "#bfdbfe", color: "#1d4ed8" };
-    if (status === "next-stage") return { icon: "➡️", text: t.applicationNextStage, help: t.nextStageHelp, bg: "#f0fdf4", border: "#bbf7d0", color: "#15803d" };
-    if (status === "not-selected") return { icon: "🌿", text: t.applicationNotSelected, help: t.notSelectedHelp, bg: "#f0fdf4", border: "#bbf7d0", color: "#166534" };
-    if (status === "completed") return { icon: "✅", text: t.applicationCompleted, help: t.completedHelp, bg: "#f8fafc", border: "#cbd5e1", color: "#475569" };
-    return { icon: "📨", text: t.applicationSent, help: "", bg: "#fffbeb", border: "#fde68a", color: "#92400e" };
+    if (status === "reviewed")
+      return {
+        icon: "👀",
+        text: t.applicationReviewed,
+        help: t.reviewedHelp,
+        bg: "#eff6ff",
+        border: "#bfdbfe",
+        color: "#1d4ed8",
+      };
+    if (status === "next-stage")
+      return {
+        icon: "➡️",
+        text: t.applicationNextStage,
+        help: t.nextStageHelp,
+        bg: "#f0fdf4",
+        border: "#bbf7d0",
+        color: "#15803d",
+      };
+    if (status === "not-selected")
+      return {
+        icon: "🌿",
+        text: t.applicationNotSelected,
+        help: t.notSelectedHelp,
+        bg: "#f0fdf4",
+        border: "#bbf7d0",
+        color: "#166534",
+      };
+    if (status === "completed")
+      return {
+        icon: "✅",
+        text: t.applicationCompleted,
+        help: t.completedHelp,
+        bg: "#f8fafc",
+        border: "#cbd5e1",
+        color: "#475569",
+      };
+    return {
+      icon: "📨",
+      text: t.applicationSent,
+      help: "",
+      bg: "#fffbeb",
+      border: "#fde68a",
+      color: "#92400e",
+    };
   };
 
   const updateApplicationStatus = (applicationId, newStatus) => {
@@ -761,7 +836,10 @@ function DogWalkerProfile() {
     });
 
     setApplications(updatedApplications);
-    localStorage.setItem("careGeorgiaApplications", JSON.stringify(updatedApplications));
+    localStorage.setItem(
+      "careGeorgiaApplications",
+      JSON.stringify(updatedApplications),
+    );
   };
 
   /* =========================
@@ -890,9 +968,7 @@ function DogWalkerProfile() {
       JSON.stringify(updatedInterests),
     );
 
-    window.dispatchEvent(
-      new Event("careGeorgiaInterestsUpdated"),
-    );
+    window.dispatchEvent(new Event("careGeorgiaInterestsUpdated"));
 
     setShowInterestBox(false);
     resetInterestForm();
@@ -999,9 +1075,27 @@ function DogWalkerProfile() {
         {/* APPLICATION MANAGEMENT */}
 
         {isLoggedIn && isClient && employerApplications.length > 0 && (
-          <div style={{ backgroundColor: "#ffffff", border: "2px solid #bfdbfe", borderRadius: "16px", padding: "25px", marginBottom: "25px" }}>
-            <h2 style={{ marginTop: 0, marginBottom: "8px" }}>📩 {t.applicationManagement}</h2>
-            <p style={{ color: "#64748b", lineHeight: "1.6", marginBottom: "20px" }}>{t.applicationDescription}</p>
+          <div
+            style={{
+              backgroundColor: "#ffffff",
+              border: "2px solid #bfdbfe",
+              borderRadius: "16px",
+              padding: "25px",
+              marginBottom: "25px",
+            }}
+          >
+            <h2 style={{ marginTop: 0, marginBottom: "8px" }}>
+              📩 {t.applicationManagement}
+            </h2>
+            <p
+              style={{
+                color: "#64748b",
+                lineHeight: "1.6",
+                marginBottom: "20px",
+              }}
+            >
+              {t.applicationDescription}
+            </p>
 
             {employerApplications.map((application) => {
               const job = getApplicationJob(application);
@@ -1009,41 +1103,200 @@ function DogWalkerProfile() {
               const info = getApplicationStatusInfo(application);
 
               return (
-                <div key={application.id} style={{ padding: "18px", marginTop: "14px", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "12px" }}>
+                <div
+                  key={application.id}
+                  style={{
+                    padding: "18px",
+                    marginTop: "14px",
+                    backgroundColor: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "12px",
+                  }}
+                >
                   {job && (
                     <div style={{ marginBottom: "18px", lineHeight: "1.7" }}>
-                      <strong style={{ display: "block", marginBottom: "7px" }}>💼 {t.applicationJob}</strong>
-                      <div>🐕 {language === "ka" ? "ძაღლის გამსეირნებელი" : language === "ru" ? "Выгульщик собак" : "Dog Walker"}</div>
+                      <strong style={{ display: "block", marginBottom: "7px" }}>
+                        💼 {t.applicationJob}
+                      </strong>
+                      <div>
+                        🐕{" "}
+                        {language === "ka"
+                          ? "ძაღლის გამსეირნებელი"
+                          : language === "ru"
+                            ? "Выгульщик собак"
+                            : "Dog Walker"}
+                      </div>
                       <div>📍 {getCityName(job.city)}</div>
-                      <div>🕒 {job.employmentType === "full-time" ? t.fullTime : t.partTime}</div>
-                      <div>💰 {job.budget} {t.currency} / {getPaymentTypeName(job.paymentType)}</div>
-                      {job.description && <div style={{ marginTop: "8px", color: "#64748b" }}>{job.description}</div>}
+                      <div>
+                        🕒{" "}
+                        {job.employmentType === "full-time"
+                          ? t.fullTime
+                          : t.partTime}
+                      </div>
+                      <div>
+                        💰 {job.budget} {t.currency} /{" "}
+                        {getPaymentTypeName(job.paymentType)}
+                      </div>
+                      {job.description && (
+                        <div style={{ marginTop: "8px", color: "#64748b" }}>
+                          {job.description}
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  <strong style={{ display: "block", marginBottom: "8px" }}>{t.applicationStatus}</strong>
-                  <div style={{ padding: "14px", backgroundColor: info.bg, border: `1px solid ${info.border}`, color: info.color, borderRadius: "10px", fontWeight: "700", lineHeight: "1.5" }}>
+                  <strong style={{ display: "block", marginBottom: "8px" }}>
+                    {t.applicationStatus}
+                  </strong>
+                  <div
+                    style={{
+                      padding: "14px",
+                      backgroundColor: info.bg,
+                      border: `1px solid ${info.border}`,
+                      color: info.color,
+                      borderRadius: "10px",
+                      fontWeight: "700",
+                      lineHeight: "1.5",
+                    }}
+                  >
                     {info.icon} {info.text}
-                    {info.help && <div style={{ marginTop: "7px", fontWeight: "400", lineHeight: "1.6" }}>{info.help}</div>}
+                    {info.help && (
+                      <div
+                        style={{
+                          marginTop: "7px",
+                          fontWeight: "400",
+                          lineHeight: "1.6",
+                        }}
+                      >
+                        {info.help}
+                      </div>
+                    )}
                   </div>
 
                   {status === "pending" && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "16px" }}>
-                      <button type="button" onClick={() => updateApplicationStatus(application.id, "reviewed")} style={{ padding: "11px 15px", border: "none", borderRadius: "9px", backgroundColor: "#2563eb", color: "#fff", cursor: "pointer", fontWeight: "700" }}>👀 {t.markReviewed}</button>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                        marginTop: "16px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(application.id, "reviewed")
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "none",
+                          borderRadius: "9px",
+                          backgroundColor: "#2563eb",
+                          color: "#fff",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        👀 {t.markReviewed}
+                      </button>
                     </div>
                   )}
 
                   {status === "reviewed" && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "16px" }}>
-                      <button type="button" onClick={() => updateApplicationStatus(application.id, "next-stage")} style={{ padding: "11px 15px", border: "none", borderRadius: "9px", backgroundColor: "#16a34a", color: "#fff", cursor: "pointer", fontWeight: "700" }}>➡️ {t.moveNextStage}</button>
-                      <button type="button" onClick={() => updateApplicationStatus(application.id, "not-selected")} style={{ padding: "11px 15px", border: "1px solid #bbf7d0", borderRadius: "9px", backgroundColor: "#f0fdf4", color: "#166534", cursor: "pointer", fontWeight: "700" }}>🌿 {t.continueOthers}</button>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                        marginTop: "16px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(application.id, "next-stage")
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "none",
+                          borderRadius: "9px",
+                          backgroundColor: "#16a34a",
+                          color: "#fff",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        ➡️ {t.moveNextStage}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(
+                            application.id,
+                            "not-selected",
+                          )
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "1px solid #bbf7d0",
+                          borderRadius: "9px",
+                          backgroundColor: "#f0fdf4",
+                          color: "#166534",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        🌿 {t.continueOthers}
+                      </button>
                     </div>
                   )}
 
                   {status === "next-stage" && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "16px" }}>
-                      <button type="button" onClick={() => updateApplicationStatus(application.id, "completed")} style={{ padding: "11px 15px", border: "none", borderRadius: "9px", backgroundColor: "#2563eb", color: "#fff", cursor: "pointer", fontWeight: "700" }}>✅ {t.completeReview}</button>
-                      <button type="button" onClick={() => updateApplicationStatus(application.id, "not-selected")} style={{ padding: "11px 15px", border: "1px solid #bbf7d0", borderRadius: "9px", backgroundColor: "#f0fdf4", color: "#166534", cursor: "pointer", fontWeight: "700" }}>🌿 {t.continueOthers}</button>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                        marginTop: "16px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(application.id, "completed")
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "none",
+                          borderRadius: "9px",
+                          backgroundColor: "#2563eb",
+                          color: "#fff",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        ✅ {t.completeReview}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateApplicationStatus(
+                            application.id,
+                            "not-selected",
+                          )
+                        }
+                        style={{
+                          padding: "11px 15px",
+                          border: "1px solid #bbf7d0",
+                          borderRadius: "9px",
+                          backgroundColor: "#f0fdf4",
+                          color: "#166534",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        🌿 {t.continueOthers}
+                      </button>
                     </div>
                   )}
                 </div>
@@ -1159,6 +1412,8 @@ function DogWalkerProfile() {
                 >
                   {t.clientOnly}
                 </p>
+              ) : jobsLoading ? (
+                <p style={{ color: "#64748b" }}>...</p>
               ) : myMatchingJobs.length === 0 ? (
                 <div>
                   <p

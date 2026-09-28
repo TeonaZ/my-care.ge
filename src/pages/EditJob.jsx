@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Link,
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./Auth.css";
 
@@ -59,26 +55,33 @@ const translations = {
       "დაწერე სამუშაოს პირობები და სხვა მნიშვნელოვანი ინფორმაცია.",
 
     contactSharing: "საკონტაქტო ინფორმაციის გაზიარება",
-    contactSharingHelp: "აირჩიე, რომელი საკონტაქტო ინფორმაცია გამოჩნდეს ამ განცხადებაზე.",
+    contactSharingHelp:
+      "აირჩიე, რომელი საკონტაქტო ინფორმაცია გამოჩნდეს ამ განცხადებაზე.",
+
     shareEmail: "ელ. ფოსტის გაზიარება",
     sharePhone: "ტელეფონის გაზიარება",
-    contactMissing: "ეს ინფორმაცია შენს პროფილში მითითებული არ არის.",
+
+    contactMissing:
+      "ეს ინფორმაცია შენს პროფილში მითითებული არ არის.",
 
     save: "ცვლილებების შენახვა",
+    saving: "ინახება...",
 
     loginRequired:
       "განცხადების რედაქტირებისთვის ჯერ უნდა შეხვიდე ანგარიშში.",
 
-    notFound:
-      "განცხადება ვერ მოიძებნა.",
+    notFound: "განცხადება ვერ მოიძებნა.",
 
     noPermission:
       "ამ განცხადების რედაქტირების უფლება არ გაქვს.",
 
-    success:
-      "ცვლილებები წარმატებით შეინახა!",
+    success: "ცვლილებები წარმატებით შეინახა!",
 
     goBack: "ჩემს განცხადებებზე დაბრუნება",
+
+    loadError: "განცხადების ჩატვირთვა ვერ მოხერხდა.",
+    saveError: "ცვლილებების შენახვა ვერ მოხერხდა.",
+    serverError: "სერვერთან დაკავშირება ვერ მოხერხდა.",
   },
 
   en: {
@@ -132,26 +135,33 @@ const translations = {
       "Describe the job conditions and other important information.",
 
     contactSharing: "Contact sharing",
-    contactSharingHelp: "Choose which contact information should be visible on this job post.",
+    contactSharingHelp:
+      "Choose which contact information should be visible on this job post.",
+
     shareEmail: "Share email",
     sharePhone: "Share phone",
-    contactMissing: "This information is not available in your profile.",
+
+    contactMissing:
+      "This information is not available in your profile.",
 
     save: "Save Changes",
+    saving: "Saving...",
 
     loginRequired:
       "You need to log in before editing a job.",
 
-    notFound:
-      "Job not found.",
+    notFound: "Job not found.",
 
     noPermission:
       "You do not have permission to edit this job.",
 
-    success:
-      "Changes saved successfully!",
+    success: "Changes saved successfully!",
 
     goBack: "Back to My Jobs",
+
+    loadError: "Could not load the job.",
+    saveError: "Could not save the changes.",
+    serverError: "Could not connect to the server.",
   },
 
   ru: {
@@ -205,69 +215,62 @@ const translations = {
       "Опишите условия работы и другую важную информацию.",
 
     contactSharing: "Контактная информация",
-    contactSharingHelp: "Выберите, какие контактные данные будут видны в этом объявлении.",
+    contactSharingHelp:
+      "Выберите, какие контактные данные будут видны в этом объявлении.",
+
     shareEmail: "Показывать эл. почту",
     sharePhone: "Показывать телефон",
-    contactMissing: "Эта информация не указана в вашем профиле.",
+
+    contactMissing:
+      "Эта информация не указана в вашем профиле.",
 
     save: "Сохранить изменения",
+    saving: "Сохранение...",
 
     loginRequired:
       "Чтобы редактировать объявление, войдите в аккаунт.",
 
-    notFound:
-      "Объявление не найдено.",
+    notFound: "Объявление не найдено.",
 
     noPermission:
       "У вас нет права редактировать это объявление.",
 
-    success:
-      "Изменения успешно сохранены!",
+    success: "Изменения успешно сохранены!",
 
     goBack: "Вернуться к моим объявлениям",
+
+    loadError: "Не удалось загрузить объявление.",
+    saveError: "Не удалось сохранить изменения.",
+    serverError: "Не удалось подключиться к серверу.",
   },
 };
 
 function EditJob() {
   const { id } = useParams();
-
   const navigate = useNavigate();
 
   const { language } = useLanguage();
+  const t = translations[language] || translations.ka;
 
-  const t =
-    translations[language] ||
-    translations.ka;
+  const [service, setService] = useState("");
+  const [city, setCity] = useState("");
+  const [employmentType, setEmploymentType] = useState("");
+  const [paymentType, setPaymentType] = useState("");
+  const [budget, setBudget] = useState("");
+  const [description, setDescription] = useState("");
 
-  const [service, setService] =
-    useState("");
+  const [shareEmail, setShareEmail] = useState(false);
+  const [sharePhone, setSharePhone] = useState(false);
 
-  const [city, setCity] =
-    useState("");
+  const [jobFound, setJobFound] = useState(true);
+  const [hasPermission, setHasPermission] = useState(true);
 
-  const [
-    employmentType,
-    setEmploymentType,
-  ] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [
-    paymentType,
-    setPaymentType,
-  ] = useState("");
-
-  const [budget, setBudget] =
-    useState("");
-
-  const [
-    description,
-    setDescription,
-  ] = useState("");
-
-  const [shareEmail, setShareEmail] =
-    useState(false);
-
-  const [sharePhone, setSharePhone] =
-    useState(false);
+  // ========================================
+  // CURRENT USER
+  // ========================================
 
   let currentUser = null;
 
@@ -282,21 +285,12 @@ function EditJob() {
     currentUser = null;
   }
 
-  const hasEmail = Boolean(
-    currentUser?.email
-  );
+  const hasEmail = Boolean(currentUser?.email);
+  const hasPhone = Boolean(currentUser?.phone);
 
-  const hasPhone = Boolean(
-    currentUser?.phone
-  );
-
-  const [jobFound, setJobFound] =
-    useState(true);
-
-  const [
-    hasPermission,
-    setHasPermission,
-  ] = useState(true);
+  // ========================================
+  // SELECT STYLE
+  // ========================================
 
   const selectStyle = {
     display: "block",
@@ -316,238 +310,258 @@ function EditJob() {
     outline: "none",
   };
 
-  /* =========================
-     LOAD JOB
-  ========================= */
+  // ========================================
+  // CLEAR LOGIN
+  // ========================================
 
-  useEffect(() => {
-    const isLoggedIn =
-      localStorage.getItem(
-        "careGeorgiaLoggedIn"
-      ) === "true";
-
-    if (!isLoggedIn) {
-      alert(t.loginRequired);
-
-      navigate("/login");
-
-      return;
-    }
-
-    const currentUserId =
-      localStorage.getItem(
-        "careGeorgiaCurrentUserId"
-      );
-
-    const savedJobs =
-      localStorage.getItem(
-        "careGeorgiaJobs"
-      );
-
-    if (!savedJobs) {
-      setJobFound(false);
-      return;
-    }
-
-    let jobs = [];
-
-    try {
-      const parsedJobs =
-        JSON.parse(savedJobs);
-
-      if (Array.isArray(parsedJobs)) {
-        jobs = parsedJobs;
-      }
-    } catch {
-      jobs = [];
-    }
-
-    const job = jobs.find(
-      (item) =>
-        String(item.id) ===
-        String(id)
+  const clearLogin = () => {
+    localStorage.removeItem("careGeorgiaToken");
+    localStorage.removeItem("careGeorgiaLoggedIn");
+    localStorage.removeItem(
+      "careGeorgiaCurrentUserId"
     );
-
-    if (!job) {
-      setJobFound(false);
-      return;
-    }
-
-    /*
-      მხოლოდ განცხადების მფლობელს
-      შეუძლია მისი რედაქტირება.
-    */
-    if (
-      !currentUserId ||
-      job.ownerId !== currentUserId
-    ) {
-      setHasPermission(false);
-      return;
-    }
-
-    setService(job.service || "");
-
-    setCity(job.city || "");
-
-    setEmploymentType(
-      job.employmentType || ""
-    );
-
-    /*
-      ძველი განცხადება თუ paymentType-ის
-      გარეშეა, default-ად hourly გამოვიყენოთ.
-    */
-    setPaymentType(
-      job.paymentType || "hourly"
-    );
-
-    setBudget(
-      job.budget !== undefined
-        ? String(job.budget)
-        : ""
-    );
-
-    setDescription(
-      job.description || ""
-    );
-
-    /*
-      ძველი განცხადებები, რომლებსაც გაზიარების
-      flags არ აქვთ, ავტომატურად არაფერს გააზიარებენ.
-    */
-    setShareEmail(
-      job.showEmployerEmail === true
-    );
-
-    setSharePhone(
-      job.showEmployerPhone === true
-    );
-  }, [
-    id,
-    navigate,
-    t.loginRequired,
-  ]);
-
-  /* =========================
-     SAVE CHANGES
-  ========================= */
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const currentUserId =
-      localStorage.getItem(
-        "careGeorgiaCurrentUserId"
-      );
-
-    if (!currentUserId) {
-      navigate("/login");
-      return;
-    }
-
-    const savedJobs =
-      localStorage.getItem(
-        "careGeorgiaJobs"
-      );
-
-    if (!savedJobs) {
-      setJobFound(false);
-      return;
-    }
-
-    let jobs = [];
-
-    try {
-      const parsedJobs =
-        JSON.parse(savedJobs);
-
-      if (Array.isArray(parsedJobs)) {
-        jobs = parsedJobs;
-      }
-    } catch {
-      jobs = [];
-    }
-
-    const jobToEdit =
-      jobs.find(
-        (job) =>
-          String(job.id) ===
-          String(id)
-      );
-
-    if (!jobToEdit) {
-      setJobFound(false);
-      return;
-    }
-
-    /*
-      თავიდანაც ვამოწმებთ ownerId-ს,
-      სანამ ცვლილებას შევინახავთ.
-    */
-    if (
-      jobToEdit.ownerId !==
-      currentUserId
-    ) {
-      setHasPermission(false);
-      return;
-    }
-
-    const updatedJobs =
-      jobs.map((job) => {
-        if (
-          String(job.id) !==
-          String(id)
-        ) {
-          return job;
-        }
-
-        return {
-          ...job,
-
-          service,
-          city,
-          employmentType,
-          paymentType,
-
-          budget:
-            Number(budget),
-
-          description,
-
-          showEmployerEmail:
-            shareEmail && hasEmail,
-
-          showEmployerPhone:
-            sharePhone && hasPhone,
-
-          employerEmail:
-            shareEmail && hasEmail
-              ? currentUser.email
-              : "",
-
-          employerPhone:
-            sharePhone && hasPhone
-              ? currentUser.phone
-              : "",
-
-          updatedAt:
-            new Date().toISOString(),
-        };
-      });
-
-    localStorage.setItem(
-      "careGeorgiaJobs",
-      JSON.stringify(updatedJobs)
-    );
-
-    alert(t.success);
-
-    navigate("/my-jobs");
+    localStorage.removeItem("careGeorgiaUser");
   };
 
-  /* =========================
-     NOT FOUND
-  ========================= */
+  // ========================================
+  // LOAD JOB FROM POSTGRESQL
+  // ========================================
+
+  useEffect(() => {
+    const loadJob = async () => {
+      const token =
+        localStorage.getItem("careGeorgiaToken");
+
+      if (!token) {
+        alert(t.loginRequired);
+
+        navigate("/login", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+
+        const response = await fetch(
+          `http://localhost:5000/api/jobs/${id}`,
+          {
+            method: "GET",
+
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (response.status === 401) {
+          clearLogin();
+
+          navigate("/login", {
+            replace: true,
+          });
+
+          return;
+        }
+
+        if (response.status === 403) {
+          setHasPermission(false);
+          return;
+        }
+
+        if (response.status === 404) {
+          setJobFound(false);
+          return;
+        }
+
+        if (!response.ok || !data.job) {
+          console.error(
+            "Load job error:",
+            data
+          );
+
+          alert(
+            data.message ||
+              t.loadError
+          );
+
+          setJobFound(false);
+
+          return;
+        }
+
+        const job = data.job;
+
+        setService(job.service || "");
+        setCity(job.city || "");
+
+        setEmploymentType(
+          job.employmentType || ""
+        );
+
+        setPaymentType(
+          job.paymentType || "hourly"
+        );
+
+        setBudget(
+          job.budget !== undefined &&
+            job.budget !== null
+            ? String(job.budget)
+            : ""
+        );
+
+        setDescription(
+          job.description || ""
+        );
+
+        setShareEmail(
+          job.showEmployerEmail === true
+        );
+
+        setSharePhone(
+          job.showEmployerPhone === true
+        );
+      } catch (error) {
+        console.error(
+          "Load job error:",
+          error
+        );
+
+        alert(t.serverError);
+        setJobFound(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadJob();
+  }, [id, navigate, t.loginRequired, t.loadError, t.serverError]);
+
+  // ========================================
+  // SAVE CHANGES TO POSTGRESQL
+  // ========================================
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (isSubmitting) {
+      return;
+    }
+
+    const token =
+      localStorage.getItem("careGeorgiaToken");
+
+    if (!token) {
+      clearLogin();
+
+      navigate("/login", {
+        replace: true,
+      });
+
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch(
+        `http://localhost:5000/api/jobs/${id}`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+
+          body: JSON.stringify({
+            service,
+            city,
+            employmentType,
+            paymentType,
+            budget: Number(budget),
+            description: description.trim(),
+
+            showEmployerEmail:
+              shareEmail && hasEmail,
+
+            showEmployerPhone:
+              sharePhone && hasPhone,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        clearLogin();
+
+        navigate("/login", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      if (response.status === 403) {
+        setHasPermission(false);
+        return;
+      }
+
+      if (response.status === 404) {
+        setJobFound(false);
+        return;
+      }
+
+      if (!response.ok) {
+        alert(
+          data.message ||
+            t.saveError
+        );
+
+        return;
+      }
+
+      alert(t.success);
+
+      navigate("/my-jobs");
+    } catch (error) {
+      console.error(
+        "Update job error:",
+        error
+      );
+
+      alert(t.serverError);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ========================================
+  // LOADING
+  // ========================================
+
+  if (isLoading) {
+    return (
+      <div className="auth-page">
+        <div className="auth-container">
+          <div className="auth-card">
+            <div className="auth-heading">
+              <p>...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ========================================
+  // NOT FOUND
+  // ========================================
 
   if (!jobFound) {
     return (
@@ -567,9 +581,9 @@ function EditJob() {
     );
   }
 
-  /* =========================
-     NO PERMISSION
-  ========================= */
+  // ========================================
+  // NO PERMISSION
+  // ========================================
 
   if (!hasPermission) {
     return (
@@ -591,9 +605,9 @@ function EditJob() {
     );
   }
 
-  /* =========================
-     PAGE
-  ========================= */
+  // ========================================
+  // PAGE
+  // ========================================
 
   return (
     <div className="auth-page">
@@ -607,13 +621,9 @@ function EditJob() {
 
         <div className="auth-card">
           <div className="auth-heading">
-            <h1>
-              {t.title}
-            </h1>
+            <h1>{t.title}</h1>
 
-            <p>
-              {t.description}
-            </p>
+            <p>{t.description}</p>
           </div>
 
           <form
@@ -623,17 +633,13 @@ function EditJob() {
             {/* SERVICE */}
 
             <div className="form-group">
-              <label>
-                {t.service}
-              </label>
+              <label>{t.service}</label>
 
               <select
                 style={selectStyle}
                 value={service}
                 onChange={(e) =>
-                  setService(
-                    e.target.value
-                  )
+                  setService(e.target.value)
                 }
                 required
               >
@@ -673,17 +679,13 @@ function EditJob() {
             {/* CITY */}
 
             <div className="form-group">
-              <label>
-                {t.city}
-              </label>
+              <label>{t.city}</label>
 
               <select
                 style={selectStyle}
                 value={city}
                 onChange={(e) =>
-                  setCity(
-                    e.target.value
-                  )
+                  setCity(e.target.value)
                 }
                 required
               >
@@ -811,18 +813,14 @@ function EditJob() {
             {/* BUDGET */}
 
             <div className="form-group">
-              <label>
-                {t.budget}
-              </label>
+              <label>{t.budget}</label>
 
               <input
                 type="number"
                 min="1"
                 value={budget}
                 onChange={(e) =>
-                  setBudget(
-                    e.target.value
-                  )
+                  setBudget(e.target.value)
                 }
                 placeholder={
                   t.budgetPlaceholder
@@ -874,9 +872,11 @@ function EditJob() {
               className="form-group"
               style={{
                 padding: "16px",
-                border: "1px solid #dbe2ea",
+                border:
+                  "1px solid #dbe2ea",
                 borderRadius: "10px",
-                backgroundColor: "#f8fafc",
+                backgroundColor:
+                  "#f8fafc",
               }}
             >
               <label
@@ -900,12 +900,15 @@ function EditJob() {
                 {t.contactSharingHelp}
               </p>
 
+              {/* EMAIL */}
+
               <label
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
                   marginBottom: "12px",
+
                   cursor: hasEmail
                     ? "pointer"
                     : "not-allowed",
@@ -928,17 +931,21 @@ function EditJob() {
 
                 <span>
                   ✉️ {t.shareEmail}
+
                   {hasEmail
                     ? ` — ${currentUser.email}`
                     : ` — ${t.contactMissing}`}
                 </span>
               </label>
 
+              {/* PHONE */}
+
               <label
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
+
                   cursor: hasPhone
                     ? "pointer"
                     : "not-allowed",
@@ -961,6 +968,7 @@ function EditJob() {
 
                 <span>
                   📞 {t.sharePhone}
+
                   {hasPhone
                     ? ` — ${currentUser.phone}`
                     : ` — ${t.contactMissing}`}
@@ -968,11 +976,17 @@ function EditJob() {
               </label>
             </div>
 
+            {/* SAVE */}
+
             <button
               type="submit"
               className="auth-submit"
+              disabled={isSubmitting}
             >
-              💾 {t.save}
+              💾{" "}
+              {isSubmitting
+                ? t.saving
+                : t.save}
             </button>
           </form>
         </div>

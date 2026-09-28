@@ -283,158 +283,61 @@ function PostJob() {
   };
 
   const clearLogin = () => {
-    localStorage.removeItem("careGeorgiaLoggedIn");
-
-    localStorage.removeItem("careGeorgiaCurrentUserId");
-
-    localStorage.removeItem("careGeorgiaUser");
+     localStorage.removeItem("careGeorgiaToken");
+  localStorage.removeItem("careGeorgiaLoggedIn");
+  localStorage.removeItem("careGeorgiaCurrentUserId");
+  localStorage.removeItem("careGeorgiaUser");
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    /* CHECK LOGIN */
+  const token = localStorage.getItem("careGeorgiaToken");
 
-    const isLoggedIn = localStorage.getItem("careGeorgiaLoggedIn") === "true";
+  if (!token) {
+    alert(t.loginRequired);
+    clearLogin();
+    navigate("/login");
+    return;
+  }
 
-    if (!isLoggedIn) {
+  try {
+    const response = await fetch("http://localhost:5000/api/jobs", {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+
+      body: JSON.stringify({
+        service,
+        city,
+        employmentType,
+        paymentType,
+        budget: Number(budget),
+        description: description.trim(),
+        showEmployerEmail: shareEmail,
+        showEmployerPhone: sharePhone,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.status === 401) {
+      clearLogin();
       alert(t.loginRequired);
-
       navigate("/login");
-
       return;
     }
 
-    /* CURRENT USER */
-
-    const currentUserId = localStorage.getItem("careGeorgiaCurrentUserId");
-
-    const savedUser = localStorage.getItem("careGeorgiaUser");
-
-    if (!savedUser || !currentUserId) {
-      alert(t.userNotFound);
-
-      clearLogin();
-
-      navigate("/login");
-
+    if (!response.ok) {
+      alert(
+        data.message ||
+          "განცხადების გამოქვეყნება ვერ მოხერხდა."
+      );
       return;
     }
-
-    let user = null;
-
-    try {
-      user = JSON.parse(savedUser);
-    } catch {
-      user = null;
-    }
-
-    if (!user) {
-      alert(t.userNotFound);
-
-      clearLogin();
-
-      navigate("/login");
-
-      return;
-    }
-
-    /*
-      ვამოწმებთ, რომ აქტიური account
-      ემთხვევა currentUserId-ს.
-    */
-
-    if (!user.id || String(user.id) !== String(currentUserId)) {
-      alert(t.userNotFound);
-
-      clearLogin();
-
-      navigate("/login");
-
-      return;
-    }
-
-    /* NEW JOB */
-
-    const newJob = {
-      id: crypto.randomUUID(),
-
-      ownerId: user.id,
-
-      service,
-
-      city,
-
-      employmentType,
-
-      paymentType,
-
-      budget: Number(budget),
-
-      description: description.trim(),
-
-      employerName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-
-      /*
-        ახალი სისტემა:
-
-        Email/Phone მხოლოდ მაშინ
-        ინახება განცხადებაში, თუ
-        დამსაქმებელმა კონკრეტულად
-        ამ განცხადებისთვის მონიშნა.
-      */
-
-      showEmployerEmail: shareEmail,
-
-      showEmployerPhone: sharePhone,
-
-      employerEmail: shareEmail ? user.email || "" : "",
-
-      employerPhone: sharePhone ? user.phone || "" : "",
-
-      /*
-        ძველ კოდთან დროებითი
-        compatibility.
-
-        Jobs/MyJobs-ის ძველ ნაწილს
-        შეიძლება ჯერ კიდევ showPhone
-        ჰქონდეს გამოყენებული.
-      */
-
-      showPhone: sharePhone,
-
-      status: "active",
-
-      createdAt: new Date().toISOString(),
-    };
-
-    /* GET EXISTING JOBS */
-
-    const savedJobs = localStorage.getItem("careGeorgiaJobs");
-
-    let jobs = [];
-
-    if (savedJobs) {
-      try {
-        const parsedJobs = JSON.parse(savedJobs);
-
-        if (Array.isArray(parsedJobs)) {
-          jobs = parsedJobs;
-        }
-      } catch {
-        jobs = [];
-      }
-    }
-
-    /* SAVE JOB */
-
-    jobs.push(newJob);
-
-    localStorage.setItem("careGeorgiaJobs", JSON.stringify(jobs));
-
-    alert(t.success);
-
-    /* CLEAR FORM */
 
     setService("");
     setCity("");
@@ -442,12 +345,18 @@ function PostJob() {
     setPaymentType("");
     setBudget("");
     setDescription("");
-
     setShareEmail(false);
     setSharePhone(false);
 
-    navigate("/jobs");
-  };
+    navigate("/my-jobs");
+  } catch (error) {
+    console.error("Create job error:", error);
+
+    alert(
+      "სერვერთან დაკავშირება ვერ მოხერხდა. დარწმუნდი, რომ backend მუშაობს."
+    );
+  }
+};
 
   return (
     <div className="auth-page">

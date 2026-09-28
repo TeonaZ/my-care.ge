@@ -182,18 +182,16 @@ function Header() {
      LOGOUT
   ========================= */
 
-  const handleLogout = () => {
-    localStorage.removeItem("careGeorgiaLoggedIn");
+ const handleLogout = () => {
+  localStorage.removeItem("careGeorgiaToken");
+  localStorage.removeItem("careGeorgiaLoggedIn");
+  localStorage.removeItem("careGeorgiaCurrentUserId");
+  localStorage.removeItem("careGeorgiaUser");
 
-    localStorage.removeItem("careGeorgiaCurrentUserId");
+  setIsUserMenuOpen(false);
 
-    localStorage.removeItem("careGeorgiaUser");
-
-    setIsUserMenuOpen(false);
-
-    navigate("/");
-  };
-
+  navigate("/");
+};
   const menuLinkStyle = {
     display: "flex",
     alignItems: "center",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./Drivers.css";
@@ -55,6 +55,7 @@ const translations = {
     apply: "განაცხადის გაგზავნა",
     selectProfile: "აირჩიე პროფილი",
     sendApplication: "გაგზავნა",
+    sending: "იგზავნება...",
     cancel: "გაუქმება",
 
     applicationSent: "განაცხადი წარმატებით გაიგზავნა.",
@@ -77,6 +78,10 @@ const translations = {
     applyingWith: "განაცხადი გაიგზავნება პროფილით",
 
     applicationStatus: "განაცხადი გაგზავნილია ✓",
+
+    applicationError: "განაცხადის გაგზავნა ვერ მოხერხდა.",
+
+    serverError: "სერვერთან დაკავშირება ვერ მოხერხდა.",
   },
 
   en: {
@@ -130,6 +135,7 @@ const translations = {
     apply: "Apply",
     selectProfile: "Select profile",
     sendApplication: "Send application",
+    sending: "Sending...",
     cancel: "Cancel",
 
     applicationSent: "Application sent successfully.",
@@ -152,6 +158,10 @@ const translations = {
     applyingWith: "Application will be sent with",
 
     applicationStatus: "Application sent ✓",
+
+    applicationError: "Could not send the application.",
+
+    serverError: "Could not connect to the server.",
   },
 
   ru: {
@@ -206,6 +216,7 @@ const translations = {
     apply: "Отправить заявку",
     selectProfile: "Выберите профиль",
     sendApplication: "Отправить",
+    sending: "Отправка...",
     cancel: "Отмена",
 
     applicationSent: "Заявка успешно отправлена.",
@@ -228,6 +239,10 @@ const translations = {
     applyingWith: "Заявка будет отправлена с профиля",
 
     applicationStatus: "Заявка отправлена ✓",
+
+    applicationError: "Не удалось отправить заявку.",
+
+    serverError: "Не удалось подключиться к серверу.",
   },
 };
 
@@ -240,9 +255,9 @@ function Jobs() {
 
   const currentUserId = localStorage.getItem("careGeorgiaCurrentUserId");
 
-  /* =========================
-     CURRENT USER
-  ========================= */
+  // ========================================
+  // CURRENT USER
+  // ========================================
 
   const getCurrentUser = () => {
     try {
@@ -256,47 +271,118 @@ function Jobs() {
 
   const currentUser = getCurrentUser();
 
-  /* =========================
-     APPLICATIONS
-  ========================= */
+  // ========================================
+  // APPLICATIONS
+  // ========================================
 
-  const [applications, setApplications] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaApplications"));
+  const [applications, setApplications] = useState([]);
 
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
-  });
+  const [applicationsLoading, setApplicationsLoading] = useState(false);
+
+  const [sendingApplication, setSendingApplication] = useState(false);
 
   const [applyingJobId, setApplyingJobId] = useState(null);
 
   const [selectedProfileId, setSelectedProfileId] = useState("");
 
-  /* =========================
-     JOBS
-  ========================= */
+  // ========================================
+  // JOBS
+  // ========================================
 
-  let jobs = [];
+  const [jobs, setJobs] = useState([]);
 
-  const savedJobs = localStorage.getItem("careGeorgiaJobs");
+  const [jobsLoading, setJobsLoading] = useState(true);
 
-  if (savedJobs) {
-    try {
-      jobs = JSON.parse(savedJobs);
+  // ========================================
+  // LOAD JOBS
+  // ========================================
 
-      if (!Array.isArray(jobs)) {
-        jobs = [];
+  useEffect(() => {
+    const loadJobs = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/jobs");
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error("Load jobs error:", data);
+
+          setJobs([]);
+
+          return;
+        }
+
+        setJobs(Array.isArray(data.jobs) ? data.jobs : []);
+      } catch (error) {
+        console.error("Load jobs error:", error);
+
+        setJobs([]);
+      } finally {
+        setJobsLoading(false);
       }
-    } catch {
-      jobs = [];
-    }
-  }
+    };
 
-  /* =========================
-     SPECIALISTS
-  ========================= */
+    loadJobs();
+  }, []);
+
+  // ========================================
+  // LOAD MY APPLICATIONS FROM POSTGRESQL
+  // ========================================
+
+  useEffect(() => {
+    const loadApplications = async () => {
+      const token = localStorage.getItem("careGeorgiaToken");
+
+      if (!token || !isLoggedIn) {
+        setApplications([]);
+        return;
+      }
+
+      try {
+        setApplicationsLoading(true);
+
+        const response = await fetch(
+          "http://localhost:5000/api/applications/my",
+          {
+            method: "GET",
+
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error("Load applications error:", data);
+
+          setApplications([]);
+
+          return;
+        }
+
+        setApplications(
+          Array.isArray(data.applications) ? data.applications : [],
+        );
+      } catch (error) {
+        console.error("Load applications error:", error);
+
+        setApplications([]);
+      } finally {
+        setApplicationsLoading(false);
+      }
+    };
+
+    loadApplications();
+  }, [isLoggedIn]);
+
+  // ========================================
+  // SPECIALISTS
+  //
+  // პროფილები ჯერ ისევ localStorage-შია.
+  // Applications უკვე PostgreSQL-ზე გადავიდა.
+  // ========================================
 
   const getSpecialists = () => {
     try {
@@ -310,9 +396,9 @@ function Jobs() {
 
   const specialists = getSpecialists();
 
-  /* =========================
-     HELPERS
-  ========================= */
+  // ========================================
+  // HELPERS
+  // ========================================
 
   const getServiceName = (service) => {
     if (service === "dog-walker" || service === "dogwalker") {
@@ -416,9 +502,9 @@ function Jobs() {
     return service;
   };
 
-  /* =========================
-     MATCHING PROFILES
-  ========================= */
+  // ========================================
+  // MATCHING PROFILES
+  // ========================================
 
   const getMatchingProfiles = (job) => {
     if (!currentUserId) {
@@ -433,9 +519,9 @@ function Jobs() {
     );
   };
 
-  /* =========================
-     APPLICATION CHECK
-  ========================= */
+  // ========================================
+  // APPLICATION CHECK
+  // ========================================
 
   const hasApplied = (jobId) => {
     if (!currentUserId) {
@@ -449,32 +535,28 @@ function Jobs() {
     );
   };
 
-  /* =========================
-     OPEN APPLICATION
-  ========================= */
+  // ========================================
+  // OPEN APPLICATION
+  // ========================================
 
   const openApplication = (job) => {
     if (!isLoggedIn) {
       alert(t.loginToApply);
-
       return;
     }
 
     if (!currentUser || currentUser.accountType !== "provider") {
       alert(t.providerOnly);
-
       return;
     }
 
     if (String(job.ownerId) === String(currentUserId)) {
       alert(t.ownJob);
-
       return;
     }
 
     if (hasApplied(job.id)) {
       alert(t.alreadyApplied);
-
       return;
     }
 
@@ -482,7 +564,6 @@ function Jobs() {
 
     if (matchingProfiles.length === 0) {
       alert(t.noMatchingProfile);
-
       return;
     }
 
@@ -495,29 +576,38 @@ function Jobs() {
     }
   };
 
-  /* =========================
-     CANCEL APPLICATION
-  ========================= */
+  // ========================================
+  // CANCEL APPLICATION
+  // ========================================
 
   const cancelApplication = () => {
     setApplyingJobId(null);
-
     setSelectedProfileId("");
   };
 
-  /* =========================
-     SEND APPLICATION
-  ========================= */
+  // ========================================
+  // SEND APPLICATION TO POSTGRESQL
+  // ========================================
 
-  const sendApplication = (job) => {
+  const sendApplication = async (job) => {
+    if (sendingApplication) {
+      return;
+    }
+
     if (!isLoggedIn || !currentUserId) {
       alert(t.loginToApply);
-
       return;
     }
 
     if (!currentUser || currentUser.accountType !== "provider") {
       alert(t.providerOnly);
+      return;
+    }
+
+    if (String(job.ownerId) === String(currentUserId)) {
+      alert(t.ownJob);
+
+      cancelApplication();
 
       return;
     }
@@ -538,39 +628,105 @@ function Jobs() {
 
     if (!selectedProfile) {
       alert(t.chooseProfile);
-
       return;
     }
 
-    const newApplication = {
-      id: crypto.randomUUID(),
+    const token = localStorage.getItem("careGeorgiaToken");
 
-      jobId: String(job.id),
+    if (!token) {
+      alert(t.loginToApply);
+      return;
+    }
 
-      jobOwnerId: String(job.ownerId),
+    try {
+      setSendingApplication(true);
 
-      applicantUserId: String(currentUserId),
+      const response = await fetch("http://localhost:5000/api/applications", {
+        method: "POST",
 
-      specialistProfileId: String(selectedProfile.id),
+        headers: {
+          "Content-Type": "application/json",
 
-      status: "pending",
+          Authorization: `Bearer ${token}`,
+        },
 
-      createdAt: new Date().toISOString(),
-    };
+        body: JSON.stringify({
+          jobId: job.id,
+        }),
+      });
 
-    const updatedApplications = [...applications, newApplication];
+      const data = await response.json();
 
-    localStorage.setItem(
-      "careGeorgiaApplications",
-      JSON.stringify(updatedApplications),
-    );
+      // JWT აღარ არის მოქმედი
+      if (response.status === 401) {
+        localStorage.removeItem("careGeorgiaToken");
 
-    setApplications(updatedApplications);
+        localStorage.removeItem("careGeorgiaLoggedIn");
 
-    cancelApplication();
+        localStorage.removeItem("careGeorgiaCurrentUserId");
 
-    alert(t.applicationSent);
+        localStorage.removeItem("careGeorgiaUser");
+
+        alert(t.loginToApply);
+
+        return;
+      }
+
+      // უკვე არსებობს განაცხადი
+      if (response.status === 409) {
+        alert(t.alreadyApplied);
+
+        // თავიდან წამოვიღოთ ბაზიდან,
+        // რათა UI-მაც იცოდეს რომ უკვე გაგზავნილია.
+        try {
+          const reloadResponse = await fetch(
+            "http://localhost:5000/api/applications/my",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+
+          const reloadData = await reloadResponse.json();
+
+          if (reloadResponse.ok && Array.isArray(reloadData.applications)) {
+            setApplications(reloadData.applications);
+          }
+        } catch (reloadError) {
+          console.error("Reload applications error:", reloadError);
+        }
+
+        cancelApplication();
+
+        return;
+      }
+
+      if (!response.ok) {
+        alert(data.message || t.applicationError);
+
+        return;
+      }
+
+      if (data.application) {
+        setApplications((previous) => [...previous, data.application]);
+      }
+
+      cancelApplication();
+
+      alert(t.applicationSent);
+    } catch (error) {
+      console.error("Send application error:", error);
+
+      alert(t.serverError);
+    } finally {
+      setSendingApplication(false);
+    }
   };
+
+  // ========================================
+  // PAGE
+  // ========================================
 
   return (
     <div className="drivers-page">
@@ -585,7 +741,18 @@ function Jobs() {
       </header>
 
       <section className="drivers-list">
-        {jobs.length === 0 ? (
+        {jobsLoading ? (
+          <div
+            className="driver-card"
+            style={{
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "40px",
+            }}
+          >
+            <p>...</p>
+          </div>
+        ) : jobs.length === 0 ? (
           <div
             className="driver-card"
             style={{
@@ -606,17 +773,6 @@ function Jobs() {
               const applicationOpen = String(applyingJobId) === String(job.id);
 
               const alreadyApplied = hasApplied(job.id);
-
-              /*
-                ახალი Contact სისტემა.
-
-                ახალი განცხადებები იყენებენ:
-                showEmployerEmail
-                showEmployerPhone
-
-                ძველი განცხადებები ავტომატურად
-                არ გამოაჩენს კონტაქტებს.
-              */
 
               const hasSharedEmail =
                 job.showEmployerEmail === true && Boolean(job.employerEmail);
@@ -663,9 +819,7 @@ function Jobs() {
                       </p>
                     )}
 
-                    {/* =========================
-                        CONTACT INFORMATION
-                    ========================= */}
+                    {/* CONTACT */}
 
                     {hasSharedContact ? (
                       isLoggedIn ? (
@@ -764,9 +918,7 @@ function Jobs() {
                       </div>
                     )}
 
-                    {/* =========================
-                        APPLICATION
-                    ========================= */}
+                    {/* APPLICATION */}
 
                     {isLoggedIn &&
                       currentUser?.accountType === "provider" &&
@@ -778,7 +930,9 @@ function Jobs() {
                             borderTop: "1px solid #e5e7eb",
                           }}
                         >
-                          {alreadyApplied ? (
+                          {applicationsLoading ? (
+                            <span>...</span>
+                          ) : alreadyApplied ? (
                             <strong
                               style={{
                                 color: "#16a34a",
@@ -890,6 +1044,7 @@ function Jobs() {
                                 <button
                                   type="button"
                                   onClick={() => sendApplication(job)}
+                                  disabled={sendingApplication}
                                   style={{
                                     padding: "10px 18px",
                                     border: "none",
@@ -897,15 +1052,21 @@ function Jobs() {
                                     backgroundColor: "#2563eb",
                                     color: "#ffffff",
                                     fontWeight: "700",
-                                    cursor: "pointer",
+                                    cursor: sendingApplication
+                                      ? "not-allowed"
+                                      : "pointer",
+                                    opacity: sendingApplication ? 0.7 : 1,
                                   }}
                                 >
-                                  {t.sendApplication}
+                                  {sendingApplication
+                                    ? t.sending
+                                    : t.sendApplication}
                                 </button>
 
                                 <button
                                   type="button"
                                   onClick={cancelApplication}
+                                  disabled={sendingApplication}
                                   style={{
                                     padding: "10px 18px",
                                     border: "1px solid #cbd5e1",
@@ -913,7 +1074,9 @@ function Jobs() {
                                     backgroundColor: "#ffffff",
                                     color: "#334155",
                                     fontWeight: "600",
-                                    cursor: "pointer",
+                                    cursor: sendingApplication
+                                      ? "not-allowed"
+                                      : "pointer",
                                   }}
                                 >
                                   {t.cancel}

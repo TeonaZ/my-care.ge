@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./DriverProfile.css";
@@ -394,9 +394,8 @@ const translations = {
 function CaregiverProfile() {
   const { id } = useParams();
 
-  
   const location = useLocation();
-const { language } = useLanguage();
+  const { language } = useLanguage();
   const t = translations[language] || translations.ka;
 
   const isLoggedIn = localStorage.getItem("careGeorgiaLoggedIn") === "true";
@@ -422,15 +421,8 @@ const { language } = useLanguage();
     }
   };
 
-  const getSavedJobs = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaJobs"));
-
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
-  };
+  // სამუშაო განცხადებები უკვე PostgreSQL-დან იტვირთება.
+  // careGeorgiaJobs localStorage აღარ გამოიყენება.
 
   const getSavedInterests = () => {
     try {
@@ -609,11 +601,43 @@ const { language } = useLanguage();
 
   const [interests, setInterests] = useState(getSavedInterests);
   const [applications, setApplications] = useState(getSavedApplications);
+  const [jobs, setJobs] = useState([]);
+  const [jobsLoading, setJobsLoading] = useState(true);
 
   const [showInterestBox, setShowInterestBox] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState("");
   const [shareEmail, setShareEmail] = useState(false);
   const [sharePhone, setSharePhone] = useState(false);
+
+  // ========================================
+  // LOAD JOBS FROM POSTGRESQL
+  // ========================================
+
+  useEffect(() => {
+    const loadJobs = async () => {
+      try {
+        setJobsLoading(true);
+
+        const response = await fetch("http://localhost:5000/api/jobs");
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error("Load jobs error:", data);
+          setJobs([]);
+          return;
+        }
+
+        setJobs(Array.isArray(data.jobs) ? data.jobs : []);
+      } catch (error) {
+        console.error("Load jobs error:", error);
+        setJobs([]);
+      } finally {
+        setJobsLoading(false);
+      }
+    };
+
+    loadJobs();
+  }, []);
 
   if (!caregiver) {
     return (
@@ -624,13 +648,13 @@ const { language } = useLanguage();
     );
   }
 
-  const savedJobs = getSavedJobs();
+  const savedJobs = jobs;
 
   const myMatchingJobs = savedJobs.filter(
     (job) =>
       String(job.ownerId) === String(currentUserId) &&
       job.service === "caregiver" &&
-      job.status !== "closed",
+      job.status === "active",
   );
 
   /*
@@ -907,9 +931,7 @@ const { language } = useLanguage();
       JSON.stringify(updatedInterests),
     );
 
-    window.dispatchEvent(
-      new Event("careGeorgiaInterestsUpdated"),
-    );
+    window.dispatchEvent(new Event("careGeorgiaInterestsUpdated"));
 
     setSelectedJobId("");
     setShareEmail(false);
@@ -922,7 +944,9 @@ const { language } = useLanguage();
   return (
     <div className="profile-page">
       <div className="profile-container">
-        <Link to={backPath} className="profile-back">{backText}</Link>
+        <Link to={backPath} className="profile-back">
+          {backText}
+        </Link>
 
         {/* MAIN PROFILE */}
 

@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  Routes,
-  Route,
-  Link,
-  useNavigate,
-} from "react-router-dom";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
 
 import Header from "./components/Header";
 
@@ -52,327 +47,222 @@ import "./App.css";
 
 const translations = {
   ka: {
-    heroSmall:
-      "ზრუნვა იწყება სწორი ადამიანის პოვნით",
+    heroSmall: "ზრუნვა იწყება სწორი ადამიანის პოვნით",
 
-    heroTitle:
-      "იპოვე სანდო ადამიანი",
+    heroTitle: "იპოვე სანდო ადამიანი",
 
-    heroTitleBlue:
-      " შენს ოჯახზე ზრუნვისთვის",
+    heroTitleBlue: " შენს ოჯახზე ზრუნვისთვის",
 
     heroDescription:
       "მოძებნე გამოცდილი სპეციალისტები შენს ქალაქში — მარტივად, სწრაფად და უსაფრთხოდ.",
 
-    chooseService:
-      "რას ეძებ?",
+    chooseService: "რას ეძებ?",
 
-    chooseCity:
-      "აირჩიე ქალაქი",
+    chooseCity: "აირჩიე ქალაქი",
 
-    search:
-      "ძიება",
+    search: "ძიება",
 
-    nanny:
-      "ძიძა",
+    nanny: "ძიძა",
 
-    elderly:
-      "ხანდაზმულის მომვლელი",
+    elderly: "ხანდაზმულის მომვლელი",
 
-    caregiver:
-      "მომვლელი",
+    caregiver: "მომვლელი",
 
-    driver:
-      "მძღოლი",
+    driver: "მძღოლი",
 
-    tutor:
-      "ტუტორი / რეპეტიტორი",
+    tutor: "ტუტორი / რეპეტიტორი",
 
-    tutorShort:
-      "ტუტორი",
+    tutorShort: "ტუტორი",
 
-    housekeeper:
-      "სახლის დამხმარე",
+    housekeeper: "სახლის დამხმარე",
 
-    dogWalker:
-      "ძაღლის გამსეირნებელი",
+    dogWalker: "ძაღლის გამსეირნებელი",
 
-    tbilisi:
-      "თბილისი",
+    tbilisi: "თბილისი",
 
-    batumi:
-      "ბათუმი",
+    batumi: "ბათუმი",
 
-    kutaisi:
-      "ქუთაისი",
+    kutaisi: "ქუთაისი",
 
-    rustavi:
-      "რუსთავი",
+    rustavi: "რუსთავი",
 
-    gori:
-      "გორი",
+    gori: "გორი",
 
-    zugdidi:
-      "ზუგდიდი",
+    zugdidi: "ზუგდიდი",
 
-    services:
-      "ჩვენი სერვისები",
+    services: "ჩვენი სერვისები",
 
-    servicesTitle:
-      "როგორი დახმარება გჭირდება?",
+    servicesTitle: "როგორი დახმარება გჭირდება?",
 
     servicesDescription:
       "აირჩიე სასურველი კატეგორია და იპოვე შესაბამისი სპეციალისტი.",
 
-    nannyDescription:
-      "იპოვე სანდო ძიძა ბავშვის მოვლისთვის.",
+    nannyDescription: "იპოვე სანდო ძიძა ბავშვის მოვლისთვის.",
 
-    caregiverDescription:
-      "იპოვე მზრუნველი ადამიანი ოჯახის წევრისთვის.",
+    caregiverDescription: "იპოვე მზრუნველი ადამიანი ოჯახის წევრისთვის.",
 
-    driverDescription:
-      "იპოვე გამოცდილი და სანდო მძღოლი.",
+    driverDescription: "იპოვე გამოცდილი და სანდო მძღოლი.",
 
-    tutorDescription:
-      "იპოვე მასწავლებელი და რეპეტიტორი.",
+    tutorDescription: "იპოვე მასწავლებელი და რეპეტიტორი.",
 
-    housekeeperDescription:
-      "იპოვე ადამიანი ყოველდღიური საქმეებისთვის.",
+    housekeeperDescription: "იპოვე ადამიანი ყოველდღიური საქმეებისთვის.",
 
-    dogWalkerDescription:
-      "ძაღლის გასეირნება და მოვლა.",
+    dogWalkerDescription: "ძაღლის გასეირნება და მოვლა.",
 
-    view:
-      "ნახვა →",
+    view: "ნახვა →",
 
-    searchAlert:
-      "გთხოვ, აირჩიე მომსახურება და ქალაქი.",
+    searchAlert: "გთხოვ, აირჩიე მომსახურება და ქალაქი.",
   },
 
   en: {
-    heroSmall:
-      "Care starts with finding the right person",
+    heroSmall: "Care starts with finding the right person",
 
-    heroTitle:
-      "Find a trusted person",
+    heroTitle: "Find a trusted person",
 
-    heroTitleBlue:
-      " to care for your family",
+    heroTitleBlue: " to care for your family",
 
     heroDescription:
       "Find experienced specialists in your city — easily, quickly and safely.",
 
-    chooseService:
-      "What are you looking for?",
+    chooseService: "What are you looking for?",
 
-    chooseCity:
-      "Choose a city",
+    chooseCity: "Choose a city",
 
-    search:
-      "Search",
+    search: "Search",
 
-    nanny:
-      "Nanny",
+    nanny: "Nanny",
 
-    elderly:
-      "Elderly Caregiver",
+    elderly: "Elderly Caregiver",
 
-    caregiver:
-      "Caregiver",
+    caregiver: "Caregiver",
 
-    driver:
-      "Driver",
+    driver: "Driver",
 
-    tutor:
-      "Tutor / Teacher",
+    tutor: "Tutor / Teacher",
 
-    tutorShort:
-      "Tutor",
+    tutorShort: "Tutor",
 
-    housekeeper:
-      "Housekeeper",
+    housekeeper: "Housekeeper",
 
-    dogWalker:
-      "Dog Walker",
+    dogWalker: "Dog Walker",
 
-    tbilisi:
-      "Tbilisi",
+    tbilisi: "Tbilisi",
 
-    batumi:
-      "Batumi",
+    batumi: "Batumi",
 
-    kutaisi:
-      "Kutaisi",
+    kutaisi: "Kutaisi",
 
-    rustavi:
-      "Rustavi",
+    rustavi: "Rustavi",
 
-    gori:
-      "Gori",
+    gori: "Gori",
 
-    zugdidi:
-      "Zugdidi",
+    zugdidi: "Zugdidi",
 
-    services:
-      "Our Services",
+    services: "Our Services",
 
-    servicesTitle:
-      "What kind of help do you need?",
+    servicesTitle: "What kind of help do you need?",
 
-    servicesDescription:
-      "Choose a category and find the right specialist.",
+    servicesDescription: "Choose a category and find the right specialist.",
 
-    nannyDescription:
-      "Find a trusted nanny for childcare.",
+    nannyDescription: "Find a trusted nanny for childcare.",
 
-    caregiverDescription:
-      "Find a caring person for your family member.",
+    caregiverDescription: "Find a caring person for your family member.",
 
-    driverDescription:
-      "Find an experienced and trusted driver.",
+    driverDescription: "Find an experienced and trusted driver.",
 
-    tutorDescription:
-      "Find a teacher or private tutor.",
+    tutorDescription: "Find a teacher or private tutor.",
 
-    housekeeperDescription:
-      "Find help for everyday household tasks.",
+    housekeeperDescription: "Find help for everyday household tasks.",
 
-    dogWalkerDescription:
-      "Dog walking and pet care.",
+    dogWalkerDescription: "Dog walking and pet care.",
 
-    view:
-      "View →",
+    view: "View →",
 
-    searchAlert:
-      "Please choose a service and a city.",
+    searchAlert: "Please choose a service and a city.",
   },
 
   ru: {
-    heroSmall:
-      "Забота начинается с поиска подходящего человека",
+    heroSmall: "Забота начинается с поиска подходящего человека",
 
-    heroTitle:
-      "Найдите надежного человека",
+    heroTitle: "Найдите надежного человека",
 
-    heroTitleBlue:
-      " для заботы о вашей семье",
+    heroTitleBlue: " для заботы о вашей семье",
 
     heroDescription:
       "Найдите опытных специалистов в вашем городе — легко, быстро и безопасно.",
 
-    chooseService:
-      "Что вы ищете?",
+    chooseService: "Что вы ищете?",
 
-    chooseCity:
-      "Выберите город",
+    chooseCity: "Выберите город",
 
-    search:
-      "Поиск",
+    search: "Поиск",
 
-    nanny:
-      "Няня",
+    nanny: "Няня",
 
-    elderly:
-      "Сиделка для пожилых",
+    elderly: "Сиделка для пожилых",
 
-    caregiver:
-      "Сиделка",
+    caregiver: "Сиделка",
 
-    driver:
-      "Водитель",
+    driver: "Водитель",
 
-    tutor:
-      "Репетитор",
+    tutor: "Репетитор",
 
-    tutorShort:
-      "Репетитор",
+    tutorShort: "Репетитор",
 
-    housekeeper:
-      "Помощник по дому",
+    housekeeper: "Помощник по дому",
 
-    dogWalker:
-      "Выгульщик собак",
+    dogWalker: "Выгульщик собак",
 
-    tbilisi:
-      "Тбилиси",
+    tbilisi: "Тбилиси",
 
-    batumi:
-      "Батуми",
+    batumi: "Батуми",
 
-    kutaisi:
-      "Кутаиси",
+    kutaisi: "Кутаиси",
 
-    rustavi:
-      "Рустави",
+    rustavi: "Рустави",
 
-    gori:
-      "Гори",
+    gori: "Гори",
 
-    zugdidi:
-      "Зугдиди",
+    zugdidi: "Зугдиди",
 
-    services:
-      "Наши услуги",
+    services: "Наши услуги",
 
-    servicesTitle:
-      "Какая помощь вам нужна?",
+    servicesTitle: "Какая помощь вам нужна?",
 
     servicesDescription:
       "Выберите нужную категорию и найдите подходящего специалиста.",
 
-    nannyDescription:
-      "Найдите надежную няню для ухода за ребенком.",
+    nannyDescription: "Найдите надежную няню для ухода за ребенком.",
 
-    caregiverDescription:
-      "Найдите заботливого человека для члена вашей семьи.",
+    caregiverDescription: "Найдите заботливого человека для члена вашей семьи.",
 
-    driverDescription:
-      "Найдите опытного и надежного водителя.",
+    driverDescription: "Найдите опытного и надежного водителя.",
 
-    tutorDescription:
-      "Найдите учителя или репетитора.",
+    tutorDescription: "Найдите учителя или репетитора.",
 
-    housekeeperDescription:
-      "Найдите помощника для повседневных домашних дел.",
+    housekeeperDescription: "Найдите помощника для повседневных домашних дел.",
 
-    dogWalkerDescription:
-      "Выгул собак и уход за питомцами.",
+    dogWalkerDescription: "Выгул собак и уход за питомцами.",
 
-    view:
-      "Посмотреть →",
+    view: "Посмотреть →",
 
-    searchAlert:
-      "Пожалуйста, выберите услугу и город.",
+    searchAlert: "Пожалуйста, выберите услугу и город.",
   },
 };
 
 function Home() {
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
-  const {
-    language,
-  } = useLanguage();
+  const { language } = useLanguage();
 
-  const t =
-    translations[language] ||
-    translations.ka;
+  const t = translations[language] || translations.ka;
 
-  const [
-    selectedService,
-    setSelectedService,
-  ] = useState("");
+  const [selectedService, setSelectedService] = useState("");
 
-  const [
-    selectedCity,
-    setSelectedCity,
-  ] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
 
   const handleSearch = () => {
-    if (
-      !selectedService ||
-      !selectedCity
-    ) {
+    if (!selectedService || !selectedCity) {
       alert(t.searchAlert);
       return;
     }
@@ -386,15 +276,10 @@ function Home() {
       dogwalker: "/dogwalker",
     };
 
-    const route =
-      serviceRoutes[
-        selectedService
-      ];
+    const route = serviceRoutes[selectedService];
 
     if (route) {
-      navigate(
-        `${route}?city=${selectedCity}`
-      );
+      navigate(`${route}?city=${selectedCity}`);
     }
   };
 
@@ -404,115 +289,62 @@ function Home() {
 
       <main className="hero">
         <div className="hero-content">
-          <p className="hero-small">
-            {t.heroSmall}
-          </p>
+          <p className="hero-small">{t.heroSmall}</p>
 
           <h1>
             {t.heroTitle}
 
-            <span>
-              {t.heroTitleBlue}
-            </span>
+            <span>{t.heroTitleBlue}</span>
           </h1>
 
-          <p className="hero-description">
-            {t.heroDescription}
-          </p>
+          <p className="hero-description">{t.heroDescription}</p>
 
           {/* SEARCH */}
 
           <div className="search-box">
             <select
-              value={
-                selectedService
-              }
-              onChange={(e) =>
-                setSelectedService(
-                  e.target.value
-                )
-              }
+              value={selectedService}
+              onChange={(e) => setSelectedService(e.target.value)}
             >
-              <option
-                value=""
-                disabled
-              >
+              <option value="" disabled>
                 {t.chooseService}
               </option>
 
-              <option value="nanny">
-                👶 {t.nanny}
-              </option>
+              <option value="nanny">👶 {t.nanny}</option>
 
-              <option value="elderly">
-                👵 {t.elderly}
-              </option>
+              <option value="elderly">👵 {t.elderly}</option>
 
-              <option value="driver">
-                🚗 {t.driver}
-              </option>
+              <option value="driver">🚗 {t.driver}</option>
 
-              <option value="tutor">
-                📚 {t.tutor}
-              </option>
+              <option value="tutor">📚 {t.tutor}</option>
 
-              <option value="home">
-                🏠 {t.housekeeper}
-              </option>
+              <option value="home">🏠 {t.housekeeper}</option>
 
-              <option value="dogwalker">
-                🐕 {t.dogWalker}
-              </option>
+              <option value="dogwalker">🐕 {t.dogWalker}</option>
             </select>
 
             <select
-              value={
-                selectedCity
-              }
-              onChange={(e) =>
-                setSelectedCity(
-                  e.target.value
-                )
-              }
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
             >
-              <option
-                value=""
-                disabled
-              >
+              <option value="" disabled>
                 {t.chooseCity}
               </option>
 
-              <option value="tbilisi">
-                {t.tbilisi}
-              </option>
+              <option value="tbilisi">{t.tbilisi}</option>
 
-              <option value="batumi">
-                {t.batumi}
-              </option>
+              <option value="batumi">{t.batumi}</option>
 
-              <option value="kutaisi">
-                {t.kutaisi}
-              </option>
+              <option value="kutaisi">{t.kutaisi}</option>
 
-              <option value="rustavi">
-                {t.rustavi}
-              </option>
+              <option value="rustavi">{t.rustavi}</option>
 
-              <option value="gori">
-                {t.gori}
-              </option>
+              <option value="gori">{t.gori}</option>
 
-              <option value="zugdidi">
-                {t.zugdidi}
-              </option>
+              <option value="zugdidi">{t.zugdidi}</option>
             </select>
 
-            <button
-              className="search-btn"
-              onClick={
-                handleSearch
-              }
-            >
+            <button className="search-btn" onClick={handleSearch}>
               {t.search}
             </button>
           </div>
@@ -521,44 +353,26 @@ function Home() {
 
       {/* SERVICES */}
 
-      <section
-        className="services"
-        id="services"
-      >
+      <section className="services" id="services">
         <div className="services-title">
-          <p>
-            {t.services}
-          </p>
+          <p>{t.services}</p>
 
-          <h2>
-            {t.servicesTitle}
-          </h2>
+          <h2>{t.servicesTitle}</h2>
 
-          <span>
-            {t.servicesDescription}
-          </span>
+          <span>{t.servicesDescription}</span>
         </div>
 
         <div className="service-cards">
           {/* NANNY */}
 
           <div className="service-card">
-            <div className="service-icon">
-              👶
-            </div>
+            <div className="service-icon">👶</div>
 
-            <h3>
-              {t.nanny}
-            </h3>
+            <h3>{t.nanny}</h3>
 
-            <p>
-              {t.nannyDescription}
-            </p>
+            <p>{t.nannyDescription}</p>
 
-            <Link
-              to="/nannies"
-              className="service-link"
-            >
+            <Link to="/nannies" className="service-link">
               {t.view}
             </Link>
           </div>
@@ -566,22 +380,13 @@ function Home() {
           {/* CAREGIVER */}
 
           <div className="service-card">
-            <div className="service-icon">
-              👵
-            </div>
+            <div className="service-icon">👵</div>
 
-            <h3>
-              {t.caregiver}
-            </h3>
+            <h3>{t.caregiver}</h3>
 
-            <p>
-              {t.caregiverDescription}
-            </p>
+            <p>{t.caregiverDescription}</p>
 
-            <Link
-              to="/caregivers"
-              className="service-link"
-            >
+            <Link to="/caregivers" className="service-link">
               {t.view}
             </Link>
           </div>
@@ -589,22 +394,13 @@ function Home() {
           {/* DRIVER */}
 
           <div className="service-card">
-            <div className="service-icon">
-              🚗
-            </div>
+            <div className="service-icon">🚗</div>
 
-            <h3>
-              {t.driver}
-            </h3>
+            <h3>{t.driver}</h3>
 
-            <p>
-              {t.driverDescription}
-            </p>
+            <p>{t.driverDescription}</p>
 
-            <Link
-              to="/drivers"
-              className="service-link"
-            >
+            <Link to="/drivers" className="service-link">
               {t.view}
             </Link>
           </div>
@@ -612,22 +408,13 @@ function Home() {
           {/* TUTOR */}
 
           <div className="service-card">
-            <div className="service-icon">
-              📚
-            </div>
+            <div className="service-icon">📚</div>
 
-            <h3>
-              {t.tutorShort}
-            </h3>
+            <h3>{t.tutorShort}</h3>
 
-            <p>
-              {t.tutorDescription}
-            </p>
+            <p>{t.tutorDescription}</p>
 
-            <Link
-              to="/tutors"
-              className="service-link"
-            >
+            <Link to="/tutors" className="service-link">
               {t.view}
             </Link>
           </div>
@@ -635,22 +422,13 @@ function Home() {
           {/* HOUSEKEEPER */}
 
           <div className="service-card">
-            <div className="service-icon">
-              🏠
-            </div>
+            <div className="service-icon">🏠</div>
 
-            <h3>
-              {t.housekeeper}
-            </h3>
+            <h3>{t.housekeeper}</h3>
 
-            <p>
-              {t.housekeeperDescription}
-            </p>
+            <p>{t.housekeeperDescription}</p>
 
-            <Link
-              to="/housekeepers"
-              className="service-link"
-            >
+            <Link to="/housekeepers" className="service-link">
               {t.view}
             </Link>
           </div>
@@ -658,22 +436,13 @@ function Home() {
           {/* DOG WALKER */}
 
           <div className="service-card">
-            <div className="service-icon">
-              🐕
-            </div>
+            <div className="service-icon">🐕</div>
 
-            <h3>
-              {t.dogWalker}
-            </h3>
+            <h3>{t.dogWalker}</h3>
 
-            <p>
-              {t.dogWalkerDescription}
-            </p>
+            <p>{t.dogWalkerDescription}</p>
 
-            <Link
-              to="/dogwalker"
-              className="service-link"
-            >
+            <Link to="/dogwalker" className="service-link">
               {t.view}
             </Link>
           </div>
@@ -693,178 +462,93 @@ function App() {
       {/* ALL ROUTES */}
 
       <Routes>
-        <Route
-          path="/"
-          element={<Home />}
-        />
+        <Route path="/" element={<Home />} />
 
         {/* DRIVERS */}
 
-        <Route
-          path="/drivers"
-          element={<Drivers />}
-        />
+        <Route path="/drivers" element={<Drivers />} />
 
-        <Route
-          path="/drivers/:id"
-          element={<DriverProfile />}
-        />
+        <Route path="/drivers/:id" element={<DriverProfile />} />
 
         {/* TUTORS */}
 
-        <Route
-          path="/tutors"
-          element={<Tutors />}
-        />
+        <Route path="/tutors" element={<Tutors />} />
 
-        <Route
-          path="/tutors/:id"
-          element={<TutorProfile />}
-        />
+        <Route path="/tutors/:id" element={<TutorProfile />} />
 
         {/* NANNIES */}
 
-        <Route
-          path="/nannies"
-          element={<Nannies />}
-        />
+        <Route path="/nannies" element={<Nannies />} />
 
-        <Route
-          path="/nannies/:id"
-          element={<NannyProfile />}
-        />
+        <Route path="/nannies/:id" element={<NannyProfile />} />
 
         {/* CAREGIVERS */}
 
-        <Route
-          path="/caregivers"
-          element={<Caregivers />}
-        />
+        <Route path="/caregivers" element={<Caregivers />} />
 
-        <Route
-          path="/caregivers/:id"
-          element={<CaregiverProfile />}
-        />
+        <Route path="/caregivers/:id" element={<CaregiverProfile />} />
 
         {/* HOUSEKEEPERS */}
 
-        <Route
-          path="/housekeepers"
-          element={<Housekeepers />}
-        />
+        <Route path="/housekeepers" element={<Housekeepers />} />
 
-        <Route
-          path="/housekeepers/:id"
-          element={<HousekeeperProfile />}
-        />
+        <Route path="/housekeepers/:id" element={<HousekeeperProfile />} />
 
         {/* DOG WALKERS */}
 
-        <Route
-          path="/dogwalker"
-          element={<DogWalkers />}
-        />
+        <Route path="/dogwalker" element={<DogWalkers />} />
 
-        <Route
-          path="/dogwalker/:id"
-          element={<DogWalkerProfile />}
-        />
+        <Route path="/dogwalker/:id" element={<DogWalkerProfile />} />
 
         {/* JOBS */}
 
-        <Route
-          path="/post-job"
-          element={<PostJob />}
-        />
+        <Route path="/post-job" element={<PostJob />} />
 
-        <Route
-          path="/jobs"
-          element={<Jobs />}
-        />
+        <Route path="/jobs" element={<Jobs />} />
 
-        <Route
-          path="/my-jobs"
-          element={<MyJobs />}
-        />
+        <Route path="/my-jobs" element={<MyJobs />} />
 
-        <Route
-          path="/my-applications"
-          element={<MyApplications />}
-        />
+        <Route path="/my-applications" element={<MyApplications />} />
 
-        <Route
-          path="/received-interests"
-          element={<ReceivedInterests />}
-        />
+        <Route path="/received-interests" element={<ReceivedInterests />} />
 
-        <Route
-          path="/sent-interests"
-          element={<SentInterests />}
-        />
+        <Route path="/sent-interests" element={<SentInterests />} />
 
-        <Route
-          path="/edit-job/:id"
-          element={<EditJob />}
-        />
+        <Route path="/edit-job/:id" element={<EditJob />} />
 
         {/* USER */}
 
-        <Route
-          path="/my-profile"
-          element={<MyProfile />}
-        />
+        <Route path="/my-profile" element={<MyProfile />} />
 
         <Route
           path="/create-specialist-profile"
-          element={
-            <CreateSpecialistProfile />
-          }
+          element={<CreateSpecialistProfile />}
         />
 
         <Route
           path="/edit-specialist/:id"
-          element={
-            <EditSpecialistProfile />
-          }
+          element={<EditSpecialistProfile />}
         />
 
         {/* AUTH */}
 
-        <Route
-          path="/register"
-          element={<Register />}
-        />
+        <Route path="/register" element={<Register />} />
 
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+        <Route path="/login" element={<Login />} />
 
         {/* ABOUT */}
 
-        <Route
-          path="/about"
-          element={<About />}
-        />
+        <Route path="/about" element={<About />} />
 
         {/* LEGAL */}
 
-        <Route
-          path="/terms"
-          element={<Terms />}
-        />
+        <Route path="/terms" element={<Terms />} />
 
-        <Route
-          path="/privacy"
-          element={<Privacy />}
-        />
+        <Route path="/privacy" element={<Privacy />} />
 
         {/* SUPPORT */}
 
-        <Route
-          path="/support"
-          element={<Support />}
-        />
+        <Route path="/support" element={<Support />} />
       </Routes>
     </>
   );

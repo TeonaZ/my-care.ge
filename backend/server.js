@@ -4,27 +4,33 @@ require("dotenv").config();
 
 const pool = require("./db");
 const authRoutes = require("./routes/auth");
+const profileRoutes = require("./routes/profile");
+const jobsRoutes = require("./routes/jobs");
+const applicationsRoutes = require("./routes/applications");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// მთავარი სატესტო route
+// ========================================
+// HOME
+// ========================================
+
 app.get("/", (req, res) => {
   res.json({
     message: "Care Georgia API მუშაობს! 🇬🇪",
   });
 });
 
-// PostgreSQL connection test
+// ========================================
+// DATABASE TEST
+// ========================================
+
 app.get("/api/db-test", async (req, res) => {
   try {
-    const result = await pool.query(
-      "SELECT NOW() AS current_time"
-    );
+    const result = await pool.query("SELECT NOW() AS current_time");
 
     res.json({
       success: true,
@@ -41,12 +47,19 @@ app.get("/api/db-test", async (req, res) => {
   }
 });
 
-// Authentication routes
-app.use("/api/auth", authRoutes);
+// ========================================
+// ROUTES
+// ========================================
 
-// Server
+app.use("/api/auth", authRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/jobs", jobsRoutes);
+app.use("/api/applications", applicationsRoutes);
+
+// ========================================
+// START SERVER
+// ========================================
+
 app.listen(PORT, () => {
-  console.log(
-    `Care Georgia backend მუშაობს: http://localhost:${PORT}`
-  );
+  console.log(`Care Georgia backend მუშაობს: http://localhost:${PORT}`);
 });
