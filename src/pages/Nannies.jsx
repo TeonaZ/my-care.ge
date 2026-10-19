@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./Drivers.css";
@@ -54,6 +54,7 @@ const translations = {
     monthly: "თვე",
 
     noResults: "ამ ფილტრებით ძიძა ვერ მოიძებნა.",
+    loading: "იტვირთება...",
   },
 
   en: {
@@ -106,6 +107,7 @@ const translations = {
     monthly: "month",
 
     noResults: "No nannies were found with these filters.",
+    loading: "Loading...",
   },
 
   ru: {
@@ -158,6 +160,7 @@ const translations = {
     monthly: "месяц",
 
     noResults: "По этим фильтрам няни не найдены.",
+    loading: "Загрузка...",
   },
 };
 
@@ -178,6 +181,9 @@ function Nannies() {
   const [appliedAge, setAppliedAge] = useState("");
   const [appliedEmployment, setAppliedEmployment] = useState("");
 
+  const [customNannies, setCustomNannies] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   // ძველი სატესტო ძიძები
   const defaultNannies = [
     {
@@ -193,7 +199,6 @@ function Nannies() {
       verified: true,
       isCustom: false,
     },
-
     {
       id: "2",
       name: t.name2,
@@ -207,7 +212,6 @@ function Nannies() {
       verified: true,
       isCustom: false,
     },
-
     {
       id: "3",
       name: t.name3,
@@ -223,76 +227,77 @@ function Nannies() {
     },
   ];
 
-  // მომხმარებლების მიერ შექმნილი სპეციალისტები
-  const getSavedSpecialists = () => {
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem("careGeorgiaSpecialists")
-      );
+  // PostgreSQL-იდან მომხმარებლის მიერ შექმნილი ძიძების ჩატვირთვა
+  useEffect(() => {
+    const loadNannies = async () => {
+      try {
+        setLoading(true);
 
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
-  };
+        const response = await fetch(
+          "http://localhost:5000/api/specialists?profession=nanny",
+        );
 
-  const savedSpecialists = getSavedSpecialists();
+        const data = await response.json();
 
-  // მხოლოდ აქტიური ძიძები
-  const customNannies = savedSpecialists
-    .filter(
-      (profile) =>
-        profile.profession === "nanny" &&
-        profile.status !== "inactive"
-    )
-    .map((profile) => {
-      const firstName = profile.firstName || "";
-      const lastName = profile.lastName || "";
+        if (!response.ok) {
+          console.error("Load nannies error:", data);
+          setCustomNannies([]);
+          return;
+        }
 
-      const lastInitial = lastName
-        ? `${lastName.charAt(0)}.`
-        : "";
+        const profiles = Array.isArray(data.specialists)
+          ? data.specialists
+          : [];
 
-      const safeName =
-        `${firstName} ${lastInitial}`.trim() ||
-        (language === "ka"
-          ? "ძიძა"
-          : language === "ru"
-          ? "Няня"
-          : "Nanny");
+        const mappedNannies = profiles.map((profile) => {
+          const firstName = profile.firstName || "";
+          const lastName = profile.lastName || "";
 
-      return {
-        id: String(profile.id),
-        name: safeName,
-        cityValue: profile.city || "other",
+          const lastInitial = lastName ? `${lastName.charAt(0)}.` : "";
 
-        // მომავალში თუ ასაკის ველს დავამატებთ,
-        // ეს ფილტრიც ავტომატურად იმუშავებს.
-        ageGroups: Array.isArray(profile.ageGroups)
-          ? profile.ageGroups
-          : [],
+          const safeName =
+            `${firstName} ${lastInitial}`.trim() ||
+            (language === "ka" ? "ძიძა" : language === "ru" ? "Няня" : "Nanny");
 
-        experience: profile.experience || "",
-        employmentType: profile.employmentType || "",
-        paymentType: profile.paymentType || "hourly",
-        priceValue: Number(profile.priceValue) || 0,
+          return {
+            id: String(profile.id),
+            ownerId: profile.ownerId,
+            name: safeName,
+            cityValue: profile.city || "other",
 
-        rating:
-          profile.rating !== null &&
-          profile.rating !== undefined
-            ? `⭐ ${profile.rating}`
-            : "",
+            ageGroups: Array.isArray(profile.ageGroups)
+              ? profile.ageGroups
+              : [],
 
-        verified: profile.verified === true,
-        isCustom: true,
-      };
-    });
+            experience: profile.experience || "",
+            employmentType: profile.employmentType || "",
+            paymentType: profile.paymentType || "hourly",
+            priceValue: Number(profile.priceValue) || 0,
 
-  // ძველი + ახალი ძიძები
-  const nannies = [
-    ...defaultNannies,
-    ...customNannies,
-  ];
+            rating:
+              profile.rating !== null && profile.rating !== undefined
+                ? `⭐ ${profile.rating}`
+                : "",
+
+            verified: profile.verified === true,
+            isCustom: true,
+          };
+        });
+
+        setCustomNannies(mappedNannies);
+      } catch (error) {
+        console.error("Load nannies error:", error);
+        setCustomNannies([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadNannies();
+  }, [language]);
+
+  // სატესტო + PostgreSQL-ის ძიძები
+  const nannies = [...defaultNannies, ...customNannies];
 
   const cityNames = {
     tbilisi: t.tbilisi,
@@ -333,9 +338,7 @@ function Nannies() {
   };
 
   const filteredNannies = nannies.filter((nanny) => {
-    const matchesCity = appliedCity
-      ? nanny.cityValue === appliedCity
-      : true;
+    const matchesCity = appliedCity ? nanny.cityValue === appliedCity : true;
 
     let matchesPrice = true;
 
@@ -344,36 +347,20 @@ function Nannies() {
     }
 
     if (appliedPrice === "20to30") {
-      matchesPrice =
-        nanny.priceValue >= 20 &&
-        nanny.priceValue <= 30;
+      matchesPrice = nanny.priceValue >= 20 && nanny.priceValue <= 30;
     }
 
     if (appliedPrice === "over30") {
       matchesPrice = nanny.priceValue >= 30;
     }
 
-    /*
-      ახალ პროფილში ჯერ ბავშვის ასაკის ველი არ გვაქვს.
-
-      ამიტომ თუ მომხმარებელი ასაკის ფილტრს გამოიყენებს,
-      გამოჩნდება მხოლოდ ის პროფილი, რომელსაც ageGroups
-      ნამდვილად აქვს შენახული.
-    */
-    const matchesAge = appliedAge
-      ? nanny.ageGroups.includes(appliedAge)
-      : true;
+    const matchesAge = appliedAge ? nanny.ageGroups.includes(appliedAge) : true;
 
     const matchesEmployment = appliedEmployment
       ? nanny.employmentType === appliedEmployment
       : true;
 
-    return (
-      matchesCity &&
-      matchesPrice &&
-      matchesAge &&
-      matchesEmployment
-    );
+    return matchesCity && matchesPrice && matchesAge && matchesEmployment;
   });
 
   const getPrice = (nanny) => {
@@ -395,7 +382,6 @@ function Nannies() {
       </header>
 
       <div className="driver-filters">
-        {/* ქალაქი */}
         <select
           value={selectedCity}
           onChange={(e) => {
@@ -408,121 +394,53 @@ function Nannies() {
             }
           }}
         >
-          <option value="">
-            {t.allCities}
-          </option>
-
-          <option value="tbilisi">
-            {t.tbilisi}
-          </option>
-
-          <option value="batumi">
-            {t.batumi}
-          </option>
-
-          <option value="kutaisi">
-            {t.kutaisi}
-          </option>
-
-          <option value="rustavi">
-            {t.rustavi}
-          </option>
-
-          <option value="gori">
-            {t.gori}
-          </option>
-
-          <option value="zugdidi">
-            {t.zugdidi}
-          </option>
-
-          <option value="other">
-            {t.other}
-          </option>
+          <option value="">{t.allCities}</option>
+          <option value="tbilisi">{t.tbilisi}</option>
+          <option value="batumi">{t.batumi}</option>
+          <option value="kutaisi">{t.kutaisi}</option>
+          <option value="rustavi">{t.rustavi}</option>
+          <option value="gori">{t.gori}</option>
+          <option value="zugdidi">{t.zugdidi}</option>
+          <option value="other">{t.other}</option>
         </select>
 
-        {/* ბავშვის ასაკი */}
         <select
           value={selectedAge}
-          onChange={(e) =>
-            setSelectedAge(e.target.value)
-          }
+          onChange={(e) => setSelectedAge(e.target.value)}
         >
-          <option value="">
-            {t.allAges}
-          </option>
-
-          <option value="0-1">
-            {t.age01}
-          </option>
-
-          <option value="1-3">
-            {t.age13}
-          </option>
-
-          <option value="3-6">
-            {t.age36}
-          </option>
-
-          <option value="6+">
-            {t.age6plus}
-          </option>
+          <option value="">{t.allAges}</option>
+          <option value="0-1">{t.age01}</option>
+          <option value="1-3">{t.age13}</option>
+          <option value="3-6">{t.age36}</option>
+          <option value="6+">{t.age6plus}</option>
         </select>
 
-        {/* განაკვეთი */}
         <select
           value={selectedEmployment}
-          onChange={(e) =>
-            setSelectedEmployment(e.target.value)
-          }
+          onChange={(e) => setSelectedEmployment(e.target.value)}
         >
-          <option value="">
-            {t.allEmployment}
-          </option>
-
-          <option value="full-time">
-            {t.fullTime}
-          </option>
-
-          <option value="part-time">
-            {t.partTime}
-          </option>
+          <option value="">{t.allEmployment}</option>
+          <option value="full-time">{t.fullTime}</option>
+          <option value="part-time">{t.partTime}</option>
         </select>
 
-        {/* ფასი */}
         <select
           value={selectedPrice}
-          onChange={(e) =>
-            setSelectedPrice(e.target.value)
-          }
+          onChange={(e) => setSelectedPrice(e.target.value)}
         >
-          <option value="">
-            {t.allPrices}
-          </option>
-
-          <option value="under20">
-            {t.under20}
-          </option>
-
-          <option value="20to30">
-            {t.price20to30}
-          </option>
-
-          <option value="over30">
-            {t.over30}
-          </option>
+          <option value="">{t.allPrices}</option>
+          <option value="under20">{t.under20}</option>
+          <option value="20to30">{t.price20to30}</option>
+          <option value="over30">{t.over30}</option>
         </select>
 
-        {/* ძიება */}
         <button
           type="button"
           onClick={() => {
             setAppliedCity(selectedCity);
             setAppliedPrice(selectedPrice);
             setAppliedAge(selectedAge);
-            setAppliedEmployment(
-              selectedEmployment
-            );
+            setAppliedEmployment(selectedEmployment);
           }}
         >
           {t.search}
@@ -530,7 +448,18 @@ function Nannies() {
       </div>
 
       <section className="drivers-list">
-        {filteredNannies.length === 0 ? (
+        {loading ? (
+          <div
+            className="driver-card"
+            style={{
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "40px",
+            }}
+          >
+            <p>{t.loading}</p>
+          </div>
+        ) : filteredNannies.length === 0 ? (
           <div
             className="driver-card"
             style={{
@@ -543,57 +472,33 @@ function Nannies() {
           </div>
         ) : (
           filteredNannies.map((nanny) => (
-            <div
-              className="driver-card"
-              key={nanny.id}
-            >
-              <div className="driver-avatar">
-                👶
-              </div>
+            <div className="driver-card" key={nanny.id}>
+              <div className="driver-avatar">👶</div>
 
               <div className="driver-info">
                 <div className="driver-name">
                   <h2>{nanny.name}</h2>
 
                   {nanny.verified && (
-                    <span className="verified">
-                      {t.verified}
-                    </span>
+                    <span className="verified">{t.verified}</span>
                   )}
                 </div>
 
-                <p>
-                  📍{" "}
-                  {cityNames[nanny.cityValue] ||
-                    nanny.cityValue}
-                </p>
+                <p>📍 {cityNames[nanny.cityValue] || nanny.cityValue}</p>
 
                 <p>
-                  👶 {t.experience}:{" "}
-                  {nanny.experience}
+                  👶 {t.experience}: {nanny.experience}
                 </p>
 
-                <p>
-                  🕒{" "}
-                  {getEmploymentName(
-                    nanny.employmentType
-                  )}
-                </p>
+                <p>🕒 {getEmploymentName(nanny.employmentType)}</p>
 
-                {nanny.rating && (
-                  <p>{nanny.rating}</p>
-                )}
+                {nanny.rating && <p>{nanny.rating}</p>}
               </div>
 
               <div className="driver-price">
-                <strong>
-                  {getPrice(nanny)}
-                </strong>
+                <strong>{getPrice(nanny)}</strong>
 
-                <Link
-                  to={`/nannies/${nanny.id}`}
-                  className="profile-btn"
-                >
+                <Link to={`/nannies/${nanny.id}`} className="profile-btn">
                   {t.viewProfile}
                 </Link>
               </div>

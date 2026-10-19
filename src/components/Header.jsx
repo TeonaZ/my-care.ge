@@ -12,7 +12,8 @@ const translations = {
     receivedInterests: "დამსაქმებლის დაინტერესება",
     sentInterests: "გაგზავნილი დაინტერესებები",
     myProfile: "ჩემი პროფილი",
-    createSpecialistProfile: "სპეციალისტის პროფილის შექმნა",
+    createSpecialistProfile:
+      "სპეციალისტის პროფილის შექმნა",
     about: "ჩვენ შესახებ",
     support: "Support",
     login: "შესვლა",
@@ -30,7 +31,8 @@ const translations = {
     receivedInterests: "Employer Interests",
     sentInterests: "Sent Interests",
     myProfile: "My Profile",
-    createSpecialistProfile: "Create Specialist Profile",
+    createSpecialistProfile:
+      "Create Specialist Profile",
     about: "About Us",
     support: "Support",
     login: "Login",
@@ -48,7 +50,8 @@ const translations = {
     receivedInterests: "Интерес работодателя",
     sentInterests: "Отправленные предложения",
     myProfile: "Мой профиль",
-    createSpecialistProfile: "Создать профиль специалиста",
+    createSpecialistProfile:
+      "Создать профиль специалиста",
     about: "О нас",
     support: "Support",
     login: "Войти",
@@ -60,114 +63,193 @@ const translations = {
 
 function Header() {
   const navigate = useNavigate();
+  const { language, setLanguage } =
+    useLanguage();
 
-  const { language, setLanguage } = useLanguage();
+  const t =
+    translations[language] ||
+    translations.ka;
 
-  const t = translations[language] || translations.ka;
+  const [
+    isUserMenuOpen,
+    setIsUserMenuOpen,
+  ] = useState(false);
 
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [unreadInterests, setUnreadInterests] = useState(0);
+  const [
+    unreadInterests,
+    setUnreadInterests,
+  ] = useState(0);
 
-  /* =========================
-     LOGIN STATE
-  ========================= */
-
-  const isLoggedIn = localStorage.getItem("careGeorgiaLoggedIn") === "true";
-
-  /* =========================
-     CURRENT USER
-  ========================= */
+  const isLoggedIn =
+    localStorage.getItem(
+      "careGeorgiaLoggedIn",
+    ) === "true";
 
   let user = null;
 
   try {
-    const savedUser = localStorage.getItem("careGeorgiaUser");
+    const savedUser =
+      localStorage.getItem(
+        "careGeorgiaUser",
+      );
 
-    user = savedUser ? JSON.parse(savedUser) : null;
+    user = savedUser
+      ? JSON.parse(savedUser)
+      : null;
   } catch {
     user = null;
   }
 
-  const currentUserId = localStorage.getItem("careGeorgiaCurrentUserId");
+  const currentUserId =
+    localStorage.getItem(
+      "careGeorgiaCurrentUserId",
+    );
+
+  const token =
+    localStorage.getItem(
+      "careGeorgiaToken",
+    );
+
+  // ========================================
+  // UNSEEN RECEIVED INTERESTS
+  // ========================================
 
   useEffect(() => {
-    const refreshUnreadInterests = () => {
-      if (!currentUserId || user?.accountType !== "provider") {
-        setUnreadInterests(0);
-        return;
-      }
+    let isMounted = true;
 
-      try {
-        const saved = JSON.parse(
-          localStorage.getItem("careGeorgiaInterests") || "[]"
-        );
+    const loadReceivedInterests =
+      async () => {
+        if (
+          !isLoggedIn ||
+          !currentUserId ||
+          user?.accountType !==
+            "provider" ||
+          !token
+        ) {
+          if (isMounted) {
+            setUnreadInterests(0);
+          }
 
-        const interests = Array.isArray(saved) ? saved : [];
+          return;
+        }
 
-        const unreadCount = interests.filter(
-          (interest) =>
-            String(interest.specialistUserId) === String(currentUserId) &&
-            interest.specialistSeen !== true
-        ).length;
+        try {
+          const response =
+            await fetch(
+              "http://localhost:5000/api/interests/received",
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              },
+            );
 
-        setUnreadInterests(unreadCount);
-      } catch {
-        setUnreadInterests(0);
-      }
-    };
+          if (
+            response.status === 401
+          ) {
+            if (isMounted) {
+              setUnreadInterests(0);
+            }
 
-    refreshUnreadInterests();
+            return;
+          }
 
-    window.addEventListener("careGeorgiaInterestsUpdated", refreshUnreadInterests);
-    window.addEventListener("storage", refreshUnreadInterests);
+          const data =
+            await response.json();
+
+          if (!response.ok) {
+            console.error(
+              "Header received interests error:",
+              data,
+            );
+
+            if (isMounted) {
+              setUnreadInterests(0);
+            }
+
+            return;
+          }
+
+          const interests =
+            Array.isArray(
+              data.interests,
+            )
+              ? data.interests
+              : [];
+
+          const unseenInterests =
+            interests.filter(
+              (interest) =>
+                interest.isSeen ===
+                false,
+            );
+
+          if (isMounted) {
+            setUnreadInterests(
+              unseenInterests.length,
+            );
+          }
+        } catch (error) {
+          console.error(
+            "Header received interests error:",
+            error,
+          );
+
+          if (isMounted) {
+            setUnreadInterests(0);
+          }
+        }
+      };
+
+    loadReceivedInterests();
+
+    const handleInterestsUpdated =
+      () => {
+        loadReceivedInterests();
+      };
+
+    window.addEventListener(
+      "careGeorgiaInterestsUpdated",
+      handleInterestsUpdated,
+    );
 
     return () => {
+      isMounted = false;
+
       window.removeEventListener(
         "careGeorgiaInterestsUpdated",
-        refreshUnreadInterests
+        handleInterestsUpdated,
       );
-      window.removeEventListener("storage", refreshUnreadInterests);
     };
-  }, [currentUserId, user?.accountType]);
-
-  /* =========================
-     CLOSE USER MENU
-  ========================= */
+  }, [
+    isLoggedIn,
+    currentUserId,
+    user?.accountType,
+    token,
+  ]);
 
   const closeMenu = () => {
     setIsUserMenuOpen(false);
   };
 
-  /* =========================
-     LANGUAGE
-  ========================= */
-
-  const handleLanguageChange = (e) => {
+  const handleLanguageChange = (
+    e,
+  ) => {
     setLanguage(e.target.value);
-
     setIsUserMenuOpen(false);
   };
-
-  /* =========================
-     FIND SPECIALIST
-  ========================= */
 
   const handleFindSpecialist = () => {
     setIsUserMenuOpen(false);
 
-    /*
-      ჯერ მთავარ გვერდზე გადავდივართ.
-    */
-
     navigate("/");
 
-    /*
-      შემდეგ ვპოულობთ services
-      სექციას და ჩამოვდივართ მასთან.
-    */
-
     setTimeout(() => {
-      const servicesSection = document.getElementById("services");
+      const servicesSection =
+        document.getElementById(
+          "services",
+        );
 
       if (servicesSection) {
         servicesSection.scrollIntoView({
@@ -178,20 +260,29 @@ function Header() {
     }, 100);
   };
 
-  /* =========================
-     LOGOUT
-  ========================= */
+  const handleLogout = () => {
+    localStorage.removeItem(
+      "careGeorgiaToken",
+    );
 
- const handleLogout = () => {
-  localStorage.removeItem("careGeorgiaToken");
-  localStorage.removeItem("careGeorgiaLoggedIn");
-  localStorage.removeItem("careGeorgiaCurrentUserId");
-  localStorage.removeItem("careGeorgiaUser");
+    localStorage.removeItem(
+      "careGeorgiaLoggedIn",
+    );
 
-  setIsUserMenuOpen(false);
+    localStorage.removeItem(
+      "careGeorgiaCurrentUserId",
+    );
 
-  navigate("/");
-};
+    localStorage.removeItem(
+      "careGeorgiaUser",
+    );
+
+    setUnreadInterests(0);
+    setIsUserMenuOpen(false);
+
+    navigate("/");
+  };
+
   const menuLinkStyle = {
     display: "flex",
     alignItems: "center",
@@ -205,10 +296,6 @@ function Header() {
 
   return (
     <header className="header">
-      {/* =========================
-          LOGO
-      ========================= */}
-
       <Link
         to="/"
         className="logo"
@@ -221,25 +308,23 @@ function Header() {
         🇬🇪 Care Georgia
       </Link>
 
-      {/* =========================
-          NAVIGATION
-      ========================= */}
-
       <nav className="nav">
-        {/* HOME */}
-
-        <Link to="/" onClick={closeMenu}>
+        <Link
+          to="/"
+          onClick={closeMenu}
+        >
           {t.home}
         </Link>
 
-        {/* FIND SPECIALIST */}
-
         <button
           type="button"
-          onClick={handleFindSpecialist}
+          onClick={
+            handleFindSpecialist
+          }
           style={{
             border: "none",
-            background: "transparent",
+            background:
+              "transparent",
             padding: "0",
             margin: "0",
             font: "inherit",
@@ -250,48 +335,49 @@ function Header() {
           {t.findSpecialist}
         </button>
 
-        {/* FIND JOB */}
-
-        <Link to="/jobs" onClick={closeMenu}>
+        <Link
+          to="/jobs"
+          onClick={closeMenu}
+        >
           {t.findJob}
         </Link>
 
-        {/* ABOUT */}
-
-        <Link to="/about" onClick={closeMenu}>
+        <Link
+          to="/about"
+          onClick={closeMenu}
+        >
           {t.about}
         </Link>
 
-        {/* SUPPORT */}
-
-        <Link to="/support" onClick={closeMenu}>
+        <Link
+          to="/support"
+          onClick={closeMenu}
+        >
           🛠️ {t.support}
         </Link>
       </nav>
 
-      {/* =========================
-          RIGHT SIDE
-      ========================= */}
-
       <div className="header-buttons">
-        {/* LANGUAGE */}
-
         <select
           className="language-select"
           value={language}
-          onChange={handleLanguageChange}
+          onChange={
+            handleLanguageChange
+          }
           aria-label="Language"
         >
-          <option value="ka">🇬🇪 ქართული</option>
+          <option value="ka">
+            🇬🇪 ქართული
+          </option>
 
-          <option value="en">🇬🇧 English</option>
+          <option value="en">
+            🇬🇧 English
+          </option>
 
-          <option value="ru">🇷🇺 Русский</option>
+          <option value="ru">
+            🇷🇺 Русский
+          </option>
         </select>
-
-        {/* =========================
-            LOGGED IN
-        ========================= */}
 
         {isLoggedIn ? (
           <div
@@ -299,23 +385,38 @@ function Header() {
               position: "relative",
             }}
           >
-            {/* USER NAME + NEW INTEREST BELL */}
-
-            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              {user?.accountType === "provider" && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              {user?.accountType ===
+                "provider" && (
                 <button
                   type="button"
                   onClick={() => {
                     closeMenu();
-                    navigate("/received-interests");
+
+                    navigate(
+                      "/received-interests",
+                    );
                   }}
-                  aria-label={t.receivedInterests}
-                  title={t.receivedInterests}
+                  aria-label={
+                    t.receivedInterests
+                  }
+                  title={
+                    t.receivedInterests
+                  }
                   style={{
-                    position: "relative",
+                    position:
+                      "relative",
                     border: "none",
-                    background: "transparent",
-                    cursor: "pointer",
+                    background:
+                      "transparent",
+                    cursor:
+                      "pointer",
                     fontSize: "20px",
                     padding: "7px",
                     lineHeight: 1,
@@ -323,259 +424,337 @@ function Header() {
                 >
                   <span
                     style={{
-                      opacity: unreadInterests > 0 ? 1 : 0.55,
+                      opacity:
+                        unreadInterests >
+                        0
+                          ? 1
+                          : 0.55,
                     }}
                   >
                     🔔
                   </span>
 
-                  {unreadInterests > 0 && (
+                  {unreadInterests >
+                    0 && (
                     <span
                       style={{
-                        position: "absolute",
+                        position:
+                          "absolute",
                         top: "0",
                         right: "0",
-                        minWidth: "17px",
+                        minWidth:
+                          "17px",
                         height: "17px",
-                        padding: "0 4px",
-                        borderRadius: "999px",
-                        backgroundColor: "#dc2626",
-                        color: "#ffffff",
-                        fontSize: "10px",
-                        fontWeight: "800",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        boxSizing: "border-box",
+                        padding:
+                          "0 4px",
+                        borderRadius:
+                          "999px",
+                        backgroundColor:
+                          "#dc2626",
+                        color:
+                          "#ffffff",
+                        fontSize:
+                          "10px",
+                        fontWeight:
+                          "800",
+                        display:
+                          "flex",
+                        alignItems:
+                          "center",
+                        justifyContent:
+                          "center",
+                        boxSizing:
+                          "border-box",
                       }}
                     >
-                      {unreadInterests > 9 ? "9+" : unreadInterests}
+                      {unreadInterests >
+                      9
+                        ? "9+"
+                        : unreadInterests}
                     </span>
                   )}
                 </button>
               )}
 
-            <button
-              type="button"
-              className="user-name"
-              onClick={() =>
-                setIsUserMenuOpen((previousValue) => !previousValue)
-              }
-              style={{
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                fontFamily: "inherit",
-                fontSize: "inherit",
-                color: "inherit",
-                padding: "8px 10px",
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-              }}
-            >
-              <span>👤 {user?.firstName || t.user}</span>
-
-              <span
+              <button
+                type="button"
+                className="user-name"
+                onClick={() =>
+                  setIsUserMenuOpen(
+                    (
+                      previousValue,
+                    ) =>
+                      !previousValue,
+                  )
+                }
                 style={{
-                  fontSize: "11px",
-
-                  transform: isUserMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
-
-                  transition: "transform 0.2s ease",
+                  border: "none",
+                  background:
+                    "transparent",
+                  cursor: "pointer",
+                  fontFamily:
+                    "inherit",
+                  fontSize:
+                    "inherit",
+                  color: "inherit",
+                  padding:
+                    "8px 10px",
+                  display: "flex",
+                  alignItems:
+                    "center",
+                  gap: "5px",
                 }}
               >
-                ▼
-              </span>
-            </button>
-            </div>
+                <span>
+                  👤{" "}
+                  {user?.firstName ||
+                    t.user}
+                </span>
 
-            {/* =========================
-                DROPDOWN
-            ========================= */}
+                <span
+                  style={{
+                    fontSize: "11px",
+                    transform:
+                      isUserMenuOpen
+                        ? "rotate(180deg)"
+                        : "rotate(0deg)",
+                    transition:
+                      "transform 0.2s ease",
+                  }}
+                >
+                  ▼
+                </span>
+              </button>
+            </div>
 
             {isUserMenuOpen && (
               <div
                 style={{
-                  position: "absolute",
-
-                  top: "calc(100% + 8px)",
-
+                  position:
+                    "absolute",
+                  top:
+                    "calc(100% + 8px)",
                   right: "0",
-
                   width: "290px",
-
-                  backgroundColor: "#ffffff",
-
-                  border: "1px solid #e2e8f0",
-
-                  borderRadius: "12px",
-
-                  boxShadow: "0 12px 35px rgba(0, 0, 0, 0.14)",
-
+                  backgroundColor:
+                    "#ffffff",
+                  border:
+                    "1px solid #e2e8f0",
+                  borderRadius:
+                    "12px",
+                  boxShadow:
+                    "0 12px 35px rgba(0, 0, 0, 0.14)",
                   padding: "8px",
-
                   zIndex: "9999",
                 }}
               >
-                {/* MY PROFILE */}
-
                 <Link
                   to="/my-profile"
-                  onClick={closeMenu}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "12px 14px",
-                    borderRadius: "8px",
-                    textDecoration: "none",
-                    color: "#1e293b",
-                    fontWeight: "600",
-                  }}
+                  onClick={
+                    closeMenu
+                  }
+                  style={
+                    menuLinkStyle
+                  }
                 >
                   <span>👤</span>
-
-                  <span>{t.myProfile}</span>
+                  <span>
+                    {t.myProfile}
+                  </span>
                 </Link>
 
-                {/* =========================
-                    CLIENT / EMPLOYER
-                ========================= */}
-
-                {user?.accountType === "client" && (
+                {user?.accountType ===
+                  "client" && (
                   <>
                     <Link
                       to="/my-jobs"
-                      onClick={closeMenu}
-                      style={menuLinkStyle}
+                      onClick={
+                        closeMenu
+                      }
+                      style={
+                        menuLinkStyle
+                      }
                     >
-                      <span>📋</span>
-                      <span>{t.myJobs}</span>
+                      <span>
+                        📋
+                      </span>
+                      <span>
+                        {t.myJobs}
+                      </span>
                     </Link>
 
                     <Link
                       to="/sent-interests"
-                      onClick={closeMenu}
-                      style={menuLinkStyle}
+                      onClick={
+                        closeMenu
+                      }
+                      style={
+                        menuLinkStyle
+                      }
                     >
-                      <span>📤</span>
-                      <span>{t.sentInterests}</span>
+                      <span>
+                        📤
+                      </span>
+                      <span>
+                        {
+                          t.sentInterests
+                        }
+                      </span>
                     </Link>
                   </>
                 )}
 
-                {/* =========================
-                    PROVIDER / JOB SEEKER
-                ========================= */}
-
-                {user?.accountType === "provider" && (
+                {user?.accountType ===
+                  "provider" && (
                   <>
                     <Link
                       to="/my-jobs"
-                      onClick={closeMenu}
-                      style={menuLinkStyle}
+                      onClick={
+                        closeMenu
+                      }
+                      style={
+                        menuLinkStyle
+                      }
                     >
-                      <span>📋</span>
-                      <span>{t.myJobs}</span>
+                      <span>
+                        📋
+                      </span>
+                      <span>
+                        {t.myJobs}
+                      </span>
                     </Link>
 
                     <Link
                       to="/my-applications"
-                      onClick={closeMenu}
-                      style={menuLinkStyle}
+                      onClick={
+                        closeMenu
+                      }
+                      style={
+                        menuLinkStyle
+                      }
                     >
-                      <span>📨</span>
-                      <span>{t.myApplications}</span>
+                      <span>
+                        📨
+                      </span>
+                      <span>
+                        {
+                          t.myApplications
+                        }
+                      </span>
                     </Link>
 
                     <Link
                       to="/received-interests"
-                      onClick={closeMenu}
-                      style={menuLinkStyle}
+                      onClick={
+                        closeMenu
+                      }
+                      style={
+                        menuLinkStyle
+                      }
                     >
-                      <span>🔔</span>
-                      <span>{t.receivedInterests}</span>
+                      <span>
+                        🔔
+                      </span>
+
+                      <span>
+                        {
+                          t.receivedInterests
+                        }
+
+                        {unreadInterests >
+                        0
+                          ? ` (${unreadInterests})`
+                          : ""}
+                      </span>
                     </Link>
 
                     <Link
                       to="/create-specialist-profile"
-                      onClick={closeMenu}
-                      style={menuLinkStyle}
+                      onClick={
+                        closeMenu
+                      }
+                      style={
+                        menuLinkStyle
+                      }
                     >
-                      <span>🧑‍💼</span>
-                      <span>{t.createSpecialistProfile}</span>
+                      <span>
+                        🧑‍💼
+                      </span>
+
+                      <span>
+                        {
+                          t.createSpecialistProfile
+                        }
+                      </span>
                     </Link>
                   </>
                 )}
 
-                {/* DIVIDER */}
-
                 <div
                   style={{
                     height: "1px",
-
-                    backgroundColor: "#e2e8f0",
-
-                    margin: "6px 0",
+                    backgroundColor:
+                      "#e2e8f0",
+                    margin:
+                      "6px 0",
                   }}
                 />
 
-                {/* =========================
-                    LOGOUT
-                ========================= */}
-
                 <button
                   type="button"
-                  onClick={handleLogout}
+                  onClick={
+                    handleLogout
+                  }
                   style={{
                     width: "100%",
-
                     display: "flex",
-
-                    alignItems: "center",
-
+                    alignItems:
+                      "center",
                     gap: "10px",
-
-                    padding: "12px 14px",
-
+                    padding:
+                      "12px 14px",
                     border: "none",
-
-                    borderRadius: "8px",
-
-                    backgroundColor: "transparent",
-
-                    color: "#dc2626",
-
-                    fontFamily: "inherit",
-
-                    fontSize: "inherit",
-
-                    fontWeight: "600",
-
-                    cursor: "pointer",
-
-                    textAlign: "left",
+                    borderRadius:
+                      "8px",
+                    backgroundColor:
+                      "transparent",
+                    color:
+                      "#dc2626",
+                    fontFamily:
+                      "inherit",
+                    fontSize:
+                      "inherit",
+                    fontWeight:
+                      "600",
+                    cursor:
+                      "pointer",
+                    textAlign:
+                      "left",
                   }}
                 >
                   <span>🚪</span>
-
-                  <span>{t.logout}</span>
+                  <span>
+                    {t.logout}
+                  </span>
                 </button>
               </div>
             )}
           </div>
         ) : (
-          /* =========================
-             LOGGED OUT
-          ========================= */
-
           <>
-            <Link to="/login" className="login-btn" onClick={closeMenu}>
+            <Link
+              to="/login"
+              className="login-btn"
+              onClick={closeMenu}
+            >
               {t.login}
             </Link>
 
-            <Link to="/register" className="register-btn" onClick={closeMenu}>
+            <Link
+              to="/register"
+              className="register-btn"
+              onClick={closeMenu}
+            >
               {t.register}
             </Link>
           </>

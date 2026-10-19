@@ -424,16 +424,6 @@ function CaregiverProfile() {
   // სამუშაო განცხადებები უკვე PostgreSQL-დან იტვირთება.
   // careGeorgiaJobs localStorage აღარ გამოიყენება.
 
-  const getSavedInterests = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaInterests"));
-
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
-  };
-
   const getSavedApplications = () => {
     try {
       const saved = JSON.parse(localStorage.getItem("careGeorgiaApplications"));
@@ -599,7 +589,9 @@ function CaregiverProfile() {
     );
   }
 
-  const [interests, setInterests] = useState(getSavedInterests);
+  const [interests, setInterests] = useState([]);
+  const [interestsLoading, setInterestsLoading] = useState(true);
+  const [sendingInterest, setSendingInterest] = useState(false);
   const [applications, setApplications] = useState(getSavedApplications);
   const [jobs, setJobs] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
@@ -637,6 +629,49 @@ function CaregiverProfile() {
     };
 
     loadJobs();
+  }, []);
+
+  // ========================================
+  // LOAD SENT INTERESTS FROM POSTGRESQL
+  // ========================================
+
+  useEffect(() => {
+    const loadInterests = async () => {
+      const token = localStorage.getItem("careGeorgiaToken");
+
+      if (!token) {
+        setInterests([]);
+        setInterestsLoading(false);
+        return;
+      }
+
+      try {
+        setInterestsLoading(true);
+
+        const response = await fetch("http://localhost:5000/api/interests/sent", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error("Load interests error:", data);
+          setInterests([]);
+          return;
+        }
+
+        setInterests(Array.isArray(data.interests) ? data.interests : []);
+      } catch (error) {
+        console.error("Load interests error:", error);
+        setInterests([]);
+      } finally {
+        setInterestsLoading(false);
+      }
+    };
+
+    loadInterests();
   }, []);
 
   if (!caregiver) {
@@ -837,8 +872,8 @@ function CaregiverProfile() {
   const hasInterestForJob = (jobId) => {
     return interests.some(
       (interest) =>
-        String(interest.employerUserId) === String(currentUserId) &&
-        String(interest.specialistProfileId) === String(caregiver.id) &&
+        String(interest.senderId) === String(currentUserId) &&
+        String(interest.specialistId) === String(caregiver.ownerId) &&
         String(interest.jobId) === String(jobId),
     );
   };
@@ -877,8 +912,8 @@ function CaregiverProfile() {
     setShowInterestBox(true);
   };
 
-  const handleSendInterest = () => {
-    if (!selectedJobId) return;
+  const handleSendInterest = async () => {
+    if (!selectedJobId || sendingInterest) return;
 
     if (!isLoggedIn || !currentUserId || !isClient) {
       return;
@@ -903,42 +938,55 @@ function CaregiverProfile() {
       return;
     }
 
-    const newInterest = {
-      id: crypto.randomUUID(),
-      employerUserId: String(currentUserId),
-      specialistUserId: String(caregiver.ownerId),
-      specialistProfileId: String(caregiver.id),
-      jobId: String(selectedJob.id),
+    const token = localStorage.getItem("careGeorgiaToken");
 
-      showEmployerEmail: shareEmail,
-      showEmployerPhone: sharePhone,
+    if (!token) {
+      alert(t.loginToSend);
+      return;
+    }
 
-      employerEmail: shareEmail ? currentUser?.email || "" : "",
+    try {
+      setSendingInterest(true);
 
-      employerPhone: sharePhone ? currentUser?.phone || "" : "",
+      const response = await fetch("http://localhost:5000/api/interests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          jobId: String(selectedJob.id),
+          specialistId: String(caregiver.ownerId),
+        }),
+      });
 
-      status: "sent",
-      specialistSeen: false,
-      createdAt: new Date().toISOString(),
-    };
+      const data = await response.json();
 
-    const updatedInterests = [...interests, newInterest];
+      if (!response.ok) {
+        if (response.status === 409) {
+          alert(t.alreadySent);
+        } else {
+          alert(data.message || "დაინტერესების გაგზავნა ვერ მოხერხდა.");
+        }
+        return;
+      }
 
-    setInterests(updatedInterests);
+      if (data.interest) {
+        setInterests((previous) => [data.interest, ...previous]);
+      }
 
-    localStorage.setItem(
-      "careGeorgiaInterests",
-      JSON.stringify(updatedInterests),
-    );
+      setSelectedJobId("");
+      setShareEmail(false);
+      setSharePhone(false);
+      setShowInterestBox(false);
 
-    window.dispatchEvent(new Event("careGeorgiaInterestsUpdated"));
-
-    setSelectedJobId("");
-    setShareEmail(false);
-    setSharePhone(false);
-    setShowInterestBox(false);
-
-    alert(t.interestSent);
+      alert(data.message || t.interestSent);
+    } catch (error) {
+      console.error("Send interest error:", error);
+      alert("სერვერთან დაკავშირება ვერ მოხერხდა.");
+    } finally {
+      setSendingInterest(false);
+    }
   };
 
   return (
@@ -1340,7 +1388,7 @@ function CaregiverProfile() {
                 {t.interestDescription}
               </p>
 
-              {alreadySentInterests.length > 0 && (
+              {!interestsLoading && alreadySentInterests.length > 0 && (
                 <div
                   style={{
                     padding: "16px",
@@ -1620,18 +1668,20 @@ function CaregiverProfile() {
                     <button
                       type="button"
                       onClick={handleSendInterest}
-                      disabled={!selectedJobId}
+                      disabled={!selectedJobId || sendingInterest}
                       style={{
                         padding: "10px 16px",
                         border: "none",
                         borderRadius: "8px",
-                        backgroundColor: selectedJobId ? "#2563eb" : "#94a3b8",
+                        backgroundColor:
+                          selectedJobId && !sendingInterest ? "#2563eb" : "#94a3b8",
                         color: "#ffffff",
-                        cursor: selectedJobId ? "pointer" : "not-allowed",
+                        cursor:
+                          selectedJobId && !sendingInterest ? "pointer" : "not-allowed",
                         fontWeight: "700",
                       }}
                     >
-                      📩 {t.send}
+                      📩 {sendingInterest ? "..." : t.send}
                     </button>
 
                     <button

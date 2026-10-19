@@ -1,15 +1,7 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./Drivers.css";
-
-const getArray = (key) => {
-  try {
-    const value = JSON.parse(localStorage.getItem(key));
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
-  }
-};
 
 const serviceLabels = {
   ka: {
@@ -87,69 +79,250 @@ const icons = {
   "dog-walker": "🐕",
 };
 
-const getProfilePath = (profile) => {
-  if (!profile) return "/";
-
-  const p = profile.profession;
-
-  if (p === "nanny") return `/nannies/${profile.id}`;
-  if (p === "caregiver") return `/caregivers/${profile.id}`;
-  if (p === "driver") return `/drivers/${profile.id}`;
-  if (p === "tutor") return `/tutors/${profile.id}`;
-  if (p === "housekeeper") return `/housekeepers/${profile.id}`;
-  if (p === "dogwalker" || p === "dog-walker")
-    return `/dogwalker/${profile.id}`;
-
-  return "/";
-};
-
 const tr = {
   ka: {
     title: "გაგზავნილი დაინტერესებები",
     desc: "აქ ჩანს სპეციალისტებისთვის შენ მიერ გაგზავნილი ყველა შეთავაზება.",
+
     empty: "ჯერ არც ერთი სპეციალისტისთვის არ გაგიგზავნიათ შეთავაზება.",
+
     waiting: "სპეციალისტის პასუხის მოლოდინში",
-    yes: "სპეციალისტს აინტერესებს შეთავაზება",
-    no: "სპეციალისტს ამ ეტაპზე შეთავაზება არ აინტერესებს",
-    view: "პროფილის ნახვა",
+    accepted: "სპეციალისტს აინტერესებს შეთავაზება",
+    declined: "სპეციალისტს ამ ეტაპზე შეთავაზება არ აინტერესებს",
+
+    specialist: "სპეციალისტი",
+    job: "შენი სამუშაოს განცხადება",
+
+    contact: "საკონტაქტო ინფორმაცია",
+    email: "ელფოსტა",
+    phone: "ტელეფონი",
+
+    noPersonalContact:
+      "სპეციალისტს პირადი საკონტაქტო ინფორმაცია გაზიარებული არ აქვს.",
+
+    contactPrivacy:
+      "აქ მხოლოდ სპეციალისტის მიერ გაზიარებული საკონტაქტო ინფორმაცია ჩანს.",
+
     back: "← Care Georgia",
+    loading: "იტვირთება...",
+
+    loginRequired:
+      "გაგზავნილი დაინტერესებების სანახავად ჯერ უნდა შეხვიდე ანგარიშში.",
+
+    login: "შესვლა",
+
+    loadError: "დაინტერესებების ჩატვირთვა ვერ მოხერხდა.",
+    serverError: "სერვერთან დაკავშირება ვერ მოხერხდა.",
   },
+
   en: {
     title: "Sent Interests",
     desc: "All offers you sent to specialists appear here.",
+
     empty: "You haven't sent an offer to a specialist yet.",
+
     waiting: "Waiting for specialist response",
-    yes: "The specialist is interested",
-    no: "The specialist is not interested at this time",
-    view: "View Profile",
+    accepted: "The specialist is interested",
+    declined: "The specialist is not interested at this time",
+
+    specialist: "Specialist",
+    job: "Your job post",
+
+    contact: "Contact Information",
+    email: "Email",
+    phone: "Phone",
+
+    noPersonalContact:
+      "The specialist has not shared personal contact information.",
+
+    contactPrivacy:
+      "Only contact information shared by the specialist is shown here.",
+
     back: "← Care Georgia",
+    loading: "Loading...",
+
+    loginRequired: "You must log in to view your sent interests.",
+
+    login: "Login",
+
+    loadError: "Could not load sent interests.",
+    serverError: "Could not connect to the server.",
   },
+
   ru: {
     title: "Отправленные предложения",
     desc: "Здесь находятся все предложения, которые вы отправили специалистам.",
+
     empty: "Вы пока не отправляли предложения специалистам.",
+
     waiting: "Ожидание ответа специалиста",
-    yes: "Специалист заинтересован",
-    no: "Специалист сейчас не заинтересован",
-    view: "Посмотреть профиль",
+    accepted: "Специалист заинтересован",
+    declined: "Специалист сейчас не заинтересован",
+
+    specialist: "Специалист",
+    job: "Ваше объявление о работе",
+
+    contact: "Контактная информация",
+    email: "Электронная почта",
+    phone: "Телефон",
+
+    noPersonalContact: "Специалист не поделился личной контактной информацией.",
+
+    contactPrivacy:
+      "Здесь отображается только контактная информация, которой поделился специалист.",
+
     back: "← Care Georgia",
+    loading: "Загрузка...",
+
+    loginRequired: "Чтобы увидеть отправленные предложения, войдите в аккаунт.",
+
+    login: "Войти",
+
+    loadError: "Не удалось загрузить отправленные предложения.",
+    serverError: "Не удалось подключиться к серверу.",
   },
 };
 
 export default function SentInterests() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
+
   const t = tr[language] || tr.ka;
-  const uid = localStorage.getItem("careGeorgiaCurrentUserId");
 
-  const mine = getArray("careGeorgiaInterests")
-    .filter(
-      (interest) =>
-        String(interest.employerUserId) === String(uid)
-    )
-    .reverse();
+  const [interests, setInterests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const jobs = getArray("careGeorgiaJobs");
-  const profiles = getArray("careGeorgiaSpecialists");
+  const isLoggedIn = localStorage.getItem("careGeorgiaLoggedIn") === "true";
+
+  const clearLogin = () => {
+    localStorage.removeItem("careGeorgiaToken");
+    localStorage.removeItem("careGeorgiaLoggedIn");
+    localStorage.removeItem("careGeorgiaCurrentUserId");
+    localStorage.removeItem("careGeorgiaUser");
+  };
+
+  useEffect(() => {
+    const loadInterests = async () => {
+      if (!isLoggedIn) {
+        setLoading(false);
+        return;
+      }
+
+      const token = localStorage.getItem("careGeorgiaToken");
+
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/interests/sent",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (response.status === 401) {
+          clearLogin();
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setErrorMessage(data.message || t.loadError);
+          setInterests([]);
+          return;
+        }
+
+        setInterests(Array.isArray(data.interests) ? data.interests : []);
+      } catch (error) {
+        console.error("Load sent interests error:", error);
+
+        setErrorMessage(t.serverError);
+        setInterests([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInterests();
+  }, [isLoggedIn, navigate, t.loadError, t.serverError]);
+
+  const getStatusText = (status) => {
+    if (status === "accepted") {
+      return `💚 ${t.accepted}`;
+    }
+
+    if (status === "declined") {
+      return `⚪ ${t.declined}`;
+    }
+
+    return `⏳ ${t.waiting}`;
+  };
+
+  const getStatusBackground = (status) => {
+    if (status === "accepted") {
+      return "#f0fdf4";
+    }
+
+    if (status === "declined") {
+      return "#f8fafc";
+    }
+
+    return "#fffbeb";
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="drivers-page">
+        <div className="drivers-container">
+          <Link to="/" className="back-link">
+            {t.back}
+          </Link>
+
+          <div
+            className="driver-card"
+            style={{
+              maxWidth: "650px",
+              margin: "40px auto",
+              padding: "30px",
+              textAlign: "center",
+            }}
+          >
+            <p>{t.loginRequired}</p>
+
+            <Link to="/login">{t.login} →</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="drivers-page">
+        <div className="drivers-container">
+          <div
+            className="driver-card"
+            style={{
+              maxWidth: "650px",
+              margin: "40px auto",
+              padding: "30px",
+              textAlign: "center",
+            }}
+          >
+            <p>{t.loading}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="drivers-page">
@@ -165,90 +338,135 @@ export default function SentInterests() {
           </div>
         </div>
 
-        {mine.length === 0 ? (
-          <div className="driver-card" style={{ padding: 30 }}>
+        {errorMessage && (
+          <div
+            className="driver-card"
+            style={{
+              padding: "18px",
+              marginBottom: "20px",
+              border: "1px solid #fecaca",
+            }}
+          >
+            <p style={{ margin: 0 }}>{errorMessage}</p>
+          </div>
+        )}
+
+        {!errorMessage && interests.length === 0 ? (
+          <div className="driver-card" style={{ padding: "30px" }}>
             <p>{t.empty}</p>
           </div>
         ) : (
           <div className="drivers-grid">
-            {mine.map((interest) => {
-              const job = jobs.find(
-                (item) =>
-                  String(item.id) === String(interest.jobId)
-              );
+            {interests.map((interest) => {
+              const specialist = interest.specialist || {};
+              const job = interest.job || {};
 
-              const profile = profiles.find(
-                (item) =>
-                  String(item.id) ===
-                  String(interest.specialistProfileId)
-              );
+              const service = job.service || specialist.profession || "";
+
+              const hasEmail = Boolean(specialist.email);
+              const hasPhone = Boolean(specialist.phone);
+
+              const hasPersonalContact = hasEmail || hasPhone;
 
               return (
                 <div className="driver-card" key={interest.id}>
-                  {profile && (
-                    <>
-                      <h3>
-                        {icons[profile.profession] || "👤"}{" "}
-                        {profile.firstName || ""}{" "}
-                        {profile.lastName
-                          ? `${profile.lastName.charAt(0)}.`
-                          : ""}
-                      </h3>
+                  <h3>
+                    {icons[service] || "👤"}{" "}
+                    {specialist.firstName || t.specialist}{" "}
+                    {specialist.lastName
+                      ? `${specialist.lastName.charAt(0)}.`
+                      : ""}
+                  </h3>
 
-                      <p>
-                        {serviceLabels[language]?.[
-                          profile.profession
-                        ] || profile.profession}
-                      </p>
-
-                      {profile.city && (
-                        <p>
-                          📍{" "}
-                          {cityLabels[language]?.[profile.city] ||
-                            profile.city}
-                        </p>
-                      )}
-                    </>
+                  {service && (
+                    <p>{serviceLabels[language]?.[service] || service}</p>
                   )}
 
-                  {job && (
-                    <p>
-                      💼{" "}
-                      {serviceLabels[language]?.[job.service] ||
-                        job.service}
-                    </p>
+                  {job.city && (
+                    <p>📍 {cityLabels[language]?.[job.city] || job.city}</p>
+                  )}
+
+                  {job.service && (
+                    <div
+                      style={{
+                        marginTop: "14px",
+                        padding: "12px",
+                        background: "#f8fafc",
+                        borderRadius: "10px",
+                      }}
+                    >
+                      <strong>💼 {t.job}:</strong>{" "}
+                      {serviceLabels[language]?.[job.service] || job.service}
+                    </div>
                   )}
 
                   <div
                     style={{
-                      marginTop: 12,
-                      padding: 12,
-                      background:
-                        interest.status === "interested"
-                          ? "#f0fdf4"
-                          : "#f8fafc",
-                      borderRadius: 10,
+                      marginTop: "12px",
+                      padding: "12px",
+                      background: getStatusBackground(interest.status),
+                      borderRadius: "10px",
                     }}
                   >
-                    {interest.status === "interested"
-                      ? `💚 ${t.yes}`
-                      : interest.status === "not-interested"
-                        ? `⚪ ${t.no}`
-                        : `⏳ ${t.waiting}`}
+                    {getStatusText(interest.status)}
                   </div>
 
-                  {profile && (
-                    <Link
-                      to={getProfilePath(profile)}
-                      state={{ from: "sent-interests" }}
-                      style={{
-                        display: "inline-block",
-                        marginTop: 14,
-                      }}
-                    >
-                      👤 {t.view} →
-                    </Link>
-                  )}
+                  <div
+                    style={{
+                      marginTop: "16px",
+                      padding: "15px",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "10px",
+                      background: "#ffffff",
+                    }}
+                  >
+                    <strong>🔐 {t.contact}</strong>
+
+                    {hasPersonalContact ? (
+                      <div style={{ marginTop: "10px" }}>
+                        {hasEmail && (
+                          <p
+                            style={{
+                              margin: "6px 0",
+                            }}
+                          >
+                            ✉️ {t.email}: <strong>{specialist.email}</strong>
+                          </p>
+                        )}
+
+                        {hasPhone && (
+                          <p
+                            style={{
+                              margin: "6px 0",
+                            }}
+                          >
+                            📞 {t.phone}: <strong>{specialist.phone}</strong>
+                          </p>
+                        )}
+
+                        <p
+                          style={{
+                            margin: "12px 0 0",
+                            fontSize: "13px",
+                            color: "#64748b",
+                            lineHeight: "1.5",
+                          }}
+                        >
+                          🔒 {t.contactPrivacy}
+                        </p>
+                      </div>
+                    ) : (
+                      <p
+                        style={{
+                          margin: "10px 0 0",
+                          color: "#64748b",
+                          lineHeight: "1.5",
+                        }}
+                      >
+                        🔒 {t.noPersonalContact}
+                      </p>
+                    )}
+                  </div>
                 </div>
               );
             })}

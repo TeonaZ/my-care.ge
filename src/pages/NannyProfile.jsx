@@ -485,90 +485,154 @@ function NannyProfile() {
       ownerId: null,
     },
   ];
+const getCityName = (city) => {
+  const cities = {
+    tbilisi: t.tbilisi,
+    batumi: t.batumi,
+    kutaisi: t.kutaisi,
+    rustavi: t.rustavi,
+    gori: t.gori,
+    zugdidi: t.zugdidi,
+    poti: t.poti,
+    telavi: t.telavi,
+    other: t.other,
+  };
 
-  const getSavedSpecialists = () => {
+  return cities[city] || city || t.other;
+};
+
+const getSafeName = (profile) => {
+  const firstName = profile?.firstName || "";
+  const lastName = profile?.lastName || "";
+
+  const lastInitial = lastName
+    ? `${lastName.charAt(0)}.`
+    : "";
+
+  return (
+    `${firstName} ${lastInitial}`.trim() ||
+    (language === "ka"
+      ? "ძიძა"
+      : language === "ru"
+        ? "Няня"
+        : "Nanny")
+  );
+};
+
+// ========================================
+// NANNY PROFILE FROM POSTGRESQL
+// ========================================
+
+const defaultNanny =
+  defaultNannies.find(
+    (item) => String(item.id) === String(id),
+  ) || null;
+
+const [backendProfile, setBackendProfile] = useState(null);
+const [profileLoading, setProfileLoading] = useState(
+  defaultNanny === null,
+);
+const [profileNotFound, setProfileNotFound] = useState(false);
+
+useEffect(() => {
+  const loadProfile = async () => {
+    // ძველი სატესტო პროფილები: 1, 2, 3
+    if (defaultNanny) {
+      setProfileLoading(false);
+      return;
+    }
+
     try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaSpecialists"));
+      const response = await fetch(
+        `http://localhost:5000/api/specialists/${id}`,
+      );
 
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
+      const data = await response.json();
+
+      if (!response.ok) {
+        setBackendProfile(null);
+        setProfileNotFound(true);
+        return;
+      }
+
+      const profile = data.profile || data.specialist || data;
+
+      if (
+        !profile ||
+        profile.profession !== "nanny" ||
+        profile.status === "inactive"
+      ) {
+        setBackendProfile(null);
+        setProfileNotFound(true);
+        return;
+      }
+
+      setBackendProfile(profile);
+      setProfileNotFound(false);
+    } catch (error) {
+      console.error("Load nanny profile error:", error);
+
+      setBackendProfile(null);
+      setProfileNotFound(true);
+    } finally {
+      setProfileLoading(false);
     }
   };
 
-  const savedProfile = getSavedSpecialists().find(
-    (profile) =>
-      String(profile.id) === String(id) &&
-      profile.profession === "nanny" &&
-      profile.status !== "inactive",
-  );
+  loadProfile();
+}, [id]);
 
-  const getCityName = (city) => {
-    const cities = {
-      tbilisi: t.tbilisi,
-      batumi: t.batumi,
-      kutaisi: t.kutaisi,
-      rustavi: t.rustavi,
-      gori: t.gori,
-      zugdidi: t.zugdidi,
-      poti: t.poti,
-      telavi: t.telavi,
-      other: t.other,
-    };
+let nanny = defaultNanny;
 
-    return cities[city] || city || t.other;
+if (backendProfile) {
+  nanny = {
+    id: String(backendProfile.id),
+    ownerId: backendProfile.ownerId,
+
+    name: getSafeName(backendProfile),
+
+    city: getCityName(backendProfile.city),
+    rawCity: backendProfile.city,
+
+    experience: backendProfile.experience || "",
+
+    employmentType:
+      backendProfile.employmentType || "part-time",
+
+    paymentType:
+      backendProfile.paymentType || "hourly",
+
+    priceValue:
+      Number(backendProfile.priceValue) || 0,
+
+    rating:
+      backendProfile.rating !== null &&
+      backendProfile.rating !== undefined
+        ? backendProfile.rating
+        : null,
+
+    reviews:
+      Number(backendProfile.reviews) || 0,
+
+    verified:
+      backendProfile.verified === true,
+
+    ageGroups:
+      backendProfile.ageGroupsText ||
+      t.ageNotSpecified,
+
+    description:
+      backendProfile.description || "",
+
+    phone: "",
+    email: "",
+    showPhone: false,
+    showEmail: false,
+
+    isCustom: true,
   };
-
-  const getSafeName = (profile) => {
-    const firstName = profile.firstName || "";
-    const lastName = profile.lastName || "";
-
-    const lastInitial = lastName ? `${lastName.charAt(0)}.` : "";
-
-    return (
-      `${firstName} ${lastInitial}`.trim() ||
-      (language === "ka" ? "ძიძა" : language === "ru" ? "Няня" : "Nanny")
-    );
-  };
-
-  let nanny = null;
-
-  if (savedProfile) {
-    nanny = {
-      id: String(savedProfile.id),
-      ownerId: savedProfile.ownerId,
-      name: getSafeName(savedProfile),
-      city: getCityName(savedProfile.city),
-      rawCity: savedProfile.city,
-      experience: savedProfile.experience || "",
-      employmentType: savedProfile.employmentType || "",
-      paymentType: savedProfile.paymentType || "hourly",
-      priceValue: Number(savedProfile.priceValue) || 0,
-
-      rating:
-        savedProfile.rating !== null && savedProfile.rating !== undefined
-          ? savedProfile.rating
-          : null,
-
-      reviews: Number(savedProfile.reviews) || 0,
-
-      verified: savedProfile.verified === true,
-
-      ageGroups: savedProfile.ageGroupsText || t.ageNotSpecified,
-
-      description: savedProfile.description || "",
-
-      phone: savedProfile.phone || "",
-      email: savedProfile.email || "",
-
-      showPhone: savedProfile.showPhone === true,
-
-      isCustom: true,
-    };
-  } else {
-    nanny = defaultNannies.find((item) => String(item.id) === String(id));
-  }
-
+}
+ 
   // ========================================
   // JOBS FROM POSTGRESQL
   // ========================================
@@ -580,6 +644,7 @@ function NannyProfile() {
     const loadJobs = async () => {
       try {
         const response = await fetch("http://localhost:5000/api/jobs");
+
         const data = await response.json();
 
         if (!response.ok) {
@@ -599,17 +664,6 @@ function NannyProfile() {
 
     loadJobs();
   }, []);
-
-  const getSavedInterests = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaInterests"));
-
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
-  };
-
   const getSavedApplications = () => {
     try {
       const saved = JSON.parse(localStorage.getItem("careGeorgiaApplications"));
@@ -619,7 +673,9 @@ function NannyProfile() {
     }
   };
 
-  const [interests, setInterests] = useState(getSavedInterests);
+  const [interests, setInterests] = useState([]);
+  const [interestsLoading, setInterestsLoading] = useState(true);
+  const [sendingInterest, setSendingInterest] = useState(false);
   const [applications, setApplications] = useState(getSavedApplications);
 
   const [showInterestBox, setShowInterestBox] = useState(false);
@@ -627,10 +683,59 @@ function NannyProfile() {
   const [selectedJobId, setSelectedJobId] = useState("");
 
   const [shareEmail, setShareEmail] = useState(false);
+  useEffect(() => {
+    const loadInterests = async () => {
+      const token = localStorage.getItem("careGeorgiaToken");
+
+      if (!token) {
+        setInterests([]);
+        setInterestsLoading(false);
+        return;
+      }
+
+      try {
+        setInterestsLoading(true);
+
+        const response = await fetch(
+          "http://localhost:5000/api/interests/sent",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error("Load interests error:", data);
+          setInterests([]);
+          return;
+        }
+
+        setInterests(Array.isArray(data.interests) ? data.interests : []);
+      } catch (error) {
+        console.error("Load interests error:", error);
+        setInterests([]);
+      } finally {
+        setInterestsLoading(false);
+      }
+    };
+
+    loadInterests();
+  }, []);
 
   const [sharePhone, setSharePhone] = useState(false);
 
-  if (!nanny) {
+  if (profileLoading) {
+  return (
+    <div className="profile-not-found">
+      <p>...</p>
+    </div>
+  );
+}
+
+ if (profileNotFound || !nanny) {
     return (
       <div className="profile-not-found">
         <h1>{t.notFound}</h1>
@@ -772,22 +877,18 @@ function NannyProfile() {
 
   const phoneCanBeShown = nanny.phone && nanny.showPhone === true;
 
-  const hasInterestForJob = (jobId) => {
-    return interests.some(
-      (interest) =>
-        String(interest.employerUserId) === String(currentUserId) &&
-        String(interest.specialistProfileId) === String(nanny.id) &&
-        String(interest.jobId) === String(jobId),
-    );
-  };
-
-  const alreadySentInterests = myMatchingJobs.filter((job) =>
-    hasInterestForJob(job.id),
+  const hasInterestForSpecialistService = interests.some(
+    (interest) =>
+      String(interest.senderId) === String(currentUserId) &&
+      String(interest.specialistId) === String(nanny.ownerId) &&
+      interest.job?.service === "nanny",
   );
 
-  const availableJobs = myMatchingJobs.filter(
-    (job) => !hasInterestForJob(job.id),
-  );
+  const alreadySentInterests = hasInterestForSpecialistService
+    ? myMatchingJobs.slice(0, 1)
+    : [];
+
+  const availableJobs = hasInterestForSpecialistService ? [] : myMatchingJobs;
 
   const resetInterestForm = () => {
     setSelectedJobId("");
@@ -824,8 +925,8 @@ function NannyProfile() {
     resetInterestForm();
   };
 
-  const handleSendInterest = () => {
-    if (!selectedJobId) {
+  const handleSendInterest = async () => {
+    if (!selectedJobId || sendingInterest) {
       return;
     }
 
@@ -849,52 +950,61 @@ function NannyProfile() {
       return;
     }
 
-    if (hasInterestForJob(selectedJob.id)) {
+    if (hasInterestForSpecialistService) {
       alert(t.alreadySent);
       return;
     }
 
-    const newInterest = {
-      id: crypto.randomUUID(),
+    const token = localStorage.getItem("careGeorgiaToken");
 
-      employerUserId: String(currentUserId),
+    if (!token) {
+      alert(t.loginToSend);
+      return;
+    }
 
-      specialistUserId: String(nanny.ownerId),
+    try {
+      setSendingInterest(true);
 
-      specialistProfileId: String(nanny.id),
+      const response = await fetch("http://localhost:5000/api/interests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          jobId: String(selectedJob.id),
+          specialistId: String(nanny.ownerId),
+          showSenderEmail: shareEmail,
+          showSenderPhone: sharePhone,
+        }),
+      });
 
-      jobId: String(selectedJob.id),
+      const data = await response.json();
 
-      showEmployerEmail: shareEmail,
+      if (!response.ok) {
+        if (response.status === 409) {
+          alert(t.alreadySent);
+        } else {
+          alert(data.message || "დაინტერესების გაგზავნა ვერ მოხერხდა.");
+        }
 
-      showEmployerPhone: sharePhone,
+        return;
+      }
 
-      employerEmail: shareEmail ? currentUser?.email || "" : "",
+      if (data.interest) {
+        setInterests((previous) => [data.interest, ...previous]);
+      }
 
-      employerPhone: sharePhone ? currentUser?.phone || "" : "",
+      setShowInterestBox(false);
+      resetInterestForm();
 
-      status: "sent",
-
-      specialistSeen: false,
-
-      createdAt: new Date().toISOString(),
-    };
-
-    const updatedInterests = [...interests, newInterest];
-
-    setInterests(updatedInterests);
-
-    localStorage.setItem(
-      "careGeorgiaInterests",
-      JSON.stringify(updatedInterests),
-    );
-
-    window.dispatchEvent(new Event("careGeorgiaInterestsUpdated"));
-
-    setShowInterestBox(false);
-    resetInterestForm();
-
-    alert(t.interestSent);
+      alert(data.message || t.interestSent);
+    } catch (error) {
+      console.error("Send interest error:", error);
+      alert("სერვერთან დაკავშირება ვერ მოხერხდა.");
+    } finally {
+      setSendingInterest(false);
+    }
   };
 
   return (
@@ -1254,49 +1364,46 @@ function NannyProfile() {
 
               {/* ALREADY SENT */}
 
-              {isLoggedIn && isClient && alreadySentInterests.length > 0 && (
-                <div
-                  style={{
-                    marginBottom: "18px",
-                  }}
-                >
-                  {alreadySentInterests.map((job) => (
-                    <div
-                      key={job.id}
-                      style={{
-                        padding: "14px",
-                        marginBottom: "8px",
-                        backgroundColor: "#f0fdf4",
-                        border: "1px solid #bbf7d0",
-                        borderRadius: "10px",
-                        color: "#166534",
-                      }}
-                    >
-                      <strong>✅ {t.sentForJob}</strong>
-
+              {isLoggedIn &&
+                isClient &&
+                !interestsLoading &&
+                alreadySentInterests.length > 0 && (
+                  <div
+                    style={{
+                      marginBottom: "18px",
+                    }}
+                  >
+                    {alreadySentInterests.map((job) => (
                       <div
+                        key={job.id}
                         style={{
-                          marginTop: "6px",
-                          fontSize: "14px",
+                          padding: "14px",
+                          marginBottom: "8px",
+                          backgroundColor: "#f0fdf4",
+                          border: "1px solid #bbf7d0",
+                          borderRadius: "10px",
+                          color: "#166534",
                         }}
                       >
-                        📍 {getCityName(job.city)} — 💰 {job.budget}{" "}
-                        {t.currency} / {getPaymentTypeName(job.paymentType)}
+                        <strong>✅ {t.sentForJob}</strong>
+
+                        <div
+                          style={{
+                            marginTop: "6px",
+                            fontSize: "14px",
+                          }}
+                        >
+                          📍 {getCityName(job.city)} — 💰 {job.budget}{" "}
+                          {t.currency} / {getPaymentTypeName(job.paymentType)}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
 
               {!isLoggedIn ? (
                 <div>
-                  <p
-                    style={{
-                      color: "#64748b",
-                    }}
-                  >
-                    🔒 {t.loginToSend}
-                  </p>
+                  <p style={{ color: "#64748b" }}>🔒 {t.loginToSend}</p>
 
                   <Link
                     to="/login"
@@ -1315,24 +1422,12 @@ function NannyProfile() {
                   </Link>
                 </div>
               ) : !isClient ? (
-                <p
-                  style={{
-                    color: "#64748b",
-                  }}
-                >
-                  {t.clientOnly}
-                </p>
-              ) : jobsLoading ? (
+                <p style={{ color: "#64748b" }}>{t.clientOnly}</p>
+              ) : jobsLoading || interestsLoading ? (
                 <p style={{ color: "#64748b" }}>...</p>
               ) : myMatchingJobs.length === 0 ? (
                 <div>
-                  <p
-                    style={{
-                      color: "#64748b",
-                    }}
-                  >
-                    {t.noJobs}
-                  </p>
+                  <p style={{ color: "#64748b" }}>{t.noJobs}</p>
 
                   <Link
                     to="/post-job"
@@ -1420,8 +1515,6 @@ function NannyProfile() {
                       </option>
                     ))}
                   </select>
-
-                  {/* CONTACT SHARING */}
 
                   <div
                     style={{
@@ -1515,18 +1608,24 @@ function NannyProfile() {
                     <button
                       type="button"
                       onClick={handleSendInterest}
-                      disabled={!selectedJobId}
+                      disabled={!selectedJobId || sendingInterest}
                       style={{
                         padding: "10px 16px",
                         border: "none",
                         borderRadius: "8px",
-                        backgroundColor: !selectedJobId ? "#94a3b8" : "#2563eb",
+                        backgroundColor:
+                          !selectedJobId || sendingInterest
+                            ? "#94a3b8"
+                            : "#2563eb",
                         color: "#ffffff",
-                        cursor: !selectedJobId ? "not-allowed" : "pointer",
+                        cursor:
+                          !selectedJobId || sendingInterest
+                            ? "not-allowed"
+                            : "pointer",
                         fontWeight: "700",
                       }}
                     >
-                      📩 {t.send}
+                      📩 {sendingInterest ? "..." : t.send}
                     </button>
 
                     <button

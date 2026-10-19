@@ -5,8 +5,8 @@ import "./Auth.css";
 
 const translations = {
   ka: {
-    title: "სპეციალისტის პროფილის რედაქტირება",
-    subtitle: "შეცვალეთ თქვენი პროფესიული პროფილის ინფორმაცია.",
+    title: "სპეციალისტის განცხადების რედაქტირება",
+    subtitle: "შეცვალეთ თქვენი პროფესიული განცხადების ინფორმაცია.",
 
     profession: "პროფესია",
     selectProfession: "აირჩიეთ პროფესია",
@@ -23,6 +23,10 @@ const translations = {
     batumi: "ბათუმი",
     kutaisi: "ქუთაისი",
     rustavi: "რუსთავი",
+    gori: "გორი",
+    zugdidi: "ზუგდიდი",
+    poti: "ფოთი",
+    telavi: "თელავი",
     other: "სხვა",
 
     experience: "გამოცდილება",
@@ -47,28 +51,56 @@ const translations = {
     descriptionPlaceholder:
       "მოკლედ აღწერეთ თქვენი გამოცდილება და მომსახურება...",
 
-    phone: "ტელეფონი",
-    phonePlaceholder: "მაგ: +995 555 12 34 56",
+    contactSettings: "საკონტაქტო ინფორმაციის ხილვადობა",
 
-    showPhone: "ჩემი ტელეფონის ნომერი გამოჩნდეს პროფილზე",
+    email: "ელფოსტა",
+    phone: "ტელეფონი",
+
+    showEmail:
+      "დაინტერესების შემდეგ დამსაქმებელს ჩემი ელფოსტა გამოუჩნდეს",
+
+    showPhone:
+      "დაინტერესების შემდეგ დამსაქმებელს ჩემი ტელეფონი გამოუჩნდეს",
+
+    contactHint:
+      "ელფოსტის ან ტელეფონის შესაცვლელად გამოიყენეთ „ჩემი პროფილი“.",
+
+    myProfile: "ჩემი პროფილი",
 
     save: "ცვლილებების შენახვა",
+    saving: "ინახება...",
+
     back: "← ჩემს განცხადებებზე დაბრუნება",
 
     success: "ცვლილებები წარმატებით შეინახა.",
 
     required: "გთხოვთ შეავსოთ ყველა აუცილებელი ველი.",
 
-    notFound: "სპეციალისტის პროფილი ვერ მოიძებნა.",
+    invalidPrice: "გთხოვთ მიუთითოთ სწორი თანხა.",
 
-    noAccess: "ამ პროფილის რედაქტირების უფლება არ გაქვთ.",
+    notFound: "სპეციალისტის განცხადება ვერ მოიძებნა.",
 
-    loginRequired: "რედაქტირებისთვის ჯერ უნდა შეხვიდეთ ანგარიშზე.",
+    noAccess:
+      "ამ სპეციალისტის განცხადების რედაქტირების უფლება არ გაქვთ.",
+
+    loginRequired:
+      "რედაქტირებისთვის ჯერ უნდა შეხვიდეთ ანგარიშზე.",
+
+    providerOnly:
+      "სპეციალისტის განცხადების რედაქტირება მხოლოდ სამუშაოს მაძიებელს შეუძლია.",
+
+    loadError: "განცხადების ჩატვირთვა ვერ მოხერხდა.",
+
+    saveError: "ცვლილებების შენახვა ვერ მოხერხდა.",
+
+    serverError: "სერვერთან დაკავშირება ვერ მოხერხდა.",
+
+    loading: "იტვირთება...",
   },
 
   en: {
-    title: "Edit Specialist Profile",
-    subtitle: "Update your professional profile information.",
+    title: "Edit Specialist Listing",
+    subtitle: "Update your professional listing information.",
 
     profession: "Profession",
     selectProfession: "Select profession",
@@ -85,6 +117,10 @@ const translations = {
     batumi: "Batumi",
     kutaisi: "Kutaisi",
     rustavi: "Rustavi",
+    gori: "Gori",
+    zugdidi: "Zugdidi",
+    poti: "Poti",
+    telavi: "Telavi",
     other: "Other",
 
     experience: "Experience",
@@ -109,28 +145,56 @@ const translations = {
     descriptionPlaceholder:
       "Briefly describe your experience and services...",
 
-    phone: "Phone",
-    phonePlaceholder: "Example: +995 555 12 34 56",
+    contactSettings: "Contact visibility",
 
-    showPhone: "Show my phone number on my profile",
+    email: "Email",
+    phone: "Phone",
+
+    showEmail:
+      "Show my email to an employer after they send interest",
+
+    showPhone:
+      "Show my phone number to an employer after they send interest",
+
+    contactHint:
+      "To change your email or phone number, use My Profile.",
+
+    myProfile: "My Profile",
 
     save: "Save Changes",
-    back: "← Back to My Jobs",
+    saving: "Saving...",
+
+    back: "← Back to My Listings",
 
     success: "Changes saved successfully.",
 
     required: "Please complete all required fields.",
 
-    notFound: "Specialist profile was not found.",
+    invalidPrice: "Please enter a valid amount.",
 
-    noAccess: "You do not have permission to edit this profile.",
+    notFound: "Specialist listing was not found.",
 
-    loginRequired: "You must log in before editing this profile.",
+    noAccess:
+      "You do not have permission to edit this specialist listing.",
+
+    loginRequired:
+      "You must log in before editing this listing.",
+
+    providerOnly:
+      "Only a job seeker can edit a specialist listing.",
+
+    loadError: "Could not load the listing.",
+
+    saveError: "Could not save the changes.",
+
+    serverError: "Could not connect to the server.",
+
+    loading: "Loading...",
   },
 
   ru: {
-    title: "Редактировать профиль специалиста",
-    subtitle: "Измените информацию вашего профессионального профиля.",
+    title: "Редактировать объявление специалиста",
+    subtitle: "Измените информацию вашего профессионального объявления.",
 
     profession: "Профессия",
     selectProfession: "Выберите профессию",
@@ -147,6 +211,10 @@ const translations = {
     batumi: "Батуми",
     kutaisi: "Кутаиси",
     rustavi: "Рустави",
+    gori: "Гори",
+    zugdidi: "Зугдиди",
+    poti: "Поти",
+    telavi: "Телави",
     other: "Другой",
 
     experience: "Опыт",
@@ -171,24 +239,51 @@ const translations = {
     descriptionPlaceholder:
       "Кратко опишите ваш опыт и услуги...",
 
-    phone: "Телефон",
-    phonePlaceholder: "Например: +995 555 12 34 56",
+    contactSettings: "Видимость контактной информации",
 
-    showPhone: "Показывать мой номер телефона в профиле",
+    email: "Электронная почта",
+    phone: "Телефон",
+
+    showEmail:
+      "Показывать мою электронную почту работодателю после проявления интереса",
+
+    showPhone:
+      "Показывать мой телефон работодателю после проявления интереса",
+
+    contactHint:
+      "Чтобы изменить электронную почту или телефон, используйте «Мой профиль».",
+
+    myProfile: "Мой профиль",
 
     save: "Сохранить изменения",
+    saving: "Сохранение...",
+
     back: "← Назад к моим объявлениям",
 
     success: "Изменения успешно сохранены.",
 
     required: "Пожалуйста, заполните все обязательные поля.",
 
-    notFound: "Профиль специалиста не найден.",
+    invalidPrice: "Укажите корректную сумму.",
 
-    noAccess: "У вас нет доступа к редактированию этого профиля.",
+    notFound: "Объявление специалиста не найдено.",
+
+    noAccess:
+      "У вас нет доступа к редактированию этого объявления.",
 
     loginRequired:
-      "Для редактирования профиля необходимо войти в аккаунт.",
+      "Для редактирования необходимо войти в аккаунт.",
+
+    providerOnly:
+      "Редактировать объявление специалиста может только соискатель.",
+
+    loadError: "Не удалось загрузить объявление.",
+
+    saveError: "Не удалось сохранить изменения.",
+
+    serverError: "Не удалось подключиться к серверу.",
+
+    loading: "Загрузка...",
   },
 };
 
@@ -203,79 +298,171 @@ function EditSpecialistProfile() {
   const [city, setCity] = useState("");
   const [experience, setExperience] = useState("");
   const [employmentType, setEmploymentType] = useState("");
-  const [paymentType, setPaymentType] = useState("");
+  const [paymentType, setPaymentType] = useState("hourly");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
+
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+
+  const [showEmail, setShowEmail] = useState(false);
   const [showPhone, setShowPhone] = useState(false);
 
   const [profileFound, setProfileFound] = useState(true);
   const [hasAccess, setHasAccess] = useState(true);
 
-  const currentUserId =
-    localStorage.getItem("careGeorgiaCurrentUserId");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const isLoggedIn =
     localStorage.getItem("careGeorgiaLoggedIn") === "true";
 
-  const getProfiles = () => {
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem("careGeorgiaSpecialists")
-      );
+  let currentUser = null;
 
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
+  try {
+    currentUser = JSON.parse(
+      localStorage.getItem("careGeorgiaUser") || "null",
+    );
+  } catch {
+    currentUser = null;
+  }
+
+  const accountType = currentUser?.accountType;
+
+  const clearLogin = () => {
+    localStorage.removeItem("careGeorgiaToken");
+    localStorage.removeItem("careGeorgiaLoggedIn");
+    localStorage.removeItem("careGeorgiaCurrentUserId");
+    localStorage.removeItem("careGeorgiaUser");
   };
 
+  // ==========================================
+  // LOAD PROFILE FROM POSTGRESQL
+  // ==========================================
+
   useEffect(() => {
-    if (!isLoggedIn || !currentUserId) {
-      setHasAccess(false);
-      return;
-    }
+    const loadProfile = async () => {
+      if (!isLoggedIn) {
+        setHasAccess(false);
+        setLoading(false);
+        return;
+      }
 
-    const profiles = getProfiles();
+      if (accountType !== "provider") {
+        setHasAccess(false);
+        setLoading(false);
+        return;
+      }
 
-    const profile = profiles.find(
-      (item) => String(item.id) === String(id)
-    );
+      const token = localStorage.getItem("careGeorgiaToken");
 
-    if (!profile) {
-      setProfileFound(false);
-      return;
-    }
+      if (!token) {
+        setHasAccess(false);
+        setLoading(false);
+        return;
+      }
 
-    if (
-      String(profile.ownerId) !== String(currentUserId)
-    ) {
-      setHasAccess(false);
-      return;
-    }
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/specialists/me",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
 
-    setProfession(profile.profession || "");
-    setCity(profile.city || "");
-    setExperience(profile.experience || "");
-    setEmploymentType(profile.employmentType || "");
-    setPaymentType(profile.paymentType || "hourly");
-    setPrice(
-      profile.priceValue !== undefined &&
-        profile.priceValue !== null
-        ? String(profile.priceValue)
-        : ""
-    );
-    setDescription(profile.description || "");
-    setPhone(profile.phone || "");
-    setShowPhone(profile.showPhone === true);
-  }, [id, isLoggedIn, currentUserId]);
+        if (response.status === 401) {
+          clearLogin();
+          navigate("/login", { replace: true });
+          return;
+        }
 
-  const handleSubmit = (event) => {
+        if (response.status === 404) {
+          setProfileFound(false);
+          return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error("Load specialist error:", data);
+          alert(data.message || t.loadError);
+          return;
+        }
+
+        const profile =
+          data.profile || data.specialist || data;
+
+        if (!profile || !profile.id) {
+          setProfileFound(false);
+          return;
+        }
+
+        // URL-ში არსებული ID უნდა ემთხვეოდეს
+        // მომხმარებლის საკუთარ სპეციალისტის პროფილს.
+        if (String(profile.id) !== String(id)) {
+          setHasAccess(false);
+          return;
+        }
+
+        setProfession(profile.profession || "");
+        setCity(profile.city || "");
+        setExperience(profile.experience || "");
+        setEmploymentType(profile.employmentType || "");
+        setPaymentType(profile.paymentType || "hourly");
+
+        if (
+          profile.priceValue !== undefined &&
+          profile.priceValue !== null
+        ) {
+          setPrice(String(profile.priceValue));
+        } else {
+          setPrice("");
+        }
+
+        setDescription(profile.description || "");
+
+        setEmail(profile.email || currentUser?.email || "");
+        setPhone(profile.phone || currentUser?.phone || "");
+
+        setShowEmail(profile.showEmail === true);
+        setShowPhone(profile.showPhone === true);
+      } catch (error) {
+        console.error("Load specialist error:", error);
+        alert(t.serverError);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [
+    id,
+    isLoggedIn,
+    accountType,
+    navigate,
+    t.loadError,
+    t.serverError,
+  ]);
+
+  // ==========================================
+  // SAVE TO POSTGRESQL
+  // ==========================================
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!isLoggedIn || !currentUserId) {
+    if (!isLoggedIn) {
       alert(t.loginRequired);
       navigate("/login");
+      return;
+    }
+
+    if (accountType !== "provider") {
+      alert(t.providerOnly);
+      navigate("/my-jobs");
       return;
     }
 
@@ -298,68 +485,77 @@ function EditSpecialistProfile() {
       !Number.isFinite(numericPrice) ||
       numericPrice <= 0
     ) {
-      alert(t.required);
+      alert(t.invalidPrice);
       return;
     }
 
-    const profiles = getProfiles();
+    const token = localStorage.getItem("careGeorgiaToken");
 
-    const profileIndex = profiles.findIndex(
-      (item) => String(item.id) === String(id)
-    );
+    if (!token) {
+      clearLogin();
+      navigate("/login");
+      return;
+    }
 
-    if (profileIndex === -1) {
-      alert(t.notFound);
+    setSaving(true);
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/specialists/me",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+
+          body: JSON.stringify({
+            profession,
+            city,
+
+            experience: experience.trim(),
+
+            employmentType,
+
+            paymentType,
+
+            priceValue: numericPrice,
+
+            description: description.trim(),
+
+            showEmail,
+            showPhone,
+          }),
+        },
+      );
+
+      if (response.status === 401) {
+        clearLogin();
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || t.saveError);
+        return;
+      }
+
+      alert(t.success);
+
       navigate("/my-jobs");
-      return;
+    } catch (error) {
+      console.error("Save specialist error:", error);
+      alert(t.serverError);
+    } finally {
+      setSaving(false);
     }
-
-    const oldProfile = profiles[profileIndex];
-
-    if (
-      String(oldProfile.ownerId) !==
-      String(currentUserId)
-    ) {
-      alert(t.noAccess);
-      navigate("/my-jobs");
-      return;
-    }
-
-    const updatedProfile = {
-      ...oldProfile,
-
-      profession,
-      city,
-
-      experience: experience.trim(),
-
-      employmentType,
-
-      paymentType,
-      priceValue: numericPrice,
-
-      description: description.trim(),
-
-      phone: phone.trim(),
-
-      showPhone,
-
-      updatedAt: new Date().toISOString(),
-    };
-
-    const updatedProfiles = [...profiles];
-
-    updatedProfiles[profileIndex] = updatedProfile;
-
-    localStorage.setItem(
-      "careGeorgiaSpecialists",
-      JSON.stringify(updatedProfiles)
-    );
-
-    alert(t.success);
-
-    navigate("/my-jobs");
   };
+
+  // ==========================================
+  // STYLES
+  // ==========================================
 
   const pageStyle = {
     width: "100%",
@@ -426,6 +622,13 @@ function EditSpecialistProfile() {
     outline: "none",
   };
 
+  const readOnlyFieldStyle = {
+    ...fieldStyle,
+    backgroundColor: "#f8fafc",
+    color: "#64748b",
+    cursor: "not-allowed",
+  };
+
   const textareaStyle = {
     ...fieldStyle,
     minHeight: "150px",
@@ -436,12 +639,34 @@ function EditSpecialistProfile() {
 
   const checkboxLabelStyle = {
     display: "flex",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: "10px",
     marginTop: "12px",
     color: "#334155",
     fontSize: "15px",
+    lineHeight: "1.5",
     cursor: "pointer",
+  };
+
+  const contactBoxStyle = {
+    marginTop: "20px",
+    padding: "22px",
+    border: "1px solid #dbeafe",
+    borderRadius: "14px",
+    backgroundColor: "#f8fbff",
+  };
+
+  const contactTitleStyle = {
+    margin: "0 0 18px",
+    color: "#172033",
+    fontSize: "18px",
+  };
+
+  const hintStyle = {
+    margin: "16px 0 0",
+    color: "#64748b",
+    fontSize: "14px",
+    lineHeight: "1.6",
   };
 
   const buttonStyle = {
@@ -450,24 +675,44 @@ function EditSpecialistProfile() {
     marginTop: "20px",
     border: "none",
     borderRadius: "10px",
-    backgroundColor: "#2563eb",
+    backgroundColor: saving ? "#94a3b8" : "#2563eb",
     color: "#ffffff",
     fontSize: "16px",
     fontWeight: "700",
     fontFamily: "inherit",
-    cursor: "pointer",
+    cursor: saving ? "not-allowed" : "pointer",
   };
 
-  if (!isLoggedIn || !currentUserId) {
+  // ==========================================
+  // LOGIN / ACCESS
+  // ==========================================
+
+  if (!isLoggedIn) {
     return (
       <div style={pageStyle}>
         <div style={containerStyle}>
           <div style={cardStyle}>
-            <h1 style={titleStyle}>{t.loginRequired}</h1>
+            <h1 style={titleStyle}>
+              {t.loginRequired}
+            </h1>
 
             <Link to="/login">
               {t.loginRequired}
             </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div style={pageStyle}>
+        <div style={containerStyle}>
+          <div style={cardStyle}>
+            <h1 style={titleStyle}>
+              {t.loading}
+            </h1>
           </div>
         </div>
       </div>
@@ -479,7 +724,9 @@ function EditSpecialistProfile() {
       <div style={pageStyle}>
         <div style={containerStyle}>
           <div style={cardStyle}>
-            <h1 style={titleStyle}>{t.notFound}</h1>
+            <h1 style={titleStyle}>
+              {t.notFound}
+            </h1>
 
             <Link to="/my-jobs">
               {t.back}
@@ -495,7 +742,11 @@ function EditSpecialistProfile() {
       <div style={pageStyle}>
         <div style={containerStyle}>
           <div style={cardStyle}>
-            <h1 style={titleStyle}>{t.noAccess}</h1>
+            <h1 style={titleStyle}>
+              {accountType !== "provider"
+                ? t.providerOnly
+                : t.noAccess}
+            </h1>
 
             <Link to="/my-jobs">
               {t.back}
@@ -505,6 +756,10 @@ function EditSpecialistProfile() {
       </div>
     );
   }
+
+  // ==========================================
+  // FORM
+  // ==========================================
 
   return (
     <div style={pageStyle}>
@@ -535,6 +790,8 @@ function EditSpecialistProfile() {
             onSubmit={handleSubmit}
             style={formStyle}
           >
+            {/* PROFESSION */}
+
             <label style={labelStyle}>
               {t.profession}
             </label>
@@ -576,6 +833,8 @@ function EditSpecialistProfile() {
               </option>
             </select>
 
+            {/* CITY */}
+
             <label style={labelStyle}>
               {t.city}
             </label>
@@ -608,10 +867,28 @@ function EditSpecialistProfile() {
                 {t.rustavi}
               </option>
 
+              <option value="gori">
+                {t.gori}
+              </option>
+
+              <option value="zugdidi">
+                {t.zugdidi}
+              </option>
+
+              <option value="poti">
+                {t.poti}
+              </option>
+
+              <option value="telavi">
+                {t.telavi}
+              </option>
+
               <option value="other">
                 {t.other}
               </option>
             </select>
+
+            {/* EXPERIENCE */}
 
             <label style={labelStyle}>
               {t.experience}
@@ -627,6 +904,8 @@ function EditSpecialistProfile() {
               style={fieldStyle}
               required
             />
+
+            {/* EMPLOYMENT */}
 
             <label style={labelStyle}>
               {t.employment}
@@ -652,6 +931,8 @@ function EditSpecialistProfile() {
                 {t.partTime}
               </option>
             </select>
+
+            {/* PAYMENT TYPE */}
 
             <label style={labelStyle}>
               {t.paymentType}
@@ -686,6 +967,8 @@ function EditSpecialistProfile() {
               </option>
             </select>
 
+            {/* PRICE */}
+
             <label style={labelStyle}>
               {t.price}
             </label>
@@ -693,7 +976,7 @@ function EditSpecialistProfile() {
             <input
               type="number"
               min="1"
-              step="1"
+              step="0.01"
               value={price}
               onChange={(event) =>
                 setPrice(event.target.value)
@@ -702,6 +985,8 @@ function EditSpecialistProfile() {
               style={fieldStyle}
               required
             />
+
+            {/* DESCRIPTION */}
 
             <label style={labelStyle}>
               {t.description}
@@ -718,42 +1003,107 @@ function EditSpecialistProfile() {
               required
             />
 
-            <label style={labelStyle}>
-              {t.phone}
-            </label>
+            {/* CONTACT SETTINGS */}
 
-            <input
-              type="tel"
-              value={phone}
-              onChange={(event) =>
-                setPhone(event.target.value)
-              }
-              placeholder={t.phonePlaceholder}
-              style={fieldStyle}
-            />
+            <div style={contactBoxStyle}>
+              <h3 style={contactTitleStyle}>
+                🔐 {t.contactSettings}
+              </h3>
 
-            <label style={checkboxLabelStyle}>
+              <label style={labelStyle}>
+                {t.email}
+              </label>
+
               <input
-                type="checkbox"
-                checked={showPhone}
-                onChange={(event) =>
-                  setShowPhone(event.target.checked)
-                }
-                style={{
-                  width: "18px",
-                  height: "18px",
-                  cursor: "pointer",
-                }}
+                type="email"
+                value={email}
+                readOnly
+                style={readOnlyFieldStyle}
               />
 
-              <span>{t.showPhone}</span>
-            </label>
+              <label style={checkboxLabelStyle}>
+                <input
+                  type="checkbox"
+                  checked={showEmail}
+                  disabled={!email}
+                  onChange={(event) =>
+                    setShowEmail(event.target.checked)
+                  }
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    marginTop: "2px",
+                    cursor: email
+                      ? "pointer"
+                      : "not-allowed",
+                  }}
+                />
+
+                <span>{t.showEmail}</span>
+              </label>
+
+              <label
+                style={{
+                  ...labelStyle,
+                  display: "block",
+                  marginTop: "22px",
+                }}
+              >
+                {t.phone}
+              </label>
+
+              <input
+                type="tel"
+                value={phone}
+                readOnly
+                style={readOnlyFieldStyle}
+              />
+
+              <label style={checkboxLabelStyle}>
+                <input
+                  type="checkbox"
+                  checked={showPhone}
+                  disabled={!phone}
+                  onChange={(event) =>
+                    setShowPhone(event.target.checked)
+                  }
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    marginTop: "2px",
+                    cursor: phone
+                      ? "pointer"
+                      : "not-allowed",
+                  }}
+                />
+
+                <span>{t.showPhone}</span>
+              </label>
+
+              <p style={hintStyle}>
+                {t.contactHint}{" "}
+                <Link
+                  to="/my-profile"
+                  style={{
+                    color: "#2563eb",
+                    fontWeight: "700",
+                  }}
+                >
+                  {t.myProfile}
+                </Link>
+              </p>
+            </div>
+
+            {/* SAVE */}
 
             <button
               type="submit"
               style={buttonStyle}
+              disabled={saving}
             >
-              💾 {t.save}
+              {saving
+                ? `⏳ ${t.saving}`
+                : `💾 ${t.save}`}
             </button>
           </form>
         </div>

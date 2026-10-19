@@ -3,23 +3,21 @@ import { Link, useNavigate } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./Drivers.css";
 
-const getArray = (key) => {
-  try {
-    const value = JSON.parse(localStorage.getItem(key));
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
-  }
-};
-
 const translations = {
   ka: {
     back: "← Care Georgia",
     title: "ჩემი განცხადებები",
-    description:
-      "აქ მართავ მხოლოდ შენს მიერ გამოქვეყნებულ სამუშაოს განცხადებებს.",
-    addJob: "ახალი განცხადების დამატება",
+    description: "აქ შეგიძლია მართო შენს მიერ შექმნილი განცხადებები.",
+
+    specialistListing: "ჩემი სპეციალისტის განცხადება",
+    jobPosts: "ჩემი სამუშაოს განცხადებები",
+
+    addJob: "ახალი სამუშაოს განცხადება",
+    createSpecialist: "სპეციალისტის განცხადების შექმნა",
+
     noJobs: "ჯერ არ გაქვს გამოქვეყნებული სამუშაოს განცხადება.",
+    noSpecialist: "ჯერ არ გაქვს შექმნილი სპეციალისტის განცხადება.",
+
     loginRequired: "ჩემი განცხადებების სანახავად ჯერ უნდა შეხვიდე ანგარიშში.",
     login: "შესვლა",
 
@@ -48,27 +46,21 @@ const translations = {
     day: "დღე",
     hour: "საათი",
 
+    experience: "გამოცდილება",
     pay: "ანაზღაურება",
     status: "სტატუსი",
+
     active: "აქტიური",
     closed: "დახურული",
-
-    receivedApplications: "მიღებული განაცხადები",
-    noApplications: "ამ განცხადებაზე ჯერ განაცხადი არ არის.",
-    applicant: "განმცხადებელი",
-    experience: "გამოცდილება",
-    viewProfile: "პროფილის ნახვა",
-
-    applicationSent: "განაცხადი გაგზავნილია",
-    applicationReviewed: "განაცხადი განხილულია",
-    applicationNextStage: "განაცხადი გადავიდა შემდეგ ეტაპზე",
-    applicationNotSelected: "სხვა კანდიდატებთან გაგრძელება",
-    applicationCompleted: "განაცხადის განხილვა დასრულებულია",
 
     edit: "რედაქტირება",
     close: "დახურვა",
     activate: "გააქტიურება",
     delete: "წაშლა",
+
+    closeSpecialistConfirm: "ნამდვილად გინდა სპეციალისტის განცხადების დახურვა?",
+
+    specialistCloseError: "სპეციალისტის განცხადების დახურვა ვერ მოხერხდა.",
 
     deleteConfirm: "ნამდვილად გინდა ამ სამუშაოს განცხადების წაშლა?",
 
@@ -77,15 +69,24 @@ const translations = {
     serverError: "სერვერთან დაკავშირება ვერ მოხერხდა.",
 
     currency: "₾",
+    loading: "იტვირთება...",
   },
 
   en: {
     back: "← Care Georgia",
-    title: "My Job Posts",
-    description: "Manage only the job posts you have published.",
+    title: "My Listings",
+    description: "Manage the listings you have created.",
+
+    specialistListing: "My Specialist Listing",
+    jobPosts: "My Job Posts",
+
     addJob: "Post a New Job",
+    createSpecialist: "Create Specialist Listing",
+
     noJobs: "You haven't posted any jobs yet.",
-    loginRequired: "You need to log in to view your job posts.",
+    noSpecialist: "You haven't created a specialist listing yet.",
+
+    loginRequired: "You need to log in to view your listings.",
     login: "Login",
 
     nanny: "Nanny",
@@ -113,27 +114,22 @@ const translations = {
     day: "day",
     hour: "hour",
 
+    experience: "Experience",
     pay: "Pay",
     status: "Status",
+
     active: "Active",
     closed: "Closed",
-
-    receivedApplications: "Received Applications",
-    noApplications: "No applications for this job yet.",
-    applicant: "Applicant",
-    experience: "Experience",
-    viewProfile: "View Profile",
-
-    applicationSent: "Application sent",
-    applicationReviewed: "Application reviewed",
-    applicationNextStage: "Application moved to the next stage",
-    applicationNotSelected: "Continuing with other candidates",
-    applicationCompleted: "Application review completed",
 
     edit: "Edit",
     close: "Close",
     activate: "Activate",
     delete: "Delete",
+
+    closeSpecialistConfirm:
+      "Are you sure you want to close your specialist listing?",
+
+    specialistCloseError: "Could not close the specialist listing.",
 
     deleteConfirm: "Are you sure you want to delete this job post?",
 
@@ -142,15 +138,23 @@ const translations = {
     serverError: "Could not connect to the server.",
 
     currency: "GEL",
+    loading: "Loading...",
   },
 
   ru: {
     back: "← Care Georgia",
     title: "Мои объявления",
-    description:
-      "Здесь находятся только опубликованные вами объявления о работе.",
-    addJob: "Добавить объявление",
+    description: "Здесь вы можете управлять своими объявлениями.",
+
+    specialistListing: "Моё объявление специалиста",
+    jobPosts: "Мои объявления о работе",
+
+    addJob: "Добавить объявление о работе",
+    createSpecialist: "Создать объявление специалиста",
+
     noJobs: "У вас пока нет опубликованных объявлений.",
+    noSpecialist: "У вас пока нет объявления специалиста.",
+
     loginRequired: "Чтобы увидеть свои объявления, войдите в аккаунт.",
     login: "Войти",
 
@@ -179,27 +183,22 @@ const translations = {
     day: "день",
     hour: "час",
 
+    experience: "Опыт",
     pay: "Оплата",
     status: "Статус",
+
     active: "Активно",
     closed: "Закрыто",
-
-    receivedApplications: "Полученные заявки",
-    noApplications: "На это объявление пока нет заявок.",
-    applicant: "Кандидат",
-    experience: "Опыт",
-    viewProfile: "Посмотреть профиль",
-
-    applicationSent: "Заявка отправлена",
-    applicationReviewed: "Заявка рассмотрена",
-    applicationNextStage: "Заявка перешла на следующий этап",
-    applicationNotSelected: "Продолжение с другими кандидатами",
-    applicationCompleted: "Рассмотрение заявки завершено",
 
     edit: "Редактировать",
     close: "Закрыть",
     activate: "Активировать",
     delete: "Удалить",
+
+    closeSpecialistConfirm:
+      "Вы уверены, что хотите закрыть объявление специалиста?",
+
+    specialistCloseError: "Не удалось закрыть объявление специалиста.",
 
     deleteConfirm: "Вы уверены, что хотите удалить это объявление?",
 
@@ -208,31 +207,38 @@ const translations = {
     serverError: "Не удалось подключиться к серверу.",
 
     currency: "GEL",
+    loading: "Загрузка...",
   },
 };
 
 export default function MyJobs() {
   const navigate = useNavigate();
-
   const { language } = useLanguage();
+
   const t = translations[language] || translations.ka;
 
   const isLoggedIn = localStorage.getItem("careGeorgiaLoggedIn") === "true";
 
   const currentUserId = localStorage.getItem("careGeorgiaCurrentUserId");
 
+  let currentUser = null;
+
+  try {
+    currentUser = JSON.parse(localStorage.getItem("careGeorgiaUser") || "null");
+  } catch {
+    currentUser = null;
+  }
+
+  const accountType = currentUser?.accountType;
+
+  const isProvider = accountType === "provider";
+  const isClient = accountType === "client";
+
   const [jobs, setJobs] = useState([]);
-  const [jobsLoading, setJobsLoading] = useState(true);
+  const [specialistProfile, setSpecialistProfile] = useState(null);
 
-  // Applications ჯერ ისევ ძველ სისტემაზე რჩება.
-  const applications = getArray("careGeorgiaApplications");
-  const specialists = getArray("careGeorgiaSpecialists");
-
-  const [openJobId, setOpenJobId] = useState(null);
-
-  // ========================================
-  // CLEAR LOGIN
-  // ========================================
+  const [jobsLoading, setJobsLoading] = useState(isClient);
+  const [profileLoading, setProfileLoading] = useState(isProvider);
 
   const clearLogin = () => {
     localStorage.removeItem("careGeorgiaToken");
@@ -241,12 +247,76 @@ export default function MyJobs() {
     localStorage.removeItem("careGeorgiaUser");
   };
 
-  // ========================================
-  // LOAD MY JOBS FROM POSTGRESQL
-  // ========================================
+  // ==========================================
+  // PROVIDER - LOAD SPECIALIST PROFILE
+  // ==========================================
 
   useEffect(() => {
-    const loadMyJobs = async () => {
+    if (!isProvider) {
+      setProfileLoading(false);
+      return;
+    }
+
+    const loadProfile = async () => {
+      const token = localStorage.getItem("careGeorgiaToken");
+
+      if (!token) {
+        setProfileLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/specialists/me",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (response.status === 401) {
+          clearLogin();
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        if (response.status === 404) {
+          setSpecialistProfile(null);
+          return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error("Load specialist error:", data);
+          setSpecialistProfile(null);
+          return;
+        }
+
+        setSpecialistProfile(data.profile || data.specialist || data || null);
+      } catch (error) {
+        console.error("Load specialist error:", error);
+        setSpecialistProfile(null);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [isProvider, navigate]);
+
+  // ==========================================
+  // CLIENT - LOAD JOB POSTS
+  // ==========================================
+
+  useEffect(() => {
+    if (!isClient) {
+      setJobsLoading(false);
+      return;
+    }
+
+    const loadJobs = async () => {
       const token = localStorage.getItem("careGeorgiaToken");
 
       if (!token) {
@@ -256,13 +326,10 @@ export default function MyJobs() {
 
       try {
         const response = await fetch("http://localhost:5000/api/jobs/my", {
-          method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        const data = await response.json();
 
         if (response.status === 401) {
           clearLogin();
@@ -270,27 +337,29 @@ export default function MyJobs() {
           return;
         }
 
+        const data = await response.json();
+
         if (!response.ok) {
-          console.error("Load my jobs error:", data);
+          console.error("Load jobs error:", data);
           setJobs([]);
           return;
         }
 
         setJobs(Array.isArray(data.jobs) ? data.jobs : []);
       } catch (error) {
-        console.error("Load my jobs error:", error);
+        console.error("Load jobs error:", error);
         setJobs([]);
       } finally {
         setJobsLoading(false);
       }
     };
 
-    loadMyJobs();
-  }, [navigate]);
+    loadJobs();
+  }, [isClient, navigate]);
 
-  // ========================================
+  // ==========================================
   // HELPERS
-  // ========================================
+  // ==========================================
 
   const getServiceName = (service) => {
     if (service === "nanny") return t.nanny;
@@ -320,7 +389,9 @@ export default function MyJobs() {
     return "💼";
   };
 
-  const getCityName = (city) => t[city] || city || "";
+  const getCityName = (city) => {
+    return t[city] || city || "";
+  };
 
   const getEmploymentName = (type) => {
     if (type === "full-time") return t.fullTime;
@@ -333,89 +404,125 @@ export default function MyJobs() {
     if (type === "monthly") return t.month;
     if (type === "biweekly") return t.biweekly;
     if (type === "daily") return t.day;
+    if (type === "hourly") return t.hour;
 
-    return t.hour;
+    return type || t.hour;
   };
 
-  // ========================================
-  // APPLICATIONS
-  // ჯერ ისევ LOCALSTORAGE
-  // ========================================
+  // ==========================================
+  // PROVIDER - CLOSE SPECIALIST LISTING
+  // ==========================================
 
-  const getJobApplications = (jobId) =>
-    applications.filter(
-      (application) =>
-        String(application.jobId) === String(jobId) &&
-        String(application.jobOwnerId) === String(currentUserId),
+  const closeSpecialistProfile = async () => {
+    if (!specialistProfile) return;
+
+    if (!window.confirm(t.closeSpecialistConfirm)) {
+      return;
+    }
+
+    const token = localStorage.getItem("careGeorgiaToken");
+
+    if (!token) {
+      clearLogin();
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/specialists/me/close",
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        clearLogin();
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      if (!response.ok) {
+        alert(data.message || t.specialistCloseError);
+        return;
+      }
+
+      setSpecialistProfile((current) =>
+        current
+          ? {
+              ...current,
+              status: "inactive",
+            }
+          : current,
+      );
+    } catch (error) {
+      console.error("Close specialist profile error:", error);
+
+      alert(t.serverError);
+    }
+  };
+
+  // ==========================================
+// PROVIDER - ACTIVATE SPECIALIST LISTING
+// ==========================================
+
+const activateSpecialistProfile = async () => {
+  if (!specialistProfile) return;
+
+  const token = localStorage.getItem("careGeorgiaToken");
+
+  if (!token) {
+    clearLogin();
+    navigate("/login");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      "http://localhost:5000/api/specialists/me/activate",
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
 
-  const getProfile = (application) =>
-    specialists.find(
-      (profile) =>
-        String(profile.id) === String(application.specialistProfileId) &&
-        String(profile.ownerId) === String(application.applicantUserId),
+    const data = await response.json();
+
+    if (response.status === 401) {
+      clearLogin();
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    if (!response.ok) {
+      alert(data.message || t.statusError);
+      return;
+    }
+
+    setSpecialistProfile((current) =>
+      current
+        ? {
+            ...current,
+            status: "active",
+          }
+        : current,
     );
+  } catch (error) {
+    console.error("Activate specialist profile error:", error);
+    alert(t.serverError);
+  }
+};
 
-  const getProfilePath = (profile) => {
-    if (!profile) return "/";
-
-    const p = profile.profession;
-
-    if (p === "nanny") return `/nannies/${profile.id}`;
-
-    if (p === "caregiver") {
-      return `/caregivers/${profile.id}`;
-    }
-
-    if (p === "driver") return `/drivers/${profile.id}`;
-    if (p === "tutor") return `/tutors/${profile.id}`;
-
-    if (p === "housekeeper") {
-      return `/housekeepers/${profile.id}`;
-    }
-
-    if (p === "dogwalker" || p === "dog-walker") {
-      return `/dogwalker/${profile.id}`;
-    }
-
-    return "/";
-  };
-
-  const getApplicantName = (profile) => {
-    if (!profile) return "";
-
-    const first = profile.firstName || "";
-    const last = profile.lastName || "";
-
-    const initial = last ? `${last.charAt(0)}.` : "";
-
-    return `${first} ${initial}`.trim() || getServiceName(profile.profession);
-  };
-
-  const getApplicationStatus = (application) => {
-    if (application.status === "reviewed") {
-      return `👀 ${t.applicationReviewed}`;
-    }
-
-    if (application.status === "next-stage") {
-      return `➡️ ${t.applicationNextStage}`;
-    }
-
-    if (application.status === "not-selected") {
-      return `🌿 ${t.applicationNotSelected}`;
-    }
-
-    if (application.status === "completed") {
-      return `✅ ${t.applicationCompleted}`;
-    }
-
-    return `📨 ${t.applicationSent}`;
-  };
-
-  // ========================================
-  // CLOSE / ACTIVATE JOB
-  // POSTGRESQL
-  // ========================================
+  // ==========================================
+  // CLIENT - CLOSE / ACTIVATE JOB
+  // ==========================================
 
   const toggleJobStatus = async (jobId) => {
     const token = localStorage.getItem("careGeorgiaToken");
@@ -428,9 +535,7 @@ export default function MyJobs() {
 
     const job = jobs.find((item) => String(item.id) === String(jobId));
 
-    if (!job) {
-      return;
-    }
+    if (!job) return;
 
     const newStatus = job.status === "closed" ? "active" : "closed";
 
@@ -439,12 +544,10 @@ export default function MyJobs() {
         `http://localhost:5000/api/jobs/${jobId}/status`,
         {
           method: "PATCH",
-
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-
           body: JSON.stringify({
             status: newStatus,
           }),
@@ -471,17 +574,19 @@ export default function MyJobs() {
       );
     } catch (error) {
       console.error("Change job status error:", error);
-
       alert(t.serverError);
     }
   };
 
-  // ========================================
-  // DELETE JOB
-  // POSTGRESQL
-  // ========================================
+  // ==========================================
+  // CLIENT - DELETE JOB
+  // ==========================================
 
   const deleteJob = async (jobId) => {
+    if (!window.confirm(t.deleteConfirm)) {
+      return;
+    }
+
     const token = localStorage.getItem("careGeorgiaToken");
 
     if (!token) {
@@ -490,20 +595,9 @@ export default function MyJobs() {
       return;
     }
 
-    const job = jobs.find((item) => String(item.id) === String(jobId));
-
-    if (!job) {
-      return;
-    }
-
-    if (!window.confirm(t.deleteConfirm)) {
-      return;
-    }
-
     try {
       const response = await fetch(`http://localhost:5000/api/jobs/${jobId}`, {
         method: "DELETE",
-
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -525,20 +619,15 @@ export default function MyJobs() {
       setJobs((currentJobs) =>
         currentJobs.filter((item) => String(item.id) !== String(jobId)),
       );
-
-      if (String(openJobId) === String(jobId)) {
-        setOpenJobId(null);
-      }
     } catch (error) {
       console.error("Delete job error:", error);
-
       alert(t.serverError);
     }
   };
 
-  // ========================================
+  // ==========================================
   // NOT LOGGED IN
-  // ========================================
+  // ==========================================
 
   if (!isLoggedIn || !currentUserId) {
     return (
@@ -553,8 +642,8 @@ export default function MyJobs() {
             style={{
               maxWidth: "600px",
               margin: "40px auto",
-              textAlign: "center",
               padding: "30px",
+              textAlign: "center",
             }}
           >
             <p>{t.loginRequired}</p>
@@ -566,37 +655,29 @@ export default function MyJobs() {
     );
   }
 
-  // ========================================
+  // ==========================================
   // LOADING
-  // ========================================
+  // ==========================================
 
-  if (jobsLoading) {
+  if ((isProvider && profileLoading) || (isClient && jobsLoading)) {
     return (
       <div className="drivers-page">
         <div className="drivers-container">
-          <Link to="/" className="back-link">
-            {t.back}
-          </Link>
-
           <div
             className="driver-card"
             style={{
               maxWidth: "600px",
               margin: "40px auto",
-              textAlign: "center",
               padding: "30px",
+              textAlign: "center",
             }}
           >
-            <p>...</p>
+            <p>{t.loading}</p>
           </div>
         </div>
       </div>
     );
   }
-
-  // ========================================
-  // PAGE
-  // ========================================
 
   return (
     <div className="drivers-page">
@@ -605,266 +686,297 @@ export default function MyJobs() {
           {t.back}
         </Link>
 
-        <div className="drivers-heading">
+        <div className="drivers-heading" style={{ marginBottom: "30px" }}>
           <div>
             <h1>📋 {t.title}</h1>
             <p>{t.description}</p>
           </div>
-
-          <Link
-            to="/post-job"
-            style={{
-              display: "inline-block",
-              padding: "12px 18px",
-              backgroundColor: "#2563eb",
-              color: "#ffffff",
-              borderRadius: "10px",
-              textDecoration: "none",
-              fontWeight: "700",
-            }}
-          >
-            + {t.addJob}
-          </Link>
         </div>
 
-        {jobs.length === 0 ? (
-          <div
-            className="driver-card"
-            style={{
-              padding: "35px",
-              textAlign: "center",
-            }}
-          >
-            <p>{t.noJobs}</p>
-          </div>
-        ) : (
-          <div className="drivers-grid">
-            {jobs.map((job) => {
-              const jobApplications = getJobApplications(job.id);
+        {/* =====================================
+            PROVIDER
+            მხოლოდ სპეციალისტის განცხადება
+        ====================================== */}
 
-              const open = String(openJobId) === String(job.id);
+        {isProvider && (
+          <section>
+            <h2 style={{ marginBottom: "18px" }}>👤 {t.specialistListing}</h2>
 
-              return (
+            {specialistProfile ? (
+              <div
+                className="driver-card"
+                style={{
+                  opacity: specialistProfile.status === "inactive" ? 0.7 : 1,
+                }}
+              >
                 <div
-                  className="driver-card"
-                  key={job.id}
                   style={{
-                    opacity: job.status === "closed" ? 0.72 : 1,
+                    fontSize: "42px",
+                    marginBottom: "12px",
                   }}
                 >
-                  <h3>
-                    {getServiceIcon(job.service)} {getServiceName(job.service)}
-                  </h3>
+                  {getServiceIcon(specialistProfile.profession)}
+                </div>
 
-                  <p>📍 {getCityName(job.city)}</p>
+                <h3>{getServiceName(specialistProfile.profession)}</h3>
 
-                  <p>💼 {getEmploymentName(job.employmentType)}</p>
+                <p>📍 {getCityName(specialistProfile.city)}</p>
 
+                {specialistProfile.experience && (
                   <p>
-                    💰 {t.pay}: {job.budget} {t.currency} /{" "}
-                    {getPaymentName(job.paymentType)}
+                    💼 {t.experience}: {specialistProfile.experience}
                   </p>
+                )}
 
+                {specialistProfile.employmentType && (
                   <p>
-                    <strong>{t.status}:</strong>{" "}
-                    {job.status === "closed"
-                      ? `🔴 ${t.closed}`
-                      : `🟢 ${t.active}`}
+                    💼 {getEmploymentName(specialistProfile.employmentType)}
                   </p>
+                )}
 
-                  {job.description && (
-                    <p
-                      style={{
-                        marginTop: "12px",
-                      }}
-                    >
-                      {job.description}
-                    </p>
-                  )}
+                <p>
+                  💰 {t.pay}: {specialistProfile.priceValue} {t.currency} /{" "}
+                  {getPaymentName(specialistProfile.paymentType)}
+                </p>
 
-                  {/* APPLICATIONS */}
+                <p>
+                  <strong>{t.status}:</strong>{" "}
+                  {specialistProfile.status === "inactive"
+                    ? `🔴 ${t.closed}`
+                    : `🟢 ${t.active}`}
+                </p>
 
-                  <div
+                {specialistProfile.description && (
+                  <p style={{ marginTop: "12px" }}>
+                    {specialistProfile.description}
+                  </p>
+                )}
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "10px",
+                    marginTop: "18px",
+                    paddingTop: "16px",
+                    borderTop: "1px solid #e5e7eb",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(`/edit-specialist/${specialistProfile.id}`)
+                    }
                     style={{
-                      marginTop: "18px",
-                      paddingTop: "16px",
-                      borderTop: "1px solid #e5e7eb",
+                      padding: "10px 14px",
+                      border: "1px solid #2563eb",
+                      borderRadius: "8px",
+                      background: "#ffffff",
+                      color: "#2563eb",
+                      cursor: "pointer",
+                      fontWeight: "700",
                     }}
                   >
-                    <button
-                      type="button"
-                      onClick={() => setOpenJobId(open ? null : job.id)}
+                    ✏️ {t.edit}
+                  </button>
+
+                 <button
+  type="button"
+  onClick={
+    specialistProfile.status === "inactive"
+      ? activateSpecialistProfile
+      : closeSpecialistProfile
+  }
+  style={{
+    padding: "10px 14px",
+    border: "1px solid #cbd5e1",
+    borderRadius: "8px",
+    background: "#ffffff",
+    cursor: "pointer",
+    fontWeight: "700",
+  }}
+>
+  {specialistProfile.status === "inactive"
+    ? `🟢 ${t.activate}`
+    : `🔒 ${t.close}`}
+</button>
+                  
+                </div>
+              </div>
+            ) : (
+              <div
+                className="driver-card"
+                style={{
+                  padding: "30px",
+                  textAlign: "center",
+                }}
+              >
+                <p>{t.noSpecialist}</p>
+
+                <Link
+                  to="/create-specialist-profile"
+                  style={{
+                    display: "inline-block",
+                    marginTop: "12px",
+                    padding: "11px 16px",
+                    background: "#2563eb",
+                    color: "#ffffff",
+                    borderRadius: "9px",
+                    textDecoration: "none",
+                    fontWeight: "700",
+                  }}
+                >
+                  + {t.createSpecialist}
+                </Link>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* =====================================
+            CLIENT
+            მხოლოდ სამუშაოს განცხადებები
+        ====================================== */}
+
+        {isClient && (
+          <section>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "15px",
+                marginBottom: "18px",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>💼 {t.jobPosts}</h2>
+
+              <Link
+                to="/post-job"
+                style={{
+                  display: "inline-block",
+                  padding: "12px 18px",
+                  background: "#2563eb",
+                  color: "#ffffff",
+                  borderRadius: "10px",
+                  textDecoration: "none",
+                  fontWeight: "700",
+                }}
+              >
+                + {t.addJob}
+              </Link>
+            </div>
+
+            {jobs.length === 0 ? (
+              <div
+                className="driver-card"
+                style={{
+                  padding: "35px",
+                  textAlign: "center",
+                }}
+              >
+                <p>{t.noJobs}</p>
+              </div>
+            ) : (
+              <div className="drivers-grid">
+                {jobs.map((job) => (
+                  <div
+                    className="driver-card"
+                    key={job.id}
+                    style={{
+                      opacity: job.status === "closed" ? 0.72 : 1,
+                    }}
+                  >
+                    <h3>
+                      {getServiceIcon(job.service)}{" "}
+                      {getServiceName(job.service)}
+                    </h3>
+
+                    <p>📍 {getCityName(job.city)}</p>
+
+                    <p>💼 {getEmploymentName(job.employmentType)}</p>
+
+                    <p>
+                      💰 {t.pay}: {job.budget} {t.currency} /{" "}
+                      {getPaymentName(job.paymentType)}
+                    </p>
+
+                    <p>
+                      <strong>{t.status}:</strong>{" "}
+                      {job.status === "closed"
+                        ? `🔴 ${t.closed}`
+                        : `🟢 ${t.active}`}
+                    </p>
+
+                    {job.description && (
+                      <p style={{ marginTop: "12px" }}>{job.description}</p>
+                    )}
+
+                    <div
                       style={{
-                        width: "100%",
-                        padding: "12px 16px",
-                        border: "1px solid #bfdbfe",
-                        borderRadius: "10px",
-                        backgroundColor: "#eff6ff",
-                        color: "#1d4ed8",
-                        cursor: "pointer",
-                        fontWeight: "700",
-                        textAlign: "left",
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "8px",
+                        marginTop: "18px",
+                        paddingTop: "16px",
+                        borderTop: "1px solid #e5e7eb",
                       }}
                     >
-                      📩 {t.receivedApplications} ({jobApplications.length}){" "}
-                      {open ? "▲" : "▼"}
-                    </button>
-
-                    {open && (
-                      <div
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/edit-job/${job.id}`)}
                         style={{
-                          marginTop: "12px",
+                          padding: "10px 14px",
+                          border: "1px solid #2563eb",
+                          borderRadius: "8px",
+                          background: "#ffffff",
+                          color: "#2563eb",
+                          cursor: "pointer",
+                          fontWeight: "700",
                         }}
                       >
-                        {jobApplications.length === 0 ? (
-                          <div
-                            style={{
-                              padding: "14px",
-                              backgroundColor: "#f8fafc",
-                              borderRadius: "10px",
-                              color: "#64748b",
-                            }}
-                          >
-                            {t.noApplications}
-                          </div>
-                        ) : (
-                          jobApplications.map((application) => {
-                            const profile = getProfile(application);
+                        ✏️ {t.edit}
+                      </button>
 
-                            if (!profile) {
-                              return null;
-                            }
+                      <button
+                        type="button"
+                        onClick={() => toggleJobStatus(job.id)}
+                        style={{
+                          padding: "10px 14px",
+                          border: "1px solid #cbd5e1",
+                          borderRadius: "8px",
+                          background: "#ffffff",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        {job.status === "closed"
+                          ? `🟢 ${t.activate}`
+                          : `🔒 ${t.close}`}
+                      </button>
 
-                            return (
-                              <div
-                                key={application.id}
-                                style={{
-                                  padding: "16px",
-                                  marginBottom: "10px",
-                                  backgroundColor: "#ffffff",
-                                  border: "1px solid #e2e8f0",
-                                  borderRadius: "12px",
-                                }}
-                              >
-                                <strong>
-                                  👤 {t.applicant}: {getApplicantName(profile)}
-                                </strong>
-
-                                <p>
-                                  {getServiceIcon(profile.profession)}{" "}
-                                  {getServiceName(profile.profession)}
-                                </p>
-
-                                <p>📍 {getCityName(profile.city)}</p>
-
-                                {profile.experience && (
-                                  <p>
-                                    🧰 {t.experience}: {profile.experience}
-                                  </p>
-                                )}
-
-                                <div
-                                  style={{
-                                    margin: "12px 0",
-                                    padding: "10px",
-                                    backgroundColor: "#f8fafc",
-                                    borderRadius: "8px",
-                                    fontWeight: "600",
-                                  }}
-                                >
-                                  {getApplicationStatus(application)}
-                                </div>
-
-                                <Link
-                                  to={getProfilePath(profile)}
-                                  state={{
-                                    from: "my-jobs",
-                                  }}
-                                  style={{
-                                    display: "inline-block",
-                                    padding: "9px 13px",
-                                    backgroundColor: "#2563eb",
-                                    color: "#ffffff",
-                                    borderRadius: "8px",
-                                    textDecoration: "none",
-                                    fontWeight: "700",
-                                  }}
-                                >
-                                  👤 {t.viewProfile}
-                                </Link>
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    )}
+                      <button
+                        type="button"
+                        onClick={() => deleteJob(job.id)}
+                        style={{
+                          padding: "10px 14px",
+                          border: "1px solid #dc2626",
+                          borderRadius: "8px",
+                          background: "#ffffff",
+                          color: "#dc2626",
+                          cursor: "pointer",
+                          fontWeight: "700",
+                        }}
+                      >
+                        🗑️ {t.delete}
+                      </button>
+                    </div>
                   </div>
-
-                  {/* ACTIONS */}
-
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "8px",
-                      marginTop: "18px",
-                      paddingTop: "16px",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/edit-job/${job.id}`)}
-                      style={{
-                        padding: "10px 14px",
-                        border: "1px solid #2563eb",
-                        borderRadius: "8px",
-                        backgroundColor: "#ffffff",
-                        color: "#2563eb",
-                        cursor: "pointer",
-                        fontWeight: "700",
-                      }}
-                    >
-                      ✏️ {t.edit}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => toggleJobStatus(job.id)}
-                      style={{
-                        padding: "10px 14px",
-                        border: "1px solid #cbd5e1",
-                        borderRadius: "8px",
-                        backgroundColor: "#ffffff",
-                        cursor: "pointer",
-                        fontWeight: "600",
-                      }}
-                    >
-                      {job.status === "closed"
-                        ? `🟢 ${t.activate}`
-                        : `🔒 ${t.close}`}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => deleteJob(job.id)}
-                      style={{
-                        padding: "10px 14px",
-                        border: "1px solid #dc2626",
-                        borderRadius: "8px",
-                        backgroundColor: "#ffffff",
-                        color: "#dc2626",
-                        cursor: "pointer",
-                        fontWeight: "600",
-                      }}
-                    >
-                      🗑️ {t.delete}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                ))}
+              </div>
+            )}
+          </section>
         )}
       </div>
     </div>

@@ -1,127 +1,407 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./Drivers.css";
 
-const getArray = (key) => {
-  try {
-    const value = JSON.parse(localStorage.getItem(key));
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
-  }
-};
-
 const serviceLabels = {
-  ka: { nanny:"ძიძა", caregiver:"მომვლელი", driver:"მძღოლი", tutor:"ტუტორი / რეპეტიტორი", housekeeper:"სახლის დამხმარე", dogwalker:"ძაღლის გამსეირნებელი", "dog-walker":"ძაღლის გამსეირნებელი" },
-  en: { nanny:"Nanny", caregiver:"Caregiver", driver:"Driver", tutor:"Tutor / Teacher", housekeeper:"Housekeeper", dogwalker:"Dog Walker", "dog-walker":"Dog Walker" },
-  ru: { nanny:"Няня", caregiver:"Сиделка", driver:"Водитель", tutor:"Репетитор", housekeeper:"Помощник по дому", dogwalker:"Выгульщик собак", "dog-walker":"Выгульщик собак" },
+  ka: {
+    nanny: "ძიძა",
+    caregiver: "მომვლელი",
+    driver: "მძღოლი",
+    tutor: "ტუტორი / რეპეტიტორი",
+    housekeeper: "სახლის დამხმარე",
+    dogwalker: "ძაღლის გამსეირნებელი",
+    "dog-walker": "ძაღლის გამსეირნებელი",
+  },
+  en: {
+    nanny: "Nanny",
+    caregiver: "Caregiver",
+    driver: "Driver",
+    tutor: "Tutor / Teacher",
+    housekeeper: "Housekeeper",
+    dogwalker: "Dog Walker",
+    "dog-walker": "Dog Walker",
+  },
+  ru: {
+    nanny: "Няня",
+    caregiver: "Сиделка",
+    driver: "Водитель",
+    tutor: "Репетитор",
+    housekeeper: "Помощник по дому",
+    dogwalker: "Выгульщик собак",
+    "dog-walker": "Выгульщик собак",
+  },
 };
 
 const cityLabels = {
-  ka:{tbilisi:"თბილისი",batumi:"ბათუმი",kutaisi:"ქუთაისი",rustavi:"რუსთავი",gori:"გორი",zugdidi:"ზუგდიდი",poti:"ფოთი",telavi:"თელავი",other:"სხვა"},
-  en:{tbilisi:"Tbilisi",batumi:"Batumi",kutaisi:"Kutaisi",rustavi:"Rustavi",gori:"Gori",zugdidi:"Zugdidi",poti:"Poti",telavi:"Telavi",other:"Other"},
-  ru:{tbilisi:"Тбилиси",batumi:"Батуми",kutaisi:"Кутаиси",rustavi:"Рустави",gori:"Гори",zugdidi:"Зугдиди",poti:"Поти",telavi:"Телави",other:"Другой"},
+  ka: {
+    tbilisi: "თბილისი",
+    batumi: "ბათუმი",
+    kutaisi: "ქუთაისი",
+    rustavi: "რუსთავი",
+    gori: "გორი",
+    zugdidi: "ზუგდიდი",
+    poti: "ფოთი",
+    telavi: "თელავი",
+    other: "სხვა",
+  },
+  en: {
+    tbilisi: "Tbilisi",
+    batumi: "Batumi",
+    kutaisi: "Kutaisi",
+    rustavi: "Rustavi",
+    gori: "Gori",
+    zugdidi: "Zugdidi",
+    poti: "Poti",
+    telavi: "Telavi",
+    other: "Other",
+  },
+  ru: {
+    tbilisi: "Тбилиси",
+    batumi: "Батуми",
+    kutaisi: "Кутаиси",
+    rustavi: "Рустави",
+    gori: "Гори",
+    zugdidi: "Зугдиди",
+    poti: "Поти",
+    telavi: "Телави",
+    other: "Другой",
+  },
 };
-
-const icons = { nanny:"👶", caregiver:"👵", driver:"🚗", tutor:"📚", housekeeper:"🏠", dogwalker:"🐕", "dog-walker":"🐕" };
 
 const tr = {
   ka: {
-    title:"დამსაქმებლის დაინტერესება",
-    desc:"აქ ჩანს დამსაქმებლებისგან შენს სპეციალისტის პროფილზე მიღებული შეთავაზებები.",
-    empty:"ჯერ არც ერთ დამსაქმებელს არ გამოუგზავნია დაინტერესება.",
-    interested:"მაინტერესებს შეთავაზება",
-    not:"ამ ეტაპზე არ მაინტერესებს",
-    new:"ახალი შეთავაზება",
-    yes:"თქვენ დაადასტურეთ, რომ შეთავაზება გაინტერესებთ.",
-    no:"თქვენ მიუთითეთ, რომ ამ ეტაპზე შეთავაზება არ გაინტერესებთ.",
-    contact:"დამსაქმებლის საკონტაქტო ინფორმაცია",
-    back:"← Care Georgia"
+    title: "დამსაქმებლის დაინტერესება",
+    desc: "აქ ჩანს დამსაქმებლებისგან შენს სპეციალისტის პროფილზე მიღებული შეთავაზებები.",
+    empty: "ჯერ არც ერთ დამსაქმებელს არ გამოუგზავნია დაინტერესება.",
+
+    interested: "მაინტერესებს შეთავაზება",
+    notInterested: "ამ ეტაპზე არ მაინტერესებს",
+
+    new: "ახალი შეთავაზება",
+    accepted: "თქვენ დაადასტურეთ, რომ შეთავაზება გაინტერესებთ.",
+    declined: "თქვენ მიუთითეთ, რომ ამ ეტაპზე შეთავაზება არ გაინტერესებთ.",
+
+    contact: "დამსაქმებლის საკონტაქტო ინფორმაცია",
+    email: "ელფოსტა",
+    phone: "ტელეფონი",
+
+    noContact: "დამსაქმებელს პირადი საკონტაქტო ინფორმაცია გაზიარებული არ აქვს.",
+
+    privacy:
+      "აქ მხოლოდ დამსაქმებლის მიერ ამ შეთავაზებისთვის გაზიარებული ინფორმაცია ჩანს.",
+
+    loading: "იტვირთება...",
+    back: "← Care Georgia",
+
+    loginRequired:
+      "მიღებული დაინტერესებების სანახავად ჯერ უნდა შეხვიდე ანგარიშში.",
+    login: "შესვლა",
+
+    loadError: "დაინტერესებების ჩატვირთვა ვერ მოხერხდა.",
+    updateError: "პასუხის შენახვა ვერ მოხერხდა.",
+    serverError: "სერვერთან დაკავშირება ვერ მოხერხდა.",
   },
+
   en: {
-    title:"Employer Interests",
-    desc:"Employer offers sent to your specialist profile appear here.",
-    empty:"No employer has sent you an offer yet.",
-    interested:"I'm interested",
-    not:"Not interested at this time",
-    new:"New offer",
-    yes:"You confirmed that you are interested.",
-    no:"You indicated that you are not interested at this time.",
-    contact:"Employer Contact Information",
-    back:"← Care Georgia"
+    title: "Employer Interests",
+    desc: "Employer offers sent to your specialist profile appear here.",
+    empty: "No employer has sent you an offer yet.",
+
+    interested: "I'm interested",
+    notInterested: "Not interested at this time",
+
+    new: "New offer",
+    accepted: "You confirmed that you are interested.",
+    declined: "You indicated that you are not interested at this time.",
+
+    contact: "Employer Contact Information",
+    email: "Email",
+    phone: "Phone",
+
+    noContact: "The employer has not shared personal contact information.",
+
+    privacy:
+      "Only contact information shared by the employer for this offer is shown here.",
+
+    loading: "Loading...",
+    back: "← Care Georgia",
+
+    loginRequired: "You must log in to view received interests.",
+    login: "Login",
+
+    loadError: "Could not load received interests.",
+    updateError: "Could not save your response.",
+    serverError: "Could not connect to the server.",
   },
+
   ru: {
-    title:"Интерес работодателя",
-    desc:"Здесь находятся предложения работодателей для вашего профиля специалиста.",
-    empty:"Работодатели пока не отправляли вам предложения.",
-    interested:"Мне интересно",
-    not:"Сейчас не интересно",
-    new:"Новое предложение",
-    yes:"Вы подтвердили интерес к предложению.",
-    no:"Вы указали, что предложение сейчас не интересно.",
-    contact:"Контактная информация работодателя",
-    back:"← Care Georgia"
-  }
+    title: "Интерес работодателя",
+    desc: "Здесь находятся предложения работодателей для вашего профиля специалиста.",
+    empty: "Работодатели пока не отправляли вам предложения.",
+
+    interested: "Мне интересно",
+    notInterested: "Сейчас не интересно",
+
+    new: "Новое предложение",
+    accepted: "Вы подтвердили интерес к предложению.",
+    declined: "Вы указали, что предложение сейчас не интересно.",
+
+    contact: "Контактная информация работодателя",
+    email: "Электронная почта",
+    phone: "Телефон",
+
+    noContact: "Работодатель не поделился личной контактной информацией.",
+
+    privacy:
+      "Здесь отображается только контактная информация, которой работодатель поделился для этого предложения.",
+
+    loading: "Загрузка...",
+    back: "← Care Georgia",
+
+    loginRequired: "Чтобы увидеть полученные предложения, войдите в аккаунт.",
+    login: "Войти",
+
+    loadError: "Не удалось загрузить предложения.",
+    updateError: "Не удалось сохранить ответ.",
+    serverError: "Не удалось подключиться к серверу.",
+  },
 };
 
 export default function ReceivedInterests() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
+
   const t = tr[language] || tr.ka;
-  const uid = localStorage.getItem("careGeorgiaCurrentUserId");
 
-  const [all, setAll] = useState(() => getArray("careGeorgiaInterests"));
-  const jobs = getArray("careGeorgiaJobs");
-  const profiles = getArray("careGeorgiaSpecialists");
+  const [interests, setInterests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [updatingId, setUpdatingId] = useState(null);
 
-  const mine = all
-    .filter((interest) => String(interest.specialistUserId) === String(uid))
-    .reverse();
+  const isLoggedIn = localStorage.getItem("careGeorgiaLoggedIn") === "true";
+
+  const clearLogin = () => {
+    localStorage.removeItem("careGeorgiaToken");
+    localStorage.removeItem("careGeorgiaLoggedIn");
+    localStorage.removeItem("careGeorgiaCurrentUserId");
+    localStorage.removeItem("careGeorgiaUser");
+  };
 
   useEffect(() => {
-    if (!uid) return;
+    const loadInterests = async () => {
+      if (!isLoggedIn) {
+        setLoading(false);
+        return;
+      }
 
-    const hasUnread = all.some(
-      (interest) =>
-        String(interest.specialistUserId) === String(uid) &&
-        interest.specialistSeen !== true
-    );
+      const token = localStorage.getItem("careGeorgiaToken");
 
-    if (!hasUnread) return;
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
-    const next = all.map((interest) =>
-      String(interest.specialistUserId) === String(uid)
-        ? { ...interest, specialistSeen: true }
-        : interest
-    );
+      try {
+        setLoading(true);
+        setErrorMessage("");
 
-    setAll(next);
-    localStorage.setItem("careGeorgiaInterests", JSON.stringify(next));
-    window.dispatchEvent(new Event("careGeorgiaInterestsUpdated"));
-  }, [uid]);
+        // First load interests.
+        const response = await fetch(
+          "http://localhost:5000/api/interests/received",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
 
-  const update = (id, status) => {
-    const next = all.map((interest) =>
-      String(interest.id) === String(id) &&
-      String(interest.specialistUserId) === String(uid)
-        ? {
-            ...interest,
-            status,
-            specialistSeen: true,
-            respondedAt: new Date().toISOString(),
+        if (response.status === 401) {
+          clearLogin();
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setErrorMessage(data.message || t.loadError);
+          setInterests([]);
+          return;
+        }
+
+        const loadedInterests = Array.isArray(data.interests)
+          ? data.interests
+          : [];
+
+        setInterests(loadedInterests);
+
+        // The provider has now opened this page.
+        // Mark all received interests as seen.
+        const hasUnseen = loadedInterests.some(
+          (interest) => interest.isSeen === false,
+        );
+
+        if (hasUnseen) {
+          const seenResponse = await fetch(
+            "http://localhost:5000/api/interests/received/seen",
+            {
+              method: "PATCH",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+
+          if (seenResponse.status === 401) {
+            clearLogin();
+            navigate("/login", { replace: true });
+            return;
           }
-        : interest
-    );
 
-    setAll(next);
-    localStorage.setItem("careGeorgiaInterests", JSON.stringify(next));
-    window.dispatchEvent(new Event("careGeorgiaInterestsUpdated"));
+          const seenData = await seenResponse.json();
+
+          if (!seenResponse.ok) {
+            console.error("Mark interests as seen error:", seenData);
+          } else {
+            setInterests((current) =>
+              current.map((interest) => ({
+                ...interest,
+                isSeen: true,
+              })),
+            );
+
+            // Tell Header to refresh the bell count.
+            window.dispatchEvent(new Event("careGeorgiaInterestsUpdated"));
+          }
+        }
+      } catch (error) {
+        console.error("Load received interests error:", error);
+
+        setErrorMessage(t.serverError);
+        setInterests([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInterests();
+  }, [isLoggedIn, navigate, t.loadError, t.serverError]);
+
+  const updateStatus = async (id, status) => {
+    const token = localStorage.getItem("careGeorgiaToken");
+
+    if (!token) {
+      clearLogin();
+      navigate("/login");
+      return;
+    }
+
+    setUpdatingId(id);
+    setErrorMessage("");
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/interests/${id}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            status,
+          }),
+        },
+      );
+
+      if (response.status === 401) {
+        clearLogin();
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(data.message || t.updateError);
+        return;
+      }
+
+      setInterests((current) =>
+        current.map((interest) =>
+          String(interest.id) === String(id)
+            ? {
+                ...interest,
+                status,
+                isSeen: true,
+              }
+            : interest,
+        ),
+      );
+
+      window.dispatchEvent(new Event("careGeorgiaInterestsUpdated"));
+    } catch (error) {
+      console.error("Update interest status error:", error);
+
+      setErrorMessage(t.serverError);
+    } finally {
+      setUpdatingId(null);
+    }
   };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="drivers-page">
+        <div className="drivers-container">
+          <Link to="/" className="back-link">
+            {t.back}
+          </Link>
+
+          <div
+            className="driver-card"
+            style={{
+              maxWidth: "650px",
+              margin: "40px auto",
+              padding: "30px",
+              textAlign: "center",
+            }}
+          >
+            <p>{t.loginRequired}</p>
+
+            <Link to="/login">{t.login} →</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="drivers-page">
+        <div className="drivers-container">
+          <div
+            className="driver-card"
+            style={{
+              maxWidth: "650px",
+              margin: "40px auto",
+              padding: "30px",
+              textAlign: "center",
+            }}
+          >
+            <p>{t.loading}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="drivers-page">
       <div className="drivers-container">
-        <Link to="/" className="back-link">{t.back}</Link>
+        <Link to="/" className="back-link">
+          {t.back}
+        </Link>
 
         <div className="drivers-heading">
           <div>
@@ -130,123 +410,155 @@ export default function ReceivedInterests() {
           </div>
         </div>
 
-        {mine.length === 0 ? (
-          <div className="driver-card" style={{ padding: 30 }}>
+        {errorMessage && (
+          <div
+            className="driver-card"
+            style={{
+              padding: "18px",
+              marginBottom: "20px",
+              border: "1px solid #fecaca",
+            }}
+          >
+            <p style={{ margin: 0 }}>{errorMessage}</p>
+          </div>
+        )}
+
+        {interests.length === 0 ? (
+          <div className="driver-card" style={{ padding: "30px" }}>
             <p>{t.empty}</p>
           </div>
         ) : (
           <div className="drivers-grid">
-            {mine.map((interest) => {
-              const job = jobs.find(
-                (item) => String(item.id) === String(interest.jobId)
-              );
+            {interests.map((interest) => {
+              const job = interest.job || {};
+              const employer = interest.employer || {};
 
-              const profile = profiles.find(
-                (item) =>
-                  String(item.id) === String(interest.specialistProfileId)
-              );
+              const email = employer.email || null;
 
-              const email =
-                interest.showEmployerEmail === true &&
-                interest.employerEmail;
+              const phone = employer.phone || null;
 
-              const phone =
-                interest.showEmployerPhone === true &&
-                interest.employerPhone;
+              const hasContact = Boolean(email) || Boolean(phone);
 
               return (
                 <div className="driver-card" key={interest.id}>
                   <h3>
-                    💼{" "}
-                    {job
-                      ? serviceLabels[language]?.[job.service] || job.service
-                      : ""}
+                    💼 {serviceLabels[language]?.[job.service] || job.service}
                   </h3>
 
-                  {profile && (
+                  {(employer.firstName || employer.lastName) && (
                     <p>
-                      {icons[profile.profession] || "👤"}{" "}
-                      {serviceLabels[language]?.[profile.profession] ||
-                        profile.profession}
+                      👤 {employer.firstName || ""} {employer.lastName || ""}
                     </p>
                   )}
 
-                  {job && (
-                    <>
-                      <p>
-                        📍 {cityLabels[language]?.[job.city] || job.city}
-                      </p>
-                      {job.description && <p>{job.description}</p>}
-                    </>
+                  {job.city && (
+                    <p>📍 {cityLabels[language]?.[job.city] || job.city}</p>
                   )}
+
+                  {job.description && <p>{job.description}</p>}
 
                   <div
                     style={{
-                      padding: 12,
-                      background: "#f8fafc",
-                      borderRadius: 10,
-                      marginTop: 12,
+                      padding: "12px",
+                      background:
+                        interest.status === "accepted"
+                          ? "#f0fdf4"
+                          : interest.status === "declined"
+                            ? "#f8fafc"
+                            : "#fffbeb",
+                      borderRadius: "10px",
+                      marginTop: "12px",
                     }}
                   >
-                    {interest.status === "interested"
-                      ? `💚 ${t.yes}`
-                      : interest.status === "not-interested"
-                        ? `⚪ ${t.no}`
+                    {interest.status === "accepted"
+                      ? `💚 ${t.accepted}`
+                      : interest.status === "declined"
+                        ? `⚪ ${t.declined}`
                         : `🔔 ${t.new}`}
                   </div>
 
-                  {(email || phone) && (
-                    <div
-                      style={{
-                        marginTop: 12,
-                        padding: 12,
-                        background: "#eff6ff",
-                        borderRadius: 10,
-                      }}
-                    >
-                      <strong>📇 {t.contact}</strong>
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      padding: "14px",
+                      background: "#eff6ff",
+                      borderRadius: "10px",
+                    }}
+                  >
+                    <strong>📇 {t.contact}</strong>
 
-                      {email && (
-                        <p>
-                          ✉️{" "}
-                          <a href={`mailto:${interest.employerEmail}`}>
-                            {interest.employerEmail}
-                          </a>
-                        </p>
-                      )}
+                    {hasContact ? (
+                      <div
+                        style={{
+                          marginTop: "10px",
+                        }}
+                      >
+                        {email && (
+                          <p
+                            style={{
+                              margin: "6px 0",
+                            }}
+                          >
+                            ✉️ {t.email}: <strong>{email}</strong>
+                          </p>
+                        )}
 
-                      {phone && (
-                        <p>
-                          📞{" "}
-                          <a href={`tel:${interest.employerPhone}`}>
-                            {interest.employerPhone}
-                          </a>
+                        {phone && (
+                          <p
+                            style={{
+                              margin: "6px 0",
+                            }}
+                          >
+                            📞 {t.phone}: <strong>{phone}</strong>
+                          </p>
+                        )}
+
+                        <p
+                          style={{
+                            margin: "12px 0 0",
+                            fontSize: "13px",
+                            color: "#64748b",
+                            lineHeight: "1.5",
+                          }}
+                        >
+                          🔒 {t.privacy}
                         </p>
-                      )}
-                    </div>
-                  )}
+                      </div>
+                    ) : (
+                      <p
+                        style={{
+                          margin: "10px 0 0",
+                          color: "#64748b",
+                        }}
+                      >
+                        🔒 {t.noContact}
+                      </p>
+                    )}
+                  </div>
 
                   {interest.status === "sent" && (
                     <div
                       style={{
                         display: "flex",
-                        gap: 8,
-                        marginTop: 14,
+                        gap: "8px",
+                        marginTop: "14px",
                         flexWrap: "wrap",
                       }}
                     >
                       <button
                         type="button"
-                        onClick={() => update(interest.id, "interested")}
+                        disabled={updatingId === interest.id}
+                        onClick={() => updateStatus(interest.id, "accepted")}
                       >
                         💚 {t.interested}
                       </button>
 
                       <button
                         type="button"
-                        onClick={() => update(interest.id, "not-interested")}
+                        disabled={updatingId === interest.id}
+                        onClick={() => updateStatus(interest.id, "declined")}
                       >
-                        {t.not}
+                        ⚪ {t.notInterested}
                       </button>
                     </div>
                   )}

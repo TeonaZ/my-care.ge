@@ -230,177 +230,106 @@ function CreateSpecialistProfile() {
   const [phone, setPhone] = useState("");
   const [showPhone, setShowPhone] = useState(false);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = async (event) => {
+  event.preventDefault();
 
-    const isLoggedIn =
-      localStorage.getItem("careGeorgiaLoggedIn") === "true";
+  const isLoggedIn =
+    localStorage.getItem("careGeorgiaLoggedIn") === "true";
 
-    const currentUserId =
-      localStorage.getItem("careGeorgiaCurrentUserId");
+  const token = localStorage.getItem("careGeorgiaToken");
 
-    const savedUser =
-      localStorage.getItem("careGeorgiaUser");
+  const savedUser = localStorage.getItem("careGeorgiaUser");
 
-    if (!isLoggedIn || !currentUserId || !savedUser) {
-      alert(t.loginRequired);
-      navigate("/login");
-      return;
-    }
+  if (!isLoggedIn || !token || !savedUser) {
+    alert(t.loginRequired);
+    navigate("/login");
+    return;
+  }
 
-    let user;
+  let user;
 
-    try {
-      user = JSON.parse(savedUser);
-    } catch {
-      localStorage.removeItem("careGeorgiaLoggedIn");
-      localStorage.removeItem("careGeorgiaCurrentUserId");
-      localStorage.removeItem("careGeorgiaUser");
+  try {
+    user = JSON.parse(savedUser);
+  } catch {
+    alert(t.loginRequired);
+    navigate("/login");
+    return;
+  }
 
-      navigate("/login");
-      return;
-    }
+  if (!user || user.accountType !== "provider") {
+    alert(t.providerRequired);
+    return;
+  }
 
-    if (
-      !user ||
-      String(user.id) !== String(currentUserId)
-    ) {
-      localStorage.removeItem("careGeorgiaLoggedIn");
-      localStorage.removeItem("careGeorgiaCurrentUserId");
-      localStorage.removeItem("careGeorgiaUser");
+  if (
+    !profession ||
+    !city ||
+    !experience.trim() ||
+    !employmentType ||
+    !paymentType ||
+    !price ||
+    !description.trim()
+  ) {
+    alert(t.required);
+    return;
+  }
 
-      navigate("/login");
-      return;
-    }
+  const numericPrice = Number(price);
 
-    // მომსახურების დამატება მხოლოდ provider ანგარიშს შეუძლია
-    if (user.accountType !== "provider") {
-      alert(t.providerRequired);
-      navigate("/my-jobs");
-      return;
-    }
+  if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+    alert(t.required);
+    return;
+  }
 
-    if (
-      !profession ||
-      !city ||
-      !experience.trim() ||
-      !employmentType ||
-      !paymentType ||
-      !price ||
-      !description.trim()
-    ) {
-      alert(t.required);
-      return;
-    }
-
-    const numericPrice = Number(price);
-
-    if (
-      !Number.isFinite(numericPrice) ||
-      numericPrice <= 0
-    ) {
-      alert(t.required);
-      return;
-    }
-
-    let savedProfiles = [];
-
-    try {
-      savedProfiles =
-        JSON.parse(
-          localStorage.getItem("careGeorgiaSpecialists")
-        ) || [];
-    } catch {
-      savedProfiles = [];
-    }
-
-    if (!Array.isArray(savedProfiles)) {
-      savedProfiles = [];
-    }
-
-    /*
-      მთავარი ცვლილება:
-
-      ადრე ვამოწმებდით მხოლოდ ownerId-ს,
-      რის გამოც ერთ მომხმარებელს მხოლოდ ერთი
-      სპეციალისტის პროფილი შეეძლო ჰქონოდა.
-
-      ახლა ვამოწმებთ:
-      ownerId + profession
-
-      ამიტომ:
-      ძიძა + მომვლელი = შეიძლება
-      ძიძა + ტუტორი = შეიძლება
-      ძიძა + კიდევ ერთი ძიძა = არ შეიძლება
-    */
-
-    const alreadyExists = savedProfiles.some(
-      (profile) =>
-        String(profile.ownerId) ===
-          String(currentUserId) &&
-        profile.profession === profession
+  try {
+    const response = await fetch(
+      "http://localhost:5000/api/specialists",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          profession,
+          city,
+          experience: experience.trim(),
+          employmentType,
+          paymentType,
+          priceValue: numericPrice,
+          description: description.trim(),
+          showEmail: false,
+          showPhone,
+        }),
+      },
     );
 
-    if (alreadyExists) {
-      alert(t.alreadyExists);
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 409) {
+        alert(data.message || t.alreadyExists);
+      } else {
+        alert(
+          data.message ||
+            "პროფილის შექმნა ვერ მოხერხდა.",
+        );
+      }
+
       return;
     }
 
-    const newProfile = {
-      id: crypto.randomUUID(),
+    alert(data.message || t.success);
 
-      ownerId: currentUserId,
-
-      profession,
-      city,
-
-      experience: experience.trim(),
-
-      employmentType,
-
-      paymentType,
-      priceValue: numericPrice,
-
-      description: description.trim(),
-
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
-
-      email: user.email || "",
-
-      phone:
-        phone.trim() ||
-        user.phone ||
-        "",
-
-      showPhone,
-
-      verified: false,
-
-      rating: null,
-      reviews: 0,
-
-      status: "active",
-
-      createdAt: new Date().toISOString(),
-    };
-
-    const updatedProfiles = [
-      ...savedProfiles,
-      newProfile,
-    ];
-
-    localStorage.setItem(
-      "careGeorgiaSpecialists",
-      JSON.stringify(updatedProfiles)
-    );
-
-    alert(t.success);
-
-    // შექმნის შემდეგ გადადის საკუთარ პროფილებთან
     navigate("/my-jobs");
-  };
+  } catch (error) {
+    console.error("Create specialist profile error:", error);
 
+    alert("სერვერთან დაკავშირება ვერ მოხერხდა.");
+  }
+};
+
+    
   const pageStyle = {
     width: "100%",
     minHeight: "100vh",
