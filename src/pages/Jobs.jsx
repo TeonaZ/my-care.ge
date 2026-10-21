@@ -384,17 +384,43 @@ function Jobs() {
   // Applications უკვე PostgreSQL-ზე გადავიდა.
   // ========================================
 
-  const getSpecialists = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaSpecialists"));
+ const [specialists, setSpecialists] = useState([]);
 
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
+useEffect(() => {
+  const loadSpecialists = async () => {
+    const token = localStorage.getItem("careGeorgiaToken");
+
+    if (!token) {
+      setSpecialists([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/specialists/mine",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && Array.isArray(data.profiles)) {
+        setSpecialists(data.profiles);
+      } else {
+        setSpecialists([]);
+        console.error("Load specialists error:", data);
+      }
+    } catch (error) {
+      console.error("Load specialists error:", error);
+      setSpecialists([]);
     }
   };
 
-  const specialists = getSpecialists();
+  loadSpecialists();
+}, []);
 
   // ========================================
   // HELPERS

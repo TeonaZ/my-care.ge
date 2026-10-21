@@ -235,7 +235,8 @@ export default function MyJobs() {
   const isClient = accountType === "client";
 
   const [jobs, setJobs] = useState([]);
-  const [specialistProfile, setSpecialistProfile] = useState(null);
+  const [specialistProfiles, setSpecialistProfiles] = useState([]);
+  const [changingProfileId, setChangingProfileId] = useState(null);
 
   const [jobsLoading, setJobsLoading] = useState(isClient);
   const [profileLoading, setProfileLoading] = useState(isProvider);
@@ -267,7 +268,7 @@ export default function MyJobs() {
 
       try {
         const response = await fetch(
-          "http://localhost:5000/api/specialists/me",
+          "http://localhost:5000/api/specialists/mine",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -282,7 +283,6 @@ export default function MyJobs() {
         }
 
         if (response.status === 404) {
-          setSpecialistProfile(null);
           return;
         }
 
@@ -290,14 +290,14 @@ export default function MyJobs() {
 
         if (!response.ok) {
           console.error("Load specialist error:", data);
-          setSpecialistProfile(null);
           return;
         }
 
-        setSpecialistProfile(data.profile || data.specialist || data || null);
+        const profiles = Array.isArray(data.profiles) ? data.profiles : [];
+
+        setSpecialistProfiles(profiles);
       } catch (error) {
         console.error("Load specialist error:", error);
-        setSpecialistProfile(null);
       } finally {
         setProfileLoading(false);
       }
@@ -409,116 +409,52 @@ export default function MyJobs() {
     return type || t.hour;
   };
 
-  // ==========================================
-  // PROVIDER - CLOSE SPECIALIST LISTING
-  // ==========================================
-
-  const closeSpecialistProfile = async () => {
-    if (!specialistProfile) return;
-
-    if (!window.confirm(t.closeSpecialistConfirm)) {
+  // Update only the selected profile, never all profiles at once.
+  const changeSpecialistStatus = async (profile) => {
+    const nextStatus = profile.status === "inactive" ? "active" : "inactive";
+    if (nextStatus === "inactive" && !window.confirm(t.closeSpecialistConfirm))
       return;
-    }
-
     const token = localStorage.getItem("careGeorgiaToken");
-
     if (!token) {
       clearLogin();
       navigate("/login");
       return;
     }
-
+    setChangingProfileId(profile.id);
     try {
       const response = await fetch(
-        "http://localhost:5000/api/specialists/me/close",
+        `http://localhost:5000/api/specialists/${profile.id}/status`,
         {
           method: "PATCH",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify({ status: nextStatus }),
         },
       );
-
-      const data = await response.json();
-
       if (response.status === 401) {
         clearLogin();
         navigate("/login", { replace: true });
         return;
       }
-
+      const data = await response.json();
       if (!response.ok) {
-        alert(data.message || t.specialistCloseError);
+        alert(data.message || t.statusError);
         return;
       }
-
-      setSpecialistProfile((current) =>
-        current
-          ? {
-              ...current,
-              status: "inactive",
-            }
-          : current,
+      setSpecialistProfiles((current) =>
+        current.map((item) =>
+          item.id === profile.id ? { ...item, status: nextStatus } : item,
+        ),
       );
     } catch (error) {
-      console.error("Close specialist profile error:", error);
-
+      console.error("Change specialist status error:", error);
       alert(t.serverError);
+    } finally {
+      setChangingProfileId(null);
     }
   };
-
-  // ==========================================
-// PROVIDER - ACTIVATE SPECIALIST LISTING
-// ==========================================
-
-const activateSpecialistProfile = async () => {
-  if (!specialistProfile) return;
-
-  const token = localStorage.getItem("careGeorgiaToken");
-
-  if (!token) {
-    clearLogin();
-    navigate("/login");
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      "http://localhost:5000/api/specialists/me/activate",
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-
-    const data = await response.json();
-
-    if (response.status === 401) {
-      clearLogin();
-      navigate("/login", { replace: true });
-      return;
-    }
-
-    if (!response.ok) {
-      alert(data.message || t.statusError);
-      return;
-    }
-
-    setSpecialistProfile((current) =>
-      current
-        ? {
-            ...current,
-            status: "active",
-          }
-        : current,
-    );
-  } catch (error) {
-    console.error("Activate specialist profile error:", error);
-    alert(t.serverError);
-  }
-};
 
   // ==========================================
   // CLIENT - CLOSE / ACTIVATE JOB
@@ -700,134 +636,128 @@ const activateSpecialistProfile = async () => {
 
         {isProvider && (
           <section>
-            <h2 style={{ marginBottom: "18px" }}>👤 {t.specialistListing}</h2>
-
-            {specialistProfile ? (
-              <div
-                className="driver-card"
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "12px",
+                marginBottom: "18px",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>👤 {t.specialistListing}</h2>
+              <Link
+                to="/create-specialist-profile"
                 style={{
-                  opacity: specialistProfile.status === "inactive" ? 0.7 : 1,
+                  padding: "11px 16px",
+                  background: "#2563eb",
+                  color: "white",
+                  borderRadius: "9px",
+                  textDecoration: "none",
+                  fontWeight: 700,
                 }}
               >
-                <div
-                  style={{
-                    fontSize: "42px",
-                    marginBottom: "12px",
-                  }}
-                >
-                  {getServiceIcon(specialistProfile.profession)}
-                </div>
+                + {t.createSpecialist}
+              </Link>
+            </div>
 
-                <h3>{getServiceName(specialistProfile.profession)}</h3>
-
-                <p>📍 {getCityName(specialistProfile.city)}</p>
-
-                {specialistProfile.experience && (
-                  <p>
-                    💼 {t.experience}: {specialistProfile.experience}
-                  </p>
-                )}
-
-                {specialistProfile.employmentType && (
-                  <p>
-                    💼 {getEmploymentName(specialistProfile.employmentType)}
-                  </p>
-                )}
-
-                <p>
-                  💰 {t.pay}: {specialistProfile.priceValue} {t.currency} /{" "}
-                  {getPaymentName(specialistProfile.paymentType)}
-                </p>
-
-                <p>
-                  <strong>{t.status}:</strong>{" "}
-                  {specialistProfile.status === "inactive"
-                    ? `🔴 ${t.closed}`
-                    : `🟢 ${t.active}`}
-                </p>
-
-                {specialistProfile.description && (
-                  <p style={{ marginTop: "12px" }}>
-                    {specialistProfile.description}
-                  </p>
-                )}
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "10px",
-                    marginTop: "18px",
-                    paddingTop: "16px",
-                    borderTop: "1px solid #e5e7eb",
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() =>
-                      navigate(`/edit-specialist/${specialistProfile.id}`)
-                    }
-                    style={{
-                      padding: "10px 14px",
-                      border: "1px solid #2563eb",
-                      borderRadius: "8px",
-                      background: "#ffffff",
-                      color: "#2563eb",
-                      cursor: "pointer",
-                      fontWeight: "700",
-                    }}
-                  >
-                    ✏️ {t.edit}
-                  </button>
-
-                 <button
-  type="button"
-  onClick={
-    specialistProfile.status === "inactive"
-      ? activateSpecialistProfile
-      : closeSpecialistProfile
-  }
-  style={{
-    padding: "10px 14px",
-    border: "1px solid #cbd5e1",
-    borderRadius: "8px",
-    background: "#ffffff",
-    cursor: "pointer",
-    fontWeight: "700",
-  }}
->
-  {specialistProfile.status === "inactive"
-    ? `🟢 ${t.activate}`
-    : `🔒 ${t.close}`}
-</button>
-                  
-                </div>
+            {specialistProfiles.length === 0 ? (
+              <div className="driver-card">
+                <p>{t.noSpecialist}</p>
               </div>
             ) : (
-              <div
-                className="driver-card"
-                style={{
-                  padding: "30px",
-                  textAlign: "center",
-                }}
-              >
-                <p>{t.noSpecialist}</p>
-
-                <Link
-                  to="/create-specialist-profile"
-                  style={{
-                    display: "inline-block",
-                    marginTop: "12px",
-                    padding: "11px 16px",
-                    background: "#2563eb",
-                    color: "#ffffff",
-                    borderRadius: "9px",
-                    textDecoration: "none",
-                    fontWeight: "700",
-                  }}
-                >
-                  + {t.createSpecialist}
-                </Link>
+              <div className="drivers-grid">
+                {specialistProfiles.map((profile) => (
+                  <div
+                    className="driver-card"
+                    key={profile.id}
+                    style={{
+                      opacity: profile.status === "inactive" ? 0.72 : 1,
+                    }}
+                  >
+                    <div style={{ fontSize: "42px", marginBottom: "12px" }}>
+                      {getServiceIcon(profile.profession)}
+                    </div>
+                    <h3>{getServiceName(profile.profession)}</h3>
+                    <p>📍 {getCityName(profile.city)}</p>
+                    {profile.experience && (
+                      <p>
+                        💼 {t.experience}: {profile.experience}
+                      </p>
+                    )}
+                    {profile.employmentType && (
+                      <p>💼 {getEmploymentName(profile.employmentType)}</p>
+                    )}
+                    <p>
+                      💰 {t.pay}: {profile.priceValue} {t.currency} /{" "}
+                      {getPaymentName(profile.paymentType)}
+                    </p>
+                    <p>
+                      <strong>{t.status}:</strong>{" "}
+                      {profile.status === "inactive"
+                        ? `🔴 ${t.closed}`
+                        : `🟢 ${t.active}`}
+                    </p>
+                    {profile.description && (
+                      <p style={{ marginTop: "12px" }}>{profile.description}</p>
+                    )}
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                        marginTop: "18px",
+                        paddingTop: "16px",
+                        borderTop: "1px solid #e5e7eb",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(`/edit-specialist/${profile.id}`)
+                        }
+                        title="განცხადების რედაქტირება"
+                        style={{
+                          padding: "10px 14px",
+                          border: "1px solid #cbd5e1",
+                          borderRadius: "8px",
+                          background: "#f3f4f6",
+                          color: "#6b7280",
+                          cursor: "pointer",
+                          fontWeight: 700,
+                          width: "170px",
+                          minHeight: "52px",
+                          flexShrink: 0,
+                        }}
+                      >
+                        ✏️ {t.edit}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={changingProfileId === profile.id}
+                        onClick={() => changeSpecialistStatus(profile)}
+                        style={{
+                          padding: "10px 14px",
+                          border: "1px solid #cbd5e1",
+                          borderRadius: "8px",
+                          background: "#ffffff",
+                          cursor:
+                            changingProfileId === profile.id
+                              ? "wait"
+                              : "pointer",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {changingProfileId === profile.id
+                          ? t.loading
+                          : profile.status === "inactive"
+                            ? `🟢 ${t.activate}`
+                            : `🔒 ${t.close}`}
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </section>

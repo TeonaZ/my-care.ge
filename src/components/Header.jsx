@@ -9,6 +9,7 @@ const translations = {
     findJob: "იპოვე სამსახური",
     myJobs: "ჩემი განცხადებები",
     myApplications: "ჩემი განაცხადები",
+    receivedApplications: "მიღებული განაცხადები",
     receivedInterests: "დამსაქმებლის დაინტერესება",
     sentInterests: "გაგზავნილი დაინტერესებები",
     myProfile: "ჩემი პროფილი",
@@ -28,6 +29,7 @@ const translations = {
     findJob: "Find a Job",
     myJobs: "My Job Posts",
     myApplications: "My Applications",
+    receivedApplications: "Received Applications",
     receivedInterests: "Employer Interests",
     sentInterests: "Sent Interests",
     myProfile: "My Profile",
@@ -47,6 +49,7 @@ const translations = {
     findJob: "Найти работу",
     myJobs: "Мои объявления",
     myApplications: "Мои заявки",
+    receivedApplications: "Полученные заявки",
     receivedInterests: "Интерес работодателя",
     sentInterests: "Отправленные предложения",
     myProfile: "Мой профиль",
@@ -581,6 +584,15 @@ function Header() {
                       <span>
                         {t.myJobs}
                       </span>
+                    </Link>
+
+                    <Link
+                      to="/received-applications"
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
+                    >
+                      <span>📥</span>
+                      <span>{t.receivedApplications}</span>
                     </Link>
 
                     <Link

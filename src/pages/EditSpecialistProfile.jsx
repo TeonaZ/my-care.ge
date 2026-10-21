@@ -364,7 +364,7 @@ function EditSpecialistProfile() {
 
       try {
         const response = await fetch(
-          "http://localhost:5000/api/specialists/me",
+          `http://localhost:5000/api/specialists/mine/${id}`,
           {
             method: "GET",
             headers: {
@@ -501,7 +501,7 @@ function EditSpecialistProfile() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/specialists/me",
+        `http://localhost:5000/api/specialists/mine/${id}`,
         {
           method: "PUT",
           headers: {

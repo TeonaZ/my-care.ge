@@ -42,6 +42,7 @@ import CreateSpecialistProfile from "./pages/CreateSpecialistProfile";
 import EditSpecialistProfile from "./pages/EditSpecialistProfile";
 
 import { useLanguage } from "./Context/LanguageContext";
+import ReceivedApplications from "./pages/ReceivedApplications";
 
 import "./App.css";
 
@@ -509,6 +510,10 @@ function App() {
         <Route path="/my-jobs" element={<MyJobs />} />
 
         <Route path="/my-applications" element={<MyApplications />} />
+        <Route
+          path="/received-applications"
+          element={<ReceivedApplications />}
+        />
 
         <Route path="/received-interests" element={<ReceivedInterests />} />
 

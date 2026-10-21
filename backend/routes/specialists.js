@@ -6,7 +6,9 @@ const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
 
 const normalizeProfession = (value) => {
-  const profession = String(value || "").trim().toLowerCase();
+  const profession = String(value || "")
+    .trim()
+    .toLowerCase();
 
   if (profession === "dogwalker") {
     return "dog-walker";
@@ -45,15 +47,9 @@ const mapProfile = (row, includeContacts = false) => ({
   showPhone: row.show_phone === true,
 
   // პირადი მონაცემები საჯარო პროფილების სიაში არ ბრუნდება.
-  email:
-    includeContacts && row.show_email === true
-      ? row.email
-      : null,
+  email: includeContacts && row.show_email === true ? row.email : null,
 
-  phone:
-    includeContacts && row.show_phone === true
-      ? row.phone
-      : null,
+  phone: includeContacts && row.show_phone === true ? row.phone : null,
 
   status: row.status,
   createdAt: row.created_at,
@@ -110,9 +106,7 @@ router.get("/", async (req, res) => {
 
     return res.json({
       success: true,
-      specialists: result.rows.map((row) =>
-        mapProfile(row, false),
-      ),
+      specialists: result.rows.map((row) => mapProfile(row, false)),
     });
   } catch (error) {
     console.error("GET SPECIALISTS ERROR:", error);
@@ -189,6 +183,38 @@ router.get("/me", authMiddleware, async (req, res) => {
 //
 // Contact data is NOT returned here.
 // ========================================
+router.get("/mine", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.accountType !== "provider") {
+      return res
+        .status(403)
+        .json({ success: false, message: "წვდომა აკრძალულია." });
+    }
+
+    const result = await pool.query(
+      `SELECT sp.*, u.first_name, u.last_name, u.email, u.phone
+       FROM specialist_profiles sp
+       JOIN users u ON u.id = sp.owner_id
+       WHERE sp.owner_id = $1
+       ORDER BY sp.created_at DESC`,
+      [req.user.userId],
+    );
+
+    return res.json({
+      success: true,
+      profiles: result.rows.map((row) => ({
+        ...mapProfile(row, true),
+        email: row.email,
+        phone: row.phone,
+      })),
+    });
+  } catch (error) {
+    console.error("GET MY SPECIALIST PROFILES ERROR:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "პროფილების მიღება ვერ მოხერხდა." });
+  }
+});
 
 router.get("/:id", async (req, res) => {
   try {
@@ -261,8 +287,7 @@ router.post("/", authMiddleware, async (req, res) => {
       showPhone = false,
     } = req.body;
 
-    const normalizedProfession =
-      normalizeProfession(profession);
+    const normalizedProfession = normalizeProfession(profession);
 
     if (!allowedProfessions.includes(normalizedProfession)) {
       return res.status(400).json({
@@ -299,27 +324,25 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const user = userResult.rows[0];
 
-    const safeShowEmail =
-      showEmail === true && Boolean(user.email);
+    const safeShowEmail = showEmail === true && Boolean(user.email);
 
-    const safeShowPhone =
-      showPhone === true && Boolean(user.phone);
+    const safeShowPhone = showPhone === true && Boolean(user.phone);
 
     const existingResult = await pool.query(
       `
-      SELECT id
-      FROM specialist_profiles
-      WHERE owner_id = $1
-      LIMIT 1
-      `,
-      [req.user.userId],
+    SELECT id
+    FROM specialist_profiles
+    WHERE owner_id = $1
+      AND profession = $2
+    LIMIT 1
+  `,
+      [req.user.userId, normalizedProfession],
     );
 
     if (existingResult.rows.length > 0) {
       return res.status(409).json({
         success: false,
-        message:
-          "თქვენ უკვე გაქვთ სპეციალისტის პროფილი.",
+        message: "თქვენ უკვე გაქვთ სპეციალისტის პროფილი.",
       });
     }
 
@@ -427,8 +450,7 @@ router.put("/me", authMiddleware, async (req, res) => {
       showPhone = false,
     } = req.body;
 
-    const normalizedProfession =
-      normalizeProfession(profession);
+    const normalizedProfession = normalizeProfession(profession);
 
     if (!allowedProfessions.includes(normalizedProfession)) {
       return res.status(400).json({
@@ -462,11 +484,9 @@ router.put("/me", authMiddleware, async (req, res) => {
 
     const user = userResult.rows[0];
 
-    const safeShowEmail =
-      showEmail === true && Boolean(user.email);
+    const safeShowEmail = showEmail === true && Boolean(user.email);
 
-    const safeShowPhone =
-      showPhone === true && Boolean(user.phone);
+    const safeShowPhone = showPhone === true && Boolean(user.phone);
 
     const result = await pool.query(
       `
@@ -557,13 +577,10 @@ router.put("/me", authMiddleware, async (req, res) => {
 // PATCH /api/specialists/me/close
 // ========================================
 
-router.patch(
-  "/me/close",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const result = await pool.query(
-        `
+router.patch("/me/close", authMiddleware, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `
         UPDATE specialist_profiles
 
         SET
@@ -574,30 +591,29 @@ router.patch(
 
         RETURNING id
         `,
-        [req.user.userId],
-      );
+      [req.user.userId],
+    );
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: "სპეციალისტის პროფილი ვერ მოიძებნა.",
-        });
-      }
-
-      return res.json({
-        success: true,
-        message: "სპეციალისტის პროფილი დაიხურა.",
-      });
-    } catch (error) {
-      console.error("CLOSE SPECIALIST ERROR:", error);
-
-      return res.status(500).json({
+    if (result.rows.length === 0) {
+      return res.status(404).json({
         success: false,
-        message: "პროფილის დახურვა ვერ მოხერხდა.",
+        message: "სპეციალისტის პროფილი ვერ მოიძებნა.",
       });
     }
-  },
-);
+
+    return res.json({
+      success: true,
+      message: "სპეციალისტის პროფილი დაიხურა.",
+    });
+  } catch (error) {
+    console.error("CLOSE SPECIALIST ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "პროფილის დახურვა ვერ მოხერხდა.",
+    });
+  }
+});
 
 // ==========================================
 // ACTIVATE MY SPECIALIST PROFILE
@@ -638,6 +654,151 @@ router.patch("/me/activate", authMiddleware, async (req, res) => {
 
     return res.status(500).json({
       message: "Server error.",
+    });
+  }
+});
+
+// Change the status of one owned specialist profile only.
+router.patch("/:id/status", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.accountType !== "provider") {
+      return res
+        .status(403)
+        .json({ success: false, message: "წვდომა აკრძალულია." });
+    }
+
+    const { status } = req.body || {};
+    if (status !== "active" && status !== "inactive") {
+      return res
+        .status(400)
+        .json({ success: false, message: "სტატუსი არასწორია." });
+    }
+
+    const result = await pool.query(
+      `UPDATE specialist_profiles
+       SET status = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2 AND owner_id = $3
+       RETURNING id, status`,
+      [status, req.params.id, req.user.userId],
+    );
+
+    if (result.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "განცხადება ვერ მოიძებნა." });
+    }
+
+    return res.json({ success: true, profile: result.rows[0] });
+  } catch (error) {
+    console.error("UPDATE SPECIALIST STATUS ERROR:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "სტატუსის შეცვლა ვერ მოხერხდა." });
+  }
+});
+
+// GET - კონკრეტული საკუთარი განცხადება
+router.get("/mine/:id", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.accountType !== "provider") {
+      return res.status(403).json({
+        success: false,
+        message: "წვდომა აკრძალულია.",
+      });
+    }
+
+    // PUT - კონკრეტული საკუთარი განცხადების რედაქტირება
+router.put("/mine/:id", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.accountType !== "provider") {
+      return res.status(403).json({
+        success: false,
+        message: "წვდომა აკრძალულია.",
+      });
+    }
+
+    const {
+      city,
+      experience,
+      employmentType,
+      paymentType,
+      priceValue,
+      description,
+      showEmail,
+      showPhone,
+    } = req.body;
+
+    const result = await pool.query(
+      `UPDATE specialist_profiles
+       SET city = $1,
+           experience = $2,
+           employment_type = $3,
+           payment_type = $4,
+           price_value = $5,
+           description = $6,
+           show_email = $7,
+           show_phone = $8,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $9 AND owner_id = $10
+       RETURNING *`,
+      [
+        city,
+        experience,
+        employmentType,
+        paymentType,
+        priceValue,
+        description,
+        showEmail,
+        showPhone,
+        req.params.id,
+        req.user.userId,
+      ]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "განცხადება ვერ მოიძებნა.",
+      });
+    }
+
+    return res.json({
+      success: true,
+      profile: mapProfile(result.rows[0], true),
+    });
+  } catch (error) {
+    console.error("UPDATE OWN SPECIALIST ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "განცხადების შეცვლა ვერ მოხერხდა.",
+    });
+  }
+});
+
+    const result = await pool.query(
+      `SELECT sp.*, u.first_name, u.last_name, u.email, u.phone
+       FROM specialist_profiles sp
+       JOIN users u ON u.id = sp.owner_id
+       WHERE sp.id = $1 AND sp.owner_id = $2`,
+      [req.params.id, req.user.userId],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "განცხადება ვერ მოიძებნა.",
+      });
+    }
+
+    return res.json({
+      success: true,
+      profile: mapProfile(result.rows[0], true),
+    });
+  } catch (error) {
+    console.error("GET OWN SPECIALIST ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "განცხადების ჩატვირთვა ვერ მოხერხდა.",
     });
   }
 });
