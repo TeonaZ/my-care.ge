@@ -69,6 +69,17 @@ const cityLabels = {
   },
 };
 
+// The URL uses the profession profile ID, not the account/user ID.
+const profileRoutes = {
+  nanny: "/nannies",
+  driver: "/drivers",
+  dogwalker: "/dogwalker",
+  "dog-walker": "/dogwalker",
+};
+
+const normalizeService = (value) =>
+  value === "dogwalker" ? "dog-walker" : value;
+
 const icons = {
   nanny: "👶",
   caregiver: "👵",
@@ -190,6 +201,7 @@ export default function SentInterests() {
   const t = tr[language] || tr.ka;
 
   const [interests, setInterests] = useState([]);
+  const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -241,6 +253,23 @@ export default function SentInterests() {
         }
 
         setInterests(Array.isArray(data.interests) ? data.interests : []);
+
+        // Find public specialist profiles by their account ID and profession.
+        // The interests API may return only the account ID, not the profile ID.
+        const services = ["nanny", "driver", "dog-walker", "caregiver", "tutor", "housekeeper"];
+        const results = await Promise.allSettled(
+          services.map(async (profession) => {
+            const response = await fetch(
+              `http://localhost:5000/api/specialists?profession=${encodeURIComponent(profession)}`
+            );
+            if (!response.ok) return [];
+            const body = await response.json();
+            return Array.isArray(body.specialists) ? body.specialists : [];
+          })
+        );
+        setProfiles(results.flatMap((result) =>
+          result.status === "fulfilled" ? result.value : []
+        ));
       } catch (error) {
         console.error("Load sent interests error:", error);
 
@@ -362,6 +391,20 @@ export default function SentInterests() {
               const job = interest.job || {};
 
               const service = job.service || specialist.profession || "";
+              const normalizedService = normalizeService(service);
+              const specialistUserId =
+                specialist.userId || specialist.id || interest.specialistUserId ||
+                interest.specialistId || interest.specialist_user_id;
+              const matchingProfile = profiles.find((profile) =>
+                String(profile.ownerId) === String(specialistUserId) &&
+                normalizeService(profile.profession) === normalizedService &&
+                profile.status !== "inactive"
+              );
+              const profileId = matchingProfile?.id || interest.specialistProfileId;
+              const profilePath = profileRoutes[service] && profileId
+                ? `${profileRoutes[service]}/${profileId}`
+                : null;
+              const city = matchingProfile?.city || job.city || specialist.city;
 
               const hasEmail = Boolean(specialist.email);
               const hasPhone = Boolean(specialist.phone);
@@ -379,11 +422,19 @@ export default function SentInterests() {
                   </h3>
 
                   {service && (
-                    <p>{serviceLabels[language]?.[service] || service}</p>
+                    <p>{serviceLabels[language]?.[service] || serviceLabels.ka[service] || service}</p>
                   )}
 
-                  {job.city && (
-                    <p>📍 {cityLabels[language]?.[job.city] || job.city}</p>
+                  {city && (
+                    <p>📍 {cityLabels[language]?.[city] || city}</p>
+                  )}
+
+                  {profilePath && (
+                    <p>
+                      <Link to={profilePath} state={{ from: "sent-interests" }} className="profile-btn">
+                        {language === "en" ? "View profile" : language === "ru" ? "Посмотреть профиль" : "პროფილის ნახვა"}
+                      </Link>
+                    </p>
                   )}
 
                   {job.service && (

@@ -9,6 +9,7 @@ const jobsRoutes = require("./routes/jobs");
 const applicationsRoutes = require("./routes/applications");
 const interestsRoutes = require("./routes/interests");
 const specialistsRoutes = require("./routes/specialists");
+const messagesRoutes = require("./routes/messages");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 app.use("/api/specialists", specialistsRoutes);
+app.use("/api/messages", messagesRoutes);
 
 // ========================================
 // HOME

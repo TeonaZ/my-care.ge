@@ -78,10 +78,20 @@ function Header() {
     setIsUserMenuOpen,
   ] = useState(false);
 
+  const [isNotificationMenuOpen, setIsNotificationMenuOpen] =
+  useState(false);
+
   const [
     unreadInterests,
     setUnreadInterests,
   ] = useState(0);
+
+  
+const [unreadMessages, setUnreadMessages] = useState(0);
+
+const [unreadApplications, setUnreadApplications] = useState(0);
+
+
 
   const isLoggedIn =
     localStorage.getItem(
@@ -232,9 +242,95 @@ function Header() {
     token,
   ]);
 
-  const closeMenu = () => {
-    setIsUserMenuOpen(false);
+  
+useEffect(() => {
+  if (!isLoggedIn || !token) {
+    setUnreadMessages(0);
+    return;
+  }
+
+  let active = true;
+
+  const loadUnreadMessages = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/messages/unread/count",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+
+      if (active) {
+        setUnreadMessages(data.unreadCount ?? 0);
+      }
+    } catch (error) {
+      console.error("Unread messages error:", error);
+    }
   };
+
+  loadUnreadMessages();
+
+  const interval = setInterval(loadUnreadMessages, 10000);
+
+  return () => {
+    active = false;
+    clearInterval(interval);
+  };
+}, [isLoggedIn, token]);
+
+
+
+    
+useEffect(() => {
+  if (!isLoggedIn || !token || user?.accountType !== "client") {
+    setUnreadApplications(0);
+    return;
+  }
+
+  let active = true;
+
+  const loadUnreadApplications = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/applications/unread/count",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+
+      if (active) {
+        setUnreadApplications(data.unreadCount ?? 0);
+      }
+    } catch (error) {
+      console.error("Unread applications error:", error);
+    }
+  };
+
+  loadUnreadApplications();
+
+  const interval = setInterval(loadUnreadApplications, 10000);
+
+  return () => {
+    active = false;
+    clearInterval(interval);
+  };
+}, [isLoggedIn, token, user?.accountType]);
+
+    const closeMenu = () => {
+  setIsUserMenuOpen(false);
+};
 
   const handleLanguageChange = (
     e,
@@ -395,17 +491,16 @@ function Header() {
                 gap: "4px",
               }}
             >
-              {user?.accountType ===
-                "provider" && (
+             {(user?.accountType === "provider" ||
+  user?.accountType === "client") && (
                 <button
                   type="button"
-                  onClick={() => {
-                    closeMenu();
+                  
+onClick={() => {
+  setIsUserMenuOpen(false);
+  setIsNotificationMenuOpen((previous) => !previous);
+}}
 
-                    navigate(
-                      "/received-interests",
-                    );
-                  }}
                   aria-label={
                     t.receivedInterests
                   }
@@ -427,18 +522,30 @@ function Header() {
                 >
                   <span
                     style={{
-                      opacity:
-                        unreadInterests >
-                        0
-                          ? 1
-                          : 0.55,
+                     
+
+opacity:
+  unreadMessages +
+    (user?.accountType === "provider"
+      ? unreadInterests
+      : unreadApplications) > 0
+    ? 1
+    : 0.55,
+
+
                     }}
                   >
                     🔔
                   </span>
 
-                  {unreadInterests >
-                    0 && (
+                  
+
+{(unreadMessages +
+  (user?.accountType === "provider"
+    ? unreadInterests
+    : unreadApplications)) > 0 && (
+
+
                     <span
                       style={{
                         position:
@@ -470,14 +577,87 @@ function Header() {
                           "border-box",
                       }}
                     >
-                      {unreadInterests >
-                      9
-                        ? "9+"
-                        : unreadInterests}
+                     
+
+{(unreadMessages +
+  (user?.accountType === "provider"
+    ? unreadInterests
+    : unreadApplications)) > 9
+  ? "9+"
+  : unreadMessages +
+    (user?.accountType === "provider"
+      ? unreadInterests
+      : unreadApplications)}
+
+
                     </span>
                   )}
                 </button>
               )}
+
+              
+{isNotificationMenuOpen && (
+  <div
+    style={{
+      position: "absolute",
+      top: "calc(100% + 8px)",
+      right: "0",
+      width: "290px",
+      backgroundColor: "#ffffff",
+      border: "1px solid #e2e8f0",
+      borderRadius: "12px",
+      boxShadow: "0 12px 35px rgba(0, 0, 0, 0.14)",
+      padding: "8px",
+      zIndex: 10000,
+    }}
+  >
+    
+
+   
+{(user?.accountType === "provider" ||
+  user?.accountType === "client") && (
+  <Link
+    to={
+      user?.accountType === "client"
+        ? "/received-applications"
+        : "/received-interests"
+    }
+    onClick={() => setIsNotificationMenuOpen(false)}
+    style={menuLinkStyle}
+  >
+    <span>❤️</span>
+    
+<span>
+  მიღებული დაინტერესებები
+  {(user?.accountType === "provider"
+    ? unreadInterests
+    : unreadApplications) > 0
+    ? ` (${
+        user?.accountType === "provider"
+          ? unreadInterests
+          : unreadApplications
+      })`
+    : ""}
+</span>
+
+  </Link>
+)}
+
+
+    <Link
+      to="/messages"
+      onClick={() => setIsNotificationMenuOpen(false)}
+      style={menuLinkStyle}
+    >
+      <span>💬</span>
+      <span>
+        მიღებული წერილები
+        {unreadMessages > 0 ? ` (${unreadMessages})` : ""}
+      </span>
+    </Link>
+  </div>
+)}
+
 
               <button
                 type="button"
@@ -565,6 +745,24 @@ function Header() {
                     {t.myProfile}
                   </span>
                 </Link>
+
+                
+<Link
+  to="/messages"
+  onClick={closeMenu}
+  style={menuLinkStyle}
+>
+  <span>💬</span>
+  <span>
+    {language === "ka"
+      ? "ჩემი შეტყობინებები"
+      : language === "ru"
+        ? "Мои сообщения"
+        : "My Messages"}
+  </span>
+</Link>
+
+
 
                 {user?.accountType ===
                   "client" && (

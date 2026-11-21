@@ -220,10 +220,12 @@ router.get("/:id", async (req, res) => {
   try {
     const result = await pool.query(
       `
-      SELECT
-        sp.*,
-        u.first_name,
-        u.last_name
+     SELECT
+  sp.*,
+  u.first_name,
+  u.last_name,
+  CASE WHEN sp.show_email = true THEN u.email ELSE NULL END AS email,
+  CASE WHEN sp.show_phone = true THEN u.phone ELSE NULL END AS phone
 
       FROM specialist_profiles sp
 
@@ -247,7 +249,7 @@ router.get("/:id", async (req, res) => {
 
     return res.json({
       success: true,
-      specialist: mapProfile(result.rows[0], false),
+      specialist: mapProfile(result.rows[0], true),
     });
   } catch (error) {
     console.error("GET SPECIALIST ERROR:", error);
@@ -707,7 +709,50 @@ router.get("/mine/:id", authMiddleware, async (req, res) => {
       });
     }
 
-    // PUT - კონკრეტული საკუთარი განცხადების რედაქტირება
+    const result = await pool.query(
+      `
+      SELECT
+        sp.*,
+        u.first_name,
+        u.last_name,
+        u.email,
+        u.phone
+      FROM specialist_profiles sp
+      JOIN users u ON u.id = sp.owner_id
+      WHERE sp.id = $1 AND sp.owner_id = $2
+      LIMIT 1
+      `,
+      [req.params.id, req.user.userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "პროფილი ვერ მოიძებნა.",
+      });
+    }
+
+    const row = result.rows[0];
+
+    return res.json({
+      success: true,
+      profile: {
+        ...mapProfile(row, true),
+        email: row.email,
+        phone: row.phone,
+      },
+    });
+  } catch (error) {
+    console.error("GET OWN SPECIALIST ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "პროფილის ჩატვირთვა ვერ მოხერხდა.",
+    });
+  }
+});
+
+// PUT - კონკრეტული საკუთარი განცხადების რედაქტირება
 router.put("/mine/:id", authMiddleware, async (req, res) => {
   try {
     if (req.user.accountType !== "provider") {
@@ -724,81 +769,105 @@ router.put("/mine/:id", authMiddleware, async (req, res) => {
       paymentType,
       priceValue,
       description,
+      ageGroupsText,
       showEmail,
       showPhone,
-    } = req.body;
+    } = req.body || {};
+
+    const existingResult = await pool.query(
+      `
+      SELECT
+        sp.*,
+        u.email,
+        u.phone
+      FROM specialist_profiles sp
+      JOIN users u ON u.id = sp.owner_id
+      WHERE sp.id = $1 AND sp.owner_id = $2
+      LIMIT 1
+      `,
+      [req.params.id, req.user.userId]
+    );
+
+    if (existingResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "პროფილი ვერ მოიძებნა.",
+      });
+    }
+
+    const existing = existingResult.rows[0];
+
+    const safeShowEmail =
+      showEmail === undefined
+        ? existing.show_email
+        : showEmail === true && Boolean(existing.email);
+
+    const safeShowPhone =
+      showPhone === undefined
+        ? existing.show_phone
+        : showPhone === true && Boolean(existing.phone);
 
     const result = await pool.query(
-      `UPDATE specialist_profiles
-       SET city = $1,
-           experience = $2,
-           employment_type = $3,
-           payment_type = $4,
-           price_value = $5,
-           description = $6,
-           show_email = $7,
-           show_phone = $8,
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = $9 AND owner_id = $10
-       RETURNING *`,
+      `
+      UPDATE specialist_profiles
+      SET
+        city = $1,
+        experience = $2,
+        employment_type = $3,
+        payment_type = $4,
+        price_value = $5,
+        description = $6,
+        age_groups_text = $7,
+        show_email = $8,
+        show_phone = $9,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $10 AND owner_id = $11
+      RETURNING *
+      `,
       [
-        city,
-        experience,
-        employmentType,
-        paymentType,
-        priceValue,
-        description,
-        showEmail,
-        showPhone,
+        city === undefined ? existing.city : city,
+        experience === undefined ? existing.experience : experience,
+        employmentType === undefined
+          ? existing.employment_type
+          : employmentType,
+        paymentType === undefined
+          ? existing.payment_type
+          : paymentType,
+        priceValue === undefined
+          ? existing.price_value
+          : Number(priceValue),
+        description === undefined
+          ? existing.description
+          : description,
+        ageGroupsText === undefined
+          ? existing.age_groups_text
+          : ageGroupsText,
+        safeShowEmail,
+        safeShowPhone,
         req.params.id,
         req.user.userId,
       ]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "განცხადება ვერ მოიძებნა.",
-      });
-    }
+    const row = result.rows[0];
 
     return res.json({
       success: true,
-      profile: mapProfile(result.rows[0], true),
+      message: "პროფილი წარმატებით განახლდა.",
+      profile: {
+        ...mapProfile(row, true),
+        firstName: existing.first_name,
+        lastName: existing.last_name,
+        email: existing.email,
+        phone: existing.phone,
+      },
     });
   } catch (error) {
     console.error("UPDATE OWN SPECIALIST ERROR:", error);
+
     return res.status(500).json({
       success: false,
-      message: "განცხადების შეცვლა ვერ მოხერხდა.",
-    });
-  }
-});
-
-    const result = await pool.query(
-      `SELECT sp.*, u.first_name, u.last_name, u.email, u.phone
-       FROM specialist_profiles sp
-       JOIN users u ON u.id = sp.owner_id
-       WHERE sp.id = $1 AND sp.owner_id = $2`,
-      [req.params.id, req.user.userId],
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "განცხადება ვერ მოიძებნა.",
-      });
-    }
-
-    return res.json({
-      success: true,
-      profile: mapProfile(result.rows[0], true),
-    });
-  } catch (error) {
-    console.error("GET OWN SPECIALIST ERROR:", error);
-    return res.status(500).json({
-      success: false,
-      message: "განცხადების ჩატვირთვა ვერ მოხერხდა.",
+      message: "პროფილის შეცვლა ვერ მოხერხდა.",
     });
   }
 });

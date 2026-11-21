@@ -328,4 +328,79 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
   }
 });
 
+
+/* დამსაქმებლის უნახავი განაცხადების რაოდენობა */
+router.get("/unread/count", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.accountType !== "client") {
+      return res.status(403).json({
+        success: false,
+        message: "ეს ფუნქცია მხოლოდ დამსაქმებლისთვისაა.",
+      });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT COUNT(*)::integer AS unread_count
+      FROM applications a
+      JOIN jobs j ON j.id = a.job_id
+      WHERE j.owner_id = $1
+        AND a.seen_at IS NULL
+      `,
+      [req.user.userId]
+    );
+
+    return res.json({
+      success: true,
+      unreadCount: result.rows[0].unread_count,
+    });
+  } catch (error) {
+    console.error("UNREAD APPLICATIONS ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "ახალი განაცხადების დათვლა ვერ მოხერხდა.",
+    });
+  }
+});
+
+
+/* დამსაქმებლის მიღებული განაცხადების ნანახად მონიშვნა */
+router.patch("/received/mark-seen", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.accountType !== "client") {
+      return res.status(403).json({
+        success: false,
+        message: "ეს ფუნქცია მხოლოდ დამსაქმებლისთვისაა.",
+      });
+    }
+
+    const result = await pool.query(
+      `
+      UPDATE applications a
+      SET seen_at = CURRENT_TIMESTAMP
+      FROM jobs j
+      WHERE j.id = a.job_id
+        AND j.owner_id = $1
+        AND a.seen_at IS NULL
+      `,
+      [req.user.userId]
+    );
+
+    return res.json({
+      success: true,
+      markedSeen: result.rowCount,
+    });
+  } catch (error) {
+    console.error("MARK APPLICATIONS SEEN ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "განაცხადების ნანახად მონიშვნა ვერ მოხერხდა.",
+    });
+  }
+});
+
+
+
 module.exports = router;

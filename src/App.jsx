@@ -44,6 +44,9 @@ import EditSpecialistProfile from "./pages/EditSpecialistProfile";
 import { useLanguage } from "./Context/LanguageContext";
 import ReceivedApplications from "./pages/ReceivedApplications";
 
+import ChatPage from "./pages/ChatPage";
+import MessagesList from "./pages/MessagesList";
+
 import "./App.css";
 
 const translations = {
@@ -554,6 +557,10 @@ function App() {
         {/* SUPPORT */}
 
         <Route path="/support" element={<Support />} />
+
+        <Route path="/messages/:id" element={<ChatPage />} />
+
+        <Route path="/messages" element={<MessagesList />} />
       </Routes>
     </>
   );

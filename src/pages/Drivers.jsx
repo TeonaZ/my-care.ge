@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./Drivers.css";
@@ -250,120 +250,56 @@ function Drivers() {
   const [appliedPrice, setAppliedPrice] = useState("");
   const [appliedEmployment, setAppliedEmployment] = useState("");
 
-  /* =========================
-     DEFAULT DRIVERS
-  ========================= */
+  // Real driver profiles from PostgreSQL
+  const [drivers, setDrivers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
-  const defaultDrivers = [
-    {
-      id: 1,
-      name: t.name1,
-      cityValue: "tbilisi",
-      experience: t.years8,
-      employmentType: "full-time",
-      paymentType: "hourly",
-      priceValue: 25,
-      rating: "⭐ 4.9",
-      verified: true,
-    },
-    {
-      id: 2,
-      name: t.name2,
-      cityValue: "tbilisi",
-      experience: t.years5,
-      employmentType: "part-time",
-      paymentType: "hourly",
-      priceValue: 20,
-      rating: "⭐ 4.8",
-      verified: true,
-    },
-    {
-      id: 3,
-      name: t.name3,
-      cityValue: "batumi",
-      experience: t.years6,
-      employmentType: "full-time",
-      paymentType: "hourly",
-      priceValue: 22,
-      rating: "⭐ 4.7",
-      verified: false,
-    },
-  ];
-
-  /* =========================
-     SAVED SPECIALISTS
-  ========================= */
-
-  let savedSpecialists = [];
-
-  try {
-    const savedData = JSON.parse(
-      localStorage.getItem("careGeorgiaSpecialists")
-    );
-
-    if (Array.isArray(savedData)) {
-      savedSpecialists = savedData;
+  useEffect(() => {
+    let cancelled = false;
+    async function loadDrivers() {
+      setLoading(true);
+      setLoadError("");
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/specialists?profession=driver"
+        );
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Failed to load drivers");
+        const profiles = Array.isArray(data.specialists) ? data.specialists : [];
+        const mapped = profiles
+          .filter((profile) => profile.profession === "driver" && profile.status !== "inactive")
+          .map((profile) => {
+            const firstName = profile.firstName || "";
+            const lastInitial = profile.lastName ? `${profile.lastName.charAt(0)}.` : "";
+            return {
+              id: profile.id,
+              ownerId: profile.ownerId,
+              name: `${firstName} ${lastInitial}`.trim() || "Care Georgia",
+              cityValue: profile.city || "other",
+              experience: profile.experience || "",
+              employmentType: profile.employmentType || "part-time",
+              paymentType: profile.paymentType || "hourly",
+              priceValue: Number(profile.priceValue) || 0,
+              rating: profile.rating != null && profile.rating !== ""
+                ? `⭐ ${profile.rating}` : "⭐ —",
+              verified: profile.verified === true,
+            };
+          });
+        if (!cancelled) setDrivers(mapped);
+      } catch (error) {
+        console.error("Load drivers error:", error);
+        if (!cancelled) {
+          setLoadError(error.message || "Failed to load drivers");
+          setDrivers([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
-  } catch {
-    savedSpecialists = [];
-  }
-
-  /* =========================
-     CUSTOM DRIVERS
-  ========================= */
-
-  const customDrivers = savedSpecialists
-    .filter(
-      (profile) =>
-        profile.profession === "driver" &&
-        profile.status !== "inactive"
-    )
-    .map((profile) => {
-      const firstName = profile.firstName || "";
-
-      const lastNameInitial = profile.lastName
-        ? `${profile.lastName.charAt(0)}.`
-        : "";
-
-      const displayName =
-        `${firstName} ${lastNameInitial}`.trim() ||
-        "Care Georgia";
-
-      return {
-        id: profile.id,
-
-        name: displayName,
-
-        cityValue: profile.city || "other",
-
-        experience: profile.experience || "",
-
-        employmentType:
-          profile.employmentType || "full-time",
-
-        paymentType:
-          profile.paymentType || "hourly",
-
-        priceValue: Number(profile.priceValue) || 0,
-
-        rating: profile.rating
-          ? `⭐ ${profile.rating}`
-          : "⭐ —",
-
-        verified: profile.verified === true,
-
-        isCustom: true,
-      };
-    });
-
-  /* =========================
-     ALL DRIVERS
-  ========================= */
-
-  const drivers = [
-    ...defaultDrivers,
-    ...customDrivers,
-  ];
+    loadDrivers();
+    return () => { cancelled = true; };
+  }, []);
 
   /* =========================
      EMPLOYMENT NAME
@@ -553,7 +489,10 @@ function Drivers() {
       ========================= */}
 
       <section className="drivers-list">
-        {filteredDrivers.map((driver) => (
+        {loading && <p>{language === "en" ? "Loading drivers..." : language === "ru" ? "Загрузка водителей..." : "მძღოლები იტვირთება..."}</p>}
+        {!loading && loadError && <p role="alert">{language === "en" ? "Could not load drivers. Check the server." : language === "ru" ? "Не удалось загрузить водителей. Проверьте сервер." : "მძღოლების ჩატვირთვა ვერ მოხერხდა. შეამოწმე სერვერი."}</p>}
+        {!loading && !loadError && filteredDrivers.length === 0 && <p>{language === "en" ? "No drivers found." : language === "ru" ? "Водители не найдены." : "მძღოლები ვერ მოიძებნა."}</p>}
+        {!loading && !loadError && filteredDrivers.map((driver) => (
           <div
             className="driver-card"
             key={driver.id}

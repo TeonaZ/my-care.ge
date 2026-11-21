@@ -624,10 +624,10 @@ if (backendProfile) {
     description:
       backendProfile.description || "",
 
-    phone: "",
-    email: "",
-    showPhone: false,
-    showEmail: false,
+   phone: backendProfile.phone || "",
+email: backendProfile.email || "",
+showPhone: backendProfile.showPhone === true,
+showEmail: backendProfile.showEmail === true,
 
     isCustom: true,
   };
@@ -1007,6 +1007,46 @@ if (backendProfile) {
     }
   };
 
+  const handleStartChat = async () => {
+  const token = localStorage.getItem("careGeorgiaToken");
+
+  if (!token) {
+    alert("შეტყობინების გასაგზავნად გაიარეთ ავტორიზაცია.");
+    return;
+  }
+
+  if (!nanny.ownerId) {
+    alert("სპეციალისტის ანგარიში ვერ მოიძებნა.");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      "http://localhost:5000/api/messages/start",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          providerId: nanny.ownerId,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "ჩატის გახსნა ვერ მოხერხდა.");
+    }
+
+    window.location.href = `/messages/${data.conversationId}`;
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
   return (
     <div className="profile-page">
       <div className="profile-container">
@@ -1064,18 +1104,23 @@ if (backendProfile) {
                   </a>
                 )}
 
-                {nanny.email && (
-                  <a
-                    href={`mailto:${nanny.email}`}
-                    className="message-btn"
-                    style={{
-                      textDecoration: "none",
-                      textAlign: "center",
-                    }}
-                  >
-                    {t.message}
-                  </a>
-                )}
+               
+{nanny.ownerId && (
+  <button
+    type="button"
+    onClick={handleStartChat}
+    className="message-btn"
+    style={{
+      textDecoration: "none",
+      textAlign: "center",
+      cursor: "pointer",
+      width: "100%",
+    }}
+  >
+    💬 {t.message}
+  </button>
+)}
+
               </>
             ) : (
               <div
@@ -1125,6 +1170,10 @@ if (backendProfile) {
               const job = getApplicationJob(application);
               const status = normalizeApplicationStatus(application.status);
               const info = getApplicationStatusInfo(application);
+
+              
+
+
 
               return (
                 <div

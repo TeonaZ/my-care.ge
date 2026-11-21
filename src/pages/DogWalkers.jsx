@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./Drivers.css";
@@ -182,137 +182,56 @@ function DogWalkers() {
 
   const [appliedPrice, setAppliedPrice] = useState("");
 
-  /* =========================
-     DEFAULT DOG WALKERS
-  ========================= */
+  // Only real specialist profiles from PostgreSQL are displayed.
+  const [dogWalkers, setDogWalkers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
-  const defaultDogWalkers = [
-    {
-      id: "1",
-      name: t.name1,
-      cityValue: "tbilisi",
-      experience: t.years5,
-      experienceYears: 5,
-      employmentType: "full-time",
-      paymentType: "hourly",
-      priceValue: 15,
-      rating: 4.9,
-      reviews: 35,
-      verified: true,
-      isCustom: false,
-    },
-
-    {
-      id: "2",
-      name: t.name2,
-      cityValue: "tbilisi",
-      experience: t.years3,
-      experienceYears: 3,
-      employmentType: "part-time",
-      paymentType: "hourly",
-      priceValue: 12,
-      rating: 4.8,
-      reviews: 27,
-      verified: true,
-      isCustom: false,
-    },
-
-    {
-      id: "3",
-      name: t.name3,
-      cityValue: "batumi",
-      experience: t.years4,
-      experienceYears: 4,
-      employmentType: "part-time",
-      paymentType: "hourly",
-      priceValue: 10,
-      rating: 4.7,
-      reviews: 19,
-      verified: false,
-      isCustom: false,
-    },
-  ];
-
-  /* =========================
-     SAVED SPECIALISTS
-  ========================= */
-
-  const getSavedSpecialists = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaSpecialists"));
-
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
-  };
-
-  const getSafeName = (profile) => {
-    const firstName = profile.firstName || "";
-
-    const lastName = profile.lastName || "";
-
-    const lastInitial = lastName ? `${lastName.charAt(0)}.` : "";
-
-    return (
-      `${firstName} ${lastInitial}`.trim() ||
-      (language === "ka"
-        ? "ძაღლის გამსეირნებელი"
-        : language === "ru"
-          ? "Выгульщик собак"
-          : "Dog Walker")
-    );
-  };
-
-  /*
-    CreateSpecialistProfile-ში
-    Dog Walker ინახება როგორც:
-    profession: "dog-walker"
-  */
-
-  const customDogWalkers = getSavedSpecialists()
-    .filter(
-      (profile) =>
-        profile.profession === "dog-walker" && profile.status !== "inactive",
-    )
-    .map((profile) => ({
-      id: String(profile.id),
-
-      ownerId: profile.ownerId,
-
-      name: getSafeName(profile),
-
-      cityValue: profile.city || "other",
-
-      experience: profile.experience || "",
-
-      experienceYears: Number(
-        String(profile.experience || "0").match(/\d+/)?.[0] || 0,
-      ),
-
-      employmentType: profile.employmentType || "part-time",
-
-      paymentType: profile.paymentType || "hourly",
-
-      priceValue: Number(profile.priceValue) || 0,
-
-      rating:
-        profile.rating !== null && profile.rating !== undefined
-          ? Number(profile.rating)
-          : null,
-
-      reviews: Number(profile.reviews) || 0,
-
-      verified: profile.verified === true,
-
-      isCustom: true,
-    }));
-
-  /* =========================
-     ALL DOG WALKERS
-  ========================= */
-
-  const dogWalkers = [...customDogWalkers, ...defaultDogWalkers];
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      setLoadError("");
+      try {
+        const response = await fetch("http://localhost:5000/api/specialists?profession=dog-walker");
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Request failed");
+        const profiles = Array.isArray(data.specialists) ? data.specialists : [];
+        const mapped = profiles
+          .filter((profile) =>
+            ["dog-walker", "dogwalker"].includes(profile.profession) &&
+            profile.status !== "inactive"
+          )
+          .map((profile) => {
+            const firstName = profile.firstName || "";
+            const lastInitial = profile.lastName ? `${profile.lastName.charAt(0)}.` : "";
+            return {
+              id: profile.id,
+              ownerId: profile.ownerId,
+              name: `${firstName} ${lastInitial}`.trim() ||
+                (language === "en" ? "Dog Walker" : language === "ru" ? "Выгульщик собак" : "ძაღლის გამსეირნებელი"),
+              cityValue: profile.city || "other",
+              experience: profile.experience || "",
+              experienceYears: Number(String(profile.experience || "0").match(/\d+/)?.[0] || 0),
+              employmentType: profile.employmentType || "part-time",
+              paymentType: profile.paymentType || "hourly",
+              priceValue: Number(profile.priceValue) || 0,
+              rating: profile.rating ?? null,
+              reviews: Number(profile.reviews) || 0,
+              verified: profile.verified === true,
+            };
+          });
+        if (!cancelled) setDogWalkers(mapped);
+      } catch (error) {
+        console.error("Load dog walkers error:", error);
+        if (!cancelled) { setLoadError(error.message || "Request failed"); setDogWalkers([]); }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [language]);
 
   /* =========================
      CITY
@@ -536,7 +455,11 @@ function DogWalkers() {
       {/* DOG WALKERS */}
 
       <section className="drivers-list">
-        {filteredDogWalkers.length === 0 ? (
+        {loading ? (
+          <p>{language === "en" ? "Loading dog walkers..." : language === "ru" ? "Загрузка..." : "ძაღლის გამსეირნებლები იტვირთება..."}</p>
+        ) : loadError ? (
+          <p role="alert">{language === "en" ? "Could not load profiles. Check the server." : language === "ru" ? "Не удалось загрузить профили." : "პროფილების ჩატვირთვა ვერ მოხერხდა. შეამოწმე სერვერი."}</p>
+        ) : filteredDogWalkers.length === 0 ? (
           <div
             style={{
               width: "100%",
