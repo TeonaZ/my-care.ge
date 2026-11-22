@@ -1,21 +1,16 @@
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./Drivers.css";
 
+const API = "http://localhost:5000";
+
 const translations = {
   ka: {
-    title: "იპოვე ტუტორი",
+    title: "იპოვე რეპეტიტორი",
     description:
-      "იპოვე შენთვის სასურველი მასწავლებელი ან რეპეტიტორი საგნის, ქალაქისა და ფასის მიხედვით.",
-
-    allSubjects: "ყველა საგანი",
-    english: "ინგლისური",
-    math: "მათემატიკა",
-    georgian: "ქართული",
-    history: "ისტორია",
-    subjectNotSpecified: "საგანი არ არის მითითებული",
-
+      "იპოვე შენთვის სასურველი მასწავლებელი ან რეპეტიტორი ქალაქისა და ფასის მიხედვით.",
     allCities: "ყველა ქალაქი",
     tbilisi: "თბილისი",
     batumi: "ბათუმი",
@@ -24,51 +19,27 @@ const translations = {
     gori: "გორი",
     zugdidi: "ზუგდიდი",
     other: "სხვა",
-
     allPrices: "ყველა ფასი",
     under20: "20 ₾-მდე",
-    price20to30: "20 - 30 ₾",
-    over30: "30 ₾+",
-
+    price20to30: "20–30 ₾",
+    over30: "30 ₾-ზე მეტი",
     search: "ძიება",
     experience: "გამოცდილება",
     viewProfile: "პროფილის ნახვა",
-
-    name1: "ნინო ბ.",
-    name2: "ანა გ.",
-    name3: "მარიამ ლ.",
-
-    years6: "6 წელი",
-    years4: "4 წელი",
-    years5: "5 წელი",
-
-    englishLanguage: "ინგლისური ენა",
-    mathSubject: "მათემატიკა",
-    georgianLanguage: "ქართული ენა",
-    historySubject: "ისტორია",
-
     currency: "₾",
-
     hourly: "საათი",
     daily: "დღე",
     biweekly: "2 კვირა",
     monthly: "თვე",
-
-    noResults: "ამ ფილტრებით ტუტორი ვერ მოიძებნა.",
+    noResults: "ამ ფილტრებით რეპეტიტორი ვერ მოიძებნა.",
+    loading: "რეპეტიტორები იტვირთება...",
+    error: "რეპეტიტორების ჩატვირთვა ვერ მოხერხდა.",
+    retry: "ხელახლა ცდა",
+    tutor: "რეპეტიტორი",
   },
-
   en: {
     title: "Find a Tutor",
-    description:
-      "Find the right teacher or tutor by subject, city and price.",
-
-    allSubjects: "All subjects",
-    english: "English",
-    math: "Mathematics",
-    georgian: "Georgian",
-    history: "History",
-    subjectNotSpecified: "Subject not specified",
-
+    description: "Find a teacher or tutor by city and price.",
     allCities: "All cities",
     tbilisi: "Tbilisi",
     batumi: "Batumi",
@@ -77,51 +48,27 @@ const translations = {
     gori: "Gori",
     zugdidi: "Zugdidi",
     other: "Other",
-
     allPrices: "All prices",
     under20: "Up to 20 GEL",
-    price20to30: "20 - 30 GEL",
-    over30: "30 GEL+",
-
+    price20to30: "20–30 GEL",
+    over30: "Over 30 GEL",
     search: "Search",
     experience: "Experience",
     viewProfile: "View Profile",
-
-    name1: "Nino B.",
-    name2: "Ana G.",
-    name3: "Mariam L.",
-
-    years6: "6 years",
-    years4: "4 years",
-    years5: "5 years",
-
-    englishLanguage: "English",
-    mathSubject: "Mathematics",
-    georgianLanguage: "Georgian",
-    historySubject: "History",
-
     currency: "GEL",
-
     hourly: "hour",
     daily: "day",
     biweekly: "2 weeks",
     monthly: "month",
-
     noResults: "No tutors were found with these filters.",
+    loading: "Loading tutors...",
+    error: "Could not load tutors.",
+    retry: "Try again",
+    tutor: "Tutor",
   },
-
   ru: {
     title: "Найти репетитора",
-    description:
-      "Найдите подходящего учителя или репетитора по предмету, городу и цене.",
-
-    allSubjects: "Все предметы",
-    english: "Английский",
-    math: "Математика",
-    georgian: "Грузинский",
-    history: "История",
-    subjectNotSpecified: "Предмет не указан",
-
+    description: "Найдите репетитора по городу и цене.",
     allCities: "Все города",
     tbilisi: "Тбилиси",
     batumi: "Батуми",
@@ -130,37 +77,23 @@ const translations = {
     gori: "Гори",
     zugdidi: "Зугдиди",
     other: "Другой",
-
     allPrices: "Все цены",
     under20: "До 20 GEL",
-    price20to30: "20 - 30 GEL",
-    over30: "30 GEL+",
-
+    price20to30: "20–30 GEL",
+    over30: "Более 30 GEL",
     search: "Поиск",
     experience: "Опыт",
     viewProfile: "Посмотреть профиль",
-
-    name1: "Нино Б.",
-    name2: "Ана Г.",
-    name3: "Мариам Л.",
-
-    years6: "6 лет",
-    years4: "4 года",
-    years5: "5 лет",
-
-    englishLanguage: "Английский язык",
-    mathSubject: "Математика",
-    georgianLanguage: "Грузинский язык",
-    historySubject: "История",
-
     currency: "GEL",
-
     hourly: "час",
     daily: "день",
     biweekly: "2 недели",
     monthly: "месяц",
-
     noResults: "По этим фильтрам репетиторы не найдены.",
+    loading: "Загрузка репетиторов...",
+    error: "Не удалось загрузить репетиторов.",
+    retry: "Повторить",
+    tutor: "Репетитор",
   },
 };
 
@@ -172,133 +105,64 @@ function Tutors() {
 
   const selectedCity = searchParams.get("city") || "";
 
-  const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedPrice, setSelectedPrice] = useState("");
-
   const [appliedCity, setAppliedCity] = useState(selectedCity);
-  const [appliedSubject, setAppliedSubject] = useState("");
   const [appliedPrice, setAppliedPrice] = useState("");
 
-  // ძველი სატესტო ტუტორები
-  const defaultTutors = [
-    {
-      id: "1",
-      name: t.name1,
-      subjectValue: "english",
-      cityValue: "tbilisi",
-      experience: t.years6,
-      paymentType: "hourly",
-      priceValue: 30,
-      rating: "⭐ 4.9",
-      verified: true,
-    },
+  const [tutors, setTutors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
-    {
-      id: "2",
-      name: t.name2,
-      subjectValue: "math",
-      cityValue: "tbilisi",
-      experience: t.years4,
-      paymentType: "hourly",
-      priceValue: 25,
-      rating: "⭐ 4.8",
-      verified: true,
-    },
+  useEffect(() => {
+    let cancelled = false;
 
-    {
-      id: "3",
-      name: t.name3,
-      subjectValue: "georgian",
-      cityValue: "batumi",
-      experience: t.years5,
-      paymentType: "hourly",
-      priceValue: 25,
-      rating: "⭐ 4.7",
-      verified: false,
-    },
-  ];
+    const loadTutors = async () => {
+      setLoading(true);
+      setError("");
 
-  // localStorage-დან სპეციალისტების წამოღება
-  const getSavedSpecialists = () => {
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem("careGeorgiaSpecialists")
-      );
+      try {
+        const response = await fetch(
+          `${API}/api/specialists?profession=tutor`
+        );
 
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
-  };
+        const data = await response.json();
 
-  const savedSpecialists = getSavedSpecialists();
+        if (!response.ok) {
+          throw new Error(data.message || t.error);
+        }
 
-  // მომხმარებლების მიერ შექმნილი აქტიური ტუტორები
-  const customTutors = savedSpecialists
-    .filter(
-      (profile) =>
-        profile.profession === "tutor" &&
-        profile.status !== "inactive"
-    )
-    .map((profile) => {
-      const firstName = profile.firstName || "";
-      const lastName = profile.lastName || "";
+        const specialists = Array.isArray(data.specialists)
+          ? data.specialists
+          : [];
 
-      const lastInitial = lastName
-        ? `${lastName.charAt(0)}.`
-        : "";
+        if (!cancelled) {
+          setTutors(
+            specialists.filter(
+              (profile) =>
+                String(profile.profession || "").toLowerCase() ===
+                "tutor"
+            )
+          );
+        }
+      } catch (err) {
+        console.error("LOAD TUTORS ERROR:", err);
 
-      const safeName =
-        `${firstName} ${lastInitial}`.trim() ||
-        (language === "ka"
-          ? "ტუტორი"
-          : language === "ru"
-          ? "Репетитор"
-          : "Tutor");
+        if (!cancelled) {
+          setTutors([]);
+          setError(err.message || t.error);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
 
-      return {
-        id: String(profile.id),
+    loadTutors();
 
-        name: safeName,
-
-        subjectValue:
-          profile.subject || "",
-
-        cityValue:
-          profile.city || "other",
-
-        experience:
-          profile.experience || "",
-
-        paymentType:
-          profile.paymentType || "hourly",
-
-        priceValue:
-          Number(profile.priceValue) || 0,
-
-        rating:
-          profile.rating !== null &&
-          profile.rating !== undefined
-            ? `⭐ ${profile.rating}`
-            : "",
-
-        verified:
-          profile.verified === true,
-      };
-    });
-
-  // ძველი + მომხმარებლების ტუტორები
-  const tutors = [
-    ...defaultTutors,
-    ...customTutors,
-  ];
-
-  const subjectNames = {
-    english: t.englishLanguage,
-    math: t.mathSubject,
-    georgian: t.georgianLanguage,
-    history: t.historySubject,
-  };
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   const cityNames = {
     tbilisi: t.tbilisi,
@@ -310,192 +174,95 @@ function Tutors() {
     other: t.other,
   };
 
+  const getCityName = (city) =>
+    cityNames[city] || city || t.other;
+
   const getPaymentTypeName = (paymentType) => {
-    if (paymentType === "monthly") {
-      return t.monthly;
-    }
-
-    if (paymentType === "biweekly") {
-      return t.biweekly;
-    }
-
-    if (paymentType === "daily") {
-      return t.daily;
-    }
-
+    if (paymentType === "monthly") return t.monthly;
+    if (paymentType === "biweekly") return t.biweekly;
+    if (paymentType === "daily") return t.daily;
     return t.hourly;
   };
 
-  const filteredTutors = tutors.filter((tutor) => {
+  const getSafeName = (profile) => {
+    const firstName = profile.firstName || "";
+    const lastName = profile.lastName || "";
+    const lastInitial = lastName
+      ? `${lastName.charAt(0)}.`
+      : "";
+
+    return `${firstName} ${lastInitial}`.trim() || t.tutor;
+  };
+
+  const filteredTutors = tutors.filter((profile) => {
     const matchesCity = appliedCity
-      ? tutor.cityValue === appliedCity
+      ? profile.city === appliedCity
       : true;
 
-    const matchesSubject = appliedSubject
-      ? tutor.subjectValue === appliedSubject
-      : true;
+    const price = Number(profile.priceValue || 0);
 
     let matchesPrice = true;
 
     if (appliedPrice === "under20") {
-      matchesPrice = tutor.priceValue <= 20;
+      matchesPrice = price <= 20;
+    } else if (appliedPrice === "20to30") {
+      matchesPrice = price >= 20 && price <= 30;
+    } else if (appliedPrice === "over30") {
+      matchesPrice = price > 30;
     }
 
-    if (appliedPrice === "20to30") {
-      matchesPrice =
-        tutor.priceValue >= 20 &&
-        tutor.priceValue <= 30;
-    }
-
-    if (appliedPrice === "over30") {
-      matchesPrice = tutor.priceValue >= 30;
-    }
-
-    return (
-      matchesCity &&
-      matchesSubject &&
-      matchesPrice
-    );
+    return matchesCity && matchesPrice;
   });
 
-  const getPrice = (tutor) => {
-    return `${tutor.priceValue} ${
+  const getPrice = (profile) =>
+    `${Number(profile.priceValue || 0)} ${
       t.currency
-    } / ${getPaymentTypeName(tutor.paymentType)}`;
-  };
-
-  const getSubjectName = (subjectValue) => {
-    if (!subjectValue) {
-      return t.subjectNotSpecified;
-    }
-
-    return (
-      subjectNames[subjectValue] ||
-      subjectValue
-    );
-  };
+    } / ${getPaymentTypeName(profile.paymentType)}`;
 
   return (
     <div className="drivers-page">
       <header className="drivers-header">
-        <Link
-          to="/"
-          className="back-link"
-        >
+        <Link to="/" className="back-link">
           ← Care Georgia
         </Link>
 
         <h1>{t.title}</h1>
-
         <p>{t.description}</p>
       </header>
 
       <div className="driver-filters">
-        {/* SUBJECT */}
-
-        <select
-          value={selectedSubject}
-          onChange={(e) =>
-            setSelectedSubject(e.target.value)
-          }
-        >
-          <option value="">
-            {t.allSubjects}
-          </option>
-
-          <option value="english">
-            {t.english}
-          </option>
-
-          <option value="math">
-            {t.math}
-          </option>
-
-          <option value="georgian">
-            {t.georgian}
-          </option>
-
-          <option value="history">
-            {t.history}
-          </option>
-        </select>
-
-        {/* CITY */}
-
         <select
           value={selectedCity}
-          onChange={(e) => {
-            const city = e.target.value;
-
-            if (city) {
-              setSearchParams({ city });
-            } else {
-              setSearchParams({});
-            }
+          onChange={(event) => {
+            const city = event.target.value;
+            setSearchParams(city ? { city } : {});
           }}
         >
-          <option value="">
-            {t.allCities}
-          </option>
-
-          <option value="tbilisi">
-            {t.tbilisi}
-          </option>
-
-          <option value="batumi">
-            {t.batumi}
-          </option>
-
-          <option value="kutaisi">
-            {t.kutaisi}
-          </option>
-
-          <option value="rustavi">
-            {t.rustavi}
-          </option>
-
-          <option value="gori">
-            {t.gori}
-          </option>
-
-          <option value="zugdidi">
-            {t.zugdidi}
-          </option>
-
-          <option value="other">
-            {t.other}
-          </option>
+          <option value="">{t.allCities}</option>
+          <option value="tbilisi">{t.tbilisi}</option>
+          <option value="batumi">{t.batumi}</option>
+          <option value="kutaisi">{t.kutaisi}</option>
+          <option value="rustavi">{t.rustavi}</option>
+          <option value="gori">{t.gori}</option>
+          <option value="zugdidi">{t.zugdidi}</option>
+          <option value="other">{t.other}</option>
         </select>
-
-        {/* PRICE */}
 
         <select
           value={selectedPrice}
-          onChange={(e) =>
-            setSelectedPrice(e.target.value)
+          onChange={(event) =>
+            setSelectedPrice(event.target.value)
           }
         >
-          <option value="">
-            {t.allPrices}
-          </option>
-
-          <option value="under20">
-            {t.under20}
-          </option>
-
-          <option value="20to30">
-            {t.price20to30}
-          </option>
-
-          <option value="over30">
-            {t.over30}
-          </option>
+          <option value="">{t.allPrices}</option>
+          <option value="under20">{t.under20}</option>
+          <option value="20to30">{t.price20to30}</option>
+          <option value="over30">{t.over30}</option>
         </select>
 
         <button
           type="button"
           onClick={() => {
-            setAppliedSubject(selectedSubject);
             setAppliedCity(selectedCity);
             setAppliedPrice(selectedPrice);
           }}
@@ -504,10 +271,24 @@ function Tutors() {
         </button>
       </div>
 
-      {/* TUTORS */}
-
       <section className="drivers-list">
-        {filteredTutors.length === 0 ? (
+        {loading ? (
+          <div className="driver-card">
+            <p>{t.loading}</p>
+          </div>
+        ) : error ? (
+          <div className="driver-card">
+            <p>{error}</p>
+            <button
+              type="button"
+              onClick={() =>
+                setReloadKey((previous) => previous + 1)
+              }
+            >
+              {t.retry}
+            </button>
+          </div>
+        ) : filteredTutors.length === 0 ? (
           <div
             className="driver-card"
             style={{
@@ -519,61 +300,33 @@ function Tutors() {
             <p>{t.noResults}</p>
           </div>
         ) : (
-          filteredTutors.map((tutor) => (
+          filteredTutors.map((profile) => (
             <div
               className="driver-card"
-              key={tutor.id}
+              key={profile.id}
             >
-              <div className="driver-avatar">
-                📚
-              </div>
+              <div className="driver-avatar">📚</div>
 
               <div className="driver-info">
                 <div className="driver-name">
-                  <h2>
-                    {tutor.name}
-                  </h2>
-
-                  {tutor.verified && (
-                    <span className="verified">
-                      ✓
-                    </span>
-                  )}
+                  <h2>{getSafeName(profile)}</h2>
                 </div>
 
                 <p>
-                  📖{" "}
-                  {getSubjectName(
-                    tutor.subjectValue
-                  )}
-                </p>
-
-                <p>
-                  📍{" "}
-                  {cityNames[
-                    tutor.cityValue
-                  ] || tutor.cityValue}
+                  📍 {getCityName(profile.city)}
                 </p>
 
                 <p>
                   🎓 {t.experience}:{" "}
-                  {tutor.experience}
+                  {profile.experience || "—"}
                 </p>
-
-                {tutor.rating && (
-                  <p>
-                    {tutor.rating}
-                  </p>
-                )}
               </div>
 
               <div className="driver-price">
-                <strong>
-                  {getPrice(tutor)}
-                </strong>
+                <strong>{getPrice(profile)}</strong>
 
                 <Link
-                  to={`/tutors/${tutor.id}`}
+                  to={`/tutors/${profile.id}`}
                   className="profile-btn"
                 >
                   {t.viewProfile}

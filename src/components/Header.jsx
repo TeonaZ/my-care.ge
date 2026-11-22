@@ -13,8 +13,7 @@ const translations = {
     receivedInterests: "დამსაქმებლის დაინტერესება",
     sentInterests: "გაგზავნილი დაინტერესებები",
     myProfile: "ჩემი პროფილი",
-    createSpecialistProfile:
-      "სპეციალისტის პროფილის შექმნა",
+    createSpecialistProfile: "სპეციალისტის პროფილის შექმნა",
     about: "ჩვენ შესახებ",
     support: "Support",
     login: "შესვლა",
@@ -33,8 +32,7 @@ const translations = {
     receivedInterests: "Employer Interests",
     sentInterests: "Sent Interests",
     myProfile: "My Profile",
-    createSpecialistProfile:
-      "Create Specialist Profile",
+    createSpecialistProfile: "Create Specialist Profile",
     about: "About Us",
     support: "Support",
     login: "Login",
@@ -53,8 +51,7 @@ const translations = {
     receivedInterests: "Интерес работодателя",
     sentInterests: "Отправленные предложения",
     myProfile: "Мой профиль",
-    createSpecialistProfile:
-      "Создать профиль специалиста",
+    createSpecialistProfile: "Создать профиль специалиста",
     about: "О нас",
     support: "Support",
     login: "Войти",
@@ -66,62 +63,37 @@ const translations = {
 
 function Header() {
   const navigate = useNavigate();
-  const { language, setLanguage } =
-    useLanguage();
+  const { language, setLanguage } = useLanguage();
 
-  const t =
-    translations[language] ||
-    translations.ka;
+  const t = translations[language] || translations.ka;
 
-  const [
-    isUserMenuOpen,
-    setIsUserMenuOpen,
-  ] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  const [isNotificationMenuOpen, setIsNotificationMenuOpen] =
-  useState(false);
+  const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);
 
-  const [
-    unreadInterests,
-    setUnreadInterests,
-  ] = useState(0);
+  const [unreadInterests, setUnreadInterests] = useState(0);
 
-  
-const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
-const [unreadApplications, setUnreadApplications] = useState(0);
+  const [unreadApplications, setUnreadApplications] = useState(0);
 
+  const [unreadInterestResponses, setUnreadInterestResponses] = useState(0);
 
-
-  const isLoggedIn =
-    localStorage.getItem(
-      "careGeorgiaLoggedIn",
-    ) === "true";
+  const isLoggedIn = localStorage.getItem("careGeorgiaLoggedIn") === "true";
 
   let user = null;
 
   try {
-    const savedUser =
-      localStorage.getItem(
-        "careGeorgiaUser",
-      );
+    const savedUser = localStorage.getItem("careGeorgiaUser");
 
-    user = savedUser
-      ? JSON.parse(savedUser)
-      : null;
+    user = savedUser ? JSON.parse(savedUser) : null;
   } catch {
     user = null;
   }
 
-  const currentUserId =
-    localStorage.getItem(
-      "careGeorgiaCurrentUserId",
-    );
+  const currentUserId = localStorage.getItem("careGeorgiaCurrentUserId");
 
-  const token =
-    localStorage.getItem(
-      "careGeorgiaToken",
-    );
+  const token = localStorage.getItem("careGeorgiaToken");
 
   // ========================================
   // UNSEEN RECEIVED INTERESTS
@@ -130,15 +102,31 @@ const [unreadApplications, setUnreadApplications] = useState(0);
   useEffect(() => {
     let isMounted = true;
 
-    const loadReceivedInterests =
-      async () => {
-        if (
-          !isLoggedIn ||
-          !currentUserId ||
-          user?.accountType !==
-            "provider" ||
-          !token
-        ) {
+    const loadReceivedInterests = async () => {
+      if (
+        !isLoggedIn ||
+        !currentUserId ||
+        user?.accountType !== "provider" ||
+        !token
+      ) {
+        if (isMounted) {
+          setUnreadInterests(0);
+        }
+
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/interests/received",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (response.status === 401) {
           if (isMounted) {
             setUnreadInterests(0);
           }
@@ -146,81 +134,43 @@ const [unreadApplications, setUnreadApplications] = useState(0);
           return;
         }
 
-        try {
-          const response =
-            await fetch(
-              "http://localhost:5000/api/interests/received",
-              {
-                headers: {
-                  Authorization:
-                    `Bearer ${token}`,
-                },
-              },
-            );
+        const data = await response.json();
 
-          if (
-            response.status === 401
-          ) {
-            if (isMounted) {
-              setUnreadInterests(0);
-            }
-
-            return;
-          }
-
-          const data =
-            await response.json();
-
-          if (!response.ok) {
-            console.error(
-              "Header received interests error:",
-              data,
-            );
-
-            if (isMounted) {
-              setUnreadInterests(0);
-            }
-
-            return;
-          }
-
-          const interests =
-            Array.isArray(
-              data.interests,
-            )
-              ? data.interests
-              : [];
-
-          const unseenInterests =
-            interests.filter(
-              (interest) =>
-                interest.isSeen ===
-                false,
-            );
-
-          if (isMounted) {
-            setUnreadInterests(
-              unseenInterests.length,
-            );
-          }
-        } catch (error) {
-          console.error(
-            "Header received interests error:",
-            error,
-          );
+        if (!response.ok) {
+          console.error("Header received interests error:", data);
 
           if (isMounted) {
             setUnreadInterests(0);
           }
+
+          return;
         }
-      };
+
+        const interests = Array.isArray(data.interests) ? data.interests : [];
+
+        const unseenInterests = interests.filter(
+          (interest) => interest.isSeen === false,
+        );
+
+        if (isMounted) {
+          setUnreadInterests(unseenInterests.length);
+        }
+      } catch (error) {
+        console.error("Header received interests error:", error);
+
+        if (isMounted) {
+          setUnreadInterests(0);
+        }
+      }
+    };
 
     loadReceivedInterests();
 
-    const handleInterestsUpdated =
-      () => {
-        loadReceivedInterests();
-      };
+    const interestsInterval = setInterval(loadReceivedInterests, 10000);
+
+    const handleInterestsUpdated = () => {
+      loadReceivedInterests();
+    };
 
     window.addEventListener(
       "careGeorgiaInterestsUpdated",
@@ -230,111 +180,148 @@ const [unreadApplications, setUnreadApplications] = useState(0);
     return () => {
       isMounted = false;
 
+      clearInterval(interestsInterval);
+
       window.removeEventListener(
         "careGeorgiaInterestsUpdated",
         handleInterestsUpdated,
       );
     };
-  }, [
-    isLoggedIn,
-    currentUserId,
-    user?.accountType,
-    token,
-  ]);
+  }, [isLoggedIn, currentUserId, user?.accountType, token]);
 
-  
-useEffect(() => {
-  if (!isLoggedIn || !token) {
-    setUnreadMessages(0);
-    return;
-  }
-
-  let active = true;
-
-  const loadUnreadMessages = async () => {
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/messages/unread/count",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) return;
-
-      const data = await response.json();
-
-      if (active) {
-        setUnreadMessages(data.unreadCount ?? 0);
-      }
-    } catch (error) {
-      console.error("Unread messages error:", error);
+  useEffect(() => {
+    if (!isLoggedIn || !token) {
+      setUnreadMessages(0);
+      return;
     }
-  };
 
-  loadUnreadMessages();
+    let active = true;
 
-  const interval = setInterval(loadUnreadMessages, 10000);
-
-  return () => {
-    active = false;
-    clearInterval(interval);
-  };
-}, [isLoggedIn, token]);
-
-
-
-    
-useEffect(() => {
-  if (!isLoggedIn || !token || user?.accountType !== "client") {
-    setUnreadApplications(0);
-    return;
-  }
-
-  let active = true;
-
-  const loadUnreadApplications = async () => {
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/applications/unread/count",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+    const loadUnreadMessages = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/messages/unread/count",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
+        );
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (active) {
+          setUnreadMessages(data.unreadCount ?? 0);
         }
-      );
-
-      if (!response.ok) return;
-
-      const data = await response.json();
-
-      if (active) {
-        setUnreadApplications(data.unreadCount ?? 0);
+      } catch (error) {
+        console.error("Unread messages error:", error);
       }
-    } catch (error) {
-      console.error("Unread applications error:", error);
+    };
+
+    loadUnreadMessages();
+
+    const interval = setInterval(loadUnreadMessages, 10000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [isLoggedIn, token]);
+
+  useEffect(() => {
+    if (!isLoggedIn || !token || user?.accountType !== "client") {
+      setUnreadApplications(0);
+      return;
     }
+
+    let active = true;
+
+    const loadUnreadApplications = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/applications/unread/count",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (active) {
+          setUnreadApplications(data.unreadCount ?? 0);
+        }
+      } catch (error) {
+        console.error("Unread applications error:", error);
+      }
+    };
+
+    loadUnreadApplications();
+
+    const interval = setInterval(loadUnreadApplications, 10000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [isLoggedIn, token, user?.accountType]);
+
+  useEffect(() => {
+    if (!isLoggedIn || user?.accountType !== "client" || !token) {
+      setUnreadInterestResponses(0);
+      return;
+    }
+
+    const loadUnreadInterestResponses = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/interests/responses/unread/count",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        setUnreadInterestResponses(data.unreadCount || 0);
+      } catch (error) {
+        console.error("INTEREST RESPONSES COUNT ERROR:", error);
+      }
+    };
+
+    loadUnreadInterestResponses();
+
+    const interval = setInterval(loadUnreadInterestResponses, 10000);
+
+    window.addEventListener(
+      "careGeorgiaInterestResponsesUpdated",
+      loadUnreadInterestResponses,
+    );
+
+    return () => {
+      clearInterval(interval);
+
+      window.removeEventListener(
+        "careGeorgiaInterestResponsesUpdated",
+        loadUnreadInterestResponses,
+      );
+    };
+  }, [isLoggedIn, user?.accountType, token]);
+
+  const closeMenu = () => {
+    setIsUserMenuOpen(false);
   };
 
-  loadUnreadApplications();
-
-  const interval = setInterval(loadUnreadApplications, 10000);
-
-  return () => {
-    active = false;
-    clearInterval(interval);
-  };
-}, [isLoggedIn, token, user?.accountType]);
-
-    const closeMenu = () => {
-  setIsUserMenuOpen(false);
-};
-
-  const handleLanguageChange = (
-    e,
-  ) => {
+  const handleLanguageChange = (e) => {
     setLanguage(e.target.value);
     setIsUserMenuOpen(false);
   };
@@ -345,10 +332,7 @@ useEffect(() => {
     navigate("/");
 
     setTimeout(() => {
-      const servicesSection =
-        document.getElementById(
-          "services",
-        );
+      const servicesSection = document.getElementById("services");
 
       if (servicesSection) {
         servicesSection.scrollIntoView({
@@ -360,21 +344,13 @@ useEffect(() => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem(
-      "careGeorgiaToken",
-    );
+    localStorage.removeItem("careGeorgiaToken");
 
-    localStorage.removeItem(
-      "careGeorgiaLoggedIn",
-    );
+    localStorage.removeItem("careGeorgiaLoggedIn");
 
-    localStorage.removeItem(
-      "careGeorgiaCurrentUserId",
-    );
+    localStorage.removeItem("careGeorgiaCurrentUserId");
 
-    localStorage.removeItem(
-      "careGeorgiaUser",
-    );
+    localStorage.removeItem("careGeorgiaUser");
 
     setUnreadInterests(0);
     setIsUserMenuOpen(false);
@@ -408,22 +384,16 @@ useEffect(() => {
       </Link>
 
       <nav className="nav">
-        <Link
-          to="/"
-          onClick={closeMenu}
-        >
+        <Link to="/" onClick={closeMenu}>
           {t.home}
         </Link>
 
         <button
           type="button"
-          onClick={
-            handleFindSpecialist
-          }
+          onClick={handleFindSpecialist}
           style={{
             border: "none",
-            background:
-              "transparent",
+            background: "transparent",
             padding: "0",
             margin: "0",
             font: "inherit",
@@ -434,24 +404,15 @@ useEffect(() => {
           {t.findSpecialist}
         </button>
 
-        <Link
-          to="/jobs"
-          onClick={closeMenu}
-        >
+        <Link to="/jobs" onClick={closeMenu}>
           {t.findJob}
         </Link>
 
-        <Link
-          to="/about"
-          onClick={closeMenu}
-        >
+        <Link to="/about" onClick={closeMenu}>
           {t.about}
         </Link>
 
-        <Link
-          to="/support"
-          onClick={closeMenu}
-        >
+        <Link to="/support" onClick={closeMenu}>
           🛠️ {t.support}
         </Link>
       </nav>
@@ -460,22 +421,14 @@ useEffect(() => {
         <select
           className="language-select"
           value={language}
-          onChange={
-            handleLanguageChange
-          }
+          onChange={handleLanguageChange}
           aria-label="Language"
         >
-          <option value="ka">
-            🇬🇪 ქართული
-          </option>
+          <option value="ka">🇬🇪 ქართული</option>
 
-          <option value="en">
-            🇬🇧 English
-          </option>
+          <option value="en">🇬🇧 English</option>
 
-          <option value="ru">
-            🇷🇺 Русский
-          </option>
+          <option value="ru">🇷🇺 Русский</option>
         </select>
 
         {isLoggedIn ? (
@@ -491,30 +444,21 @@ useEffect(() => {
                 gap: "4px",
               }}
             >
-             {(user?.accountType === "provider" ||
-  user?.accountType === "client") && (
+              {(user?.accountType === "provider" ||
+                user?.accountType === "client") && (
                 <button
                   type="button"
-                  
-onClick={() => {
-  setIsUserMenuOpen(false);
-  setIsNotificationMenuOpen((previous) => !previous);
-}}
-
-                  aria-label={
-                    t.receivedInterests
-                  }
-                  title={
-                    t.receivedInterests
-                  }
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                    setIsNotificationMenuOpen((previous) => !previous);
+                  }}
+                  aria-label={t.receivedInterests}
+                  title={t.receivedInterests}
                   style={{
-                    position:
-                      "relative",
+                    position: "relative",
                     border: "none",
-                    background:
-                      "transparent",
-                    cursor:
-                      "pointer",
+                    background: "transparent",
+                    cursor: "pointer",
                     fontSize: "20px",
                     padding: "7px",
                     lineHeight: 1,
@@ -522,187 +466,159 @@ onClick={() => {
                 >
                   <span
                     style={{
-                     
-
-opacity:
-  unreadMessages +
-    (user?.accountType === "provider"
-      ? unreadInterests
-      : unreadApplications) > 0
-    ? 1
-    : 0.55,
-
-
+                      opacity:
+                        unreadMessages +
+                          (user?.accountType === "provider"
+                            ? unreadInterests
+                            : unreadApplications + unreadInterestResponses) >
+                        0
+                          ? 1
+                          : 0.55,
                     }}
                   >
                     🔔
                   </span>
 
-                  
-
-{(unreadMessages +
-  (user?.accountType === "provider"
-    ? unreadInterests
-    : unreadApplications)) > 0 && (
-
-
+                  {unreadMessages +
+                    (user?.accountType === "provider"
+                      ? unreadInterests
+                      : unreadApplications + unreadInterestResponses) >
+                    0 && (
                     <span
                       style={{
-                        position:
-                          "absolute",
+                        position: "absolute",
                         top: "0",
                         right: "0",
-                        minWidth:
-                          "17px",
+                        minWidth: "17px",
                         height: "17px",
-                        padding:
-                          "0 4px",
-                        borderRadius:
-                          "999px",
-                        backgroundColor:
-                          "#dc2626",
-                        color:
-                          "#ffffff",
-                        fontSize:
-                          "10px",
-                        fontWeight:
-                          "800",
-                        display:
-                          "flex",
-                        alignItems:
-                          "center",
-                        justifyContent:
-                          "center",
-                        boxSizing:
-                          "border-box",
+                        padding: "0 4px",
+                        borderRadius: "999px",
+                        backgroundColor: "#dc2626",
+                        color: "#ffffff",
+                        fontSize: "10px",
+                        fontWeight: "800",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxSizing: "border-box",
                       }}
                     >
-                     
-
-{(unreadMessages +
-  (user?.accountType === "provider"
-    ? unreadInterests
-    : unreadApplications)) > 9
-  ? "9+"
-  : unreadMessages +
-    (user?.accountType === "provider"
-      ? unreadInterests
-      : unreadApplications)}
-
-
+                      {unreadMessages +
+                        (user?.accountType === "provider"
+                          ? unreadInterests
+                          : unreadApplications + unreadInterestResponses) >
+                      9
+                        ? "9+"
+                        : unreadMessages +
+                          (user?.accountType === "provider"
+                            ? unreadInterests
+                            : unreadApplications + unreadInterestResponses)}
                     </span>
                   )}
                 </button>
               )}
 
-              
-{isNotificationMenuOpen && (
-  <div
-    style={{
-      position: "absolute",
-      top: "calc(100% + 8px)",
-      right: "0",
-      width: "290px",
-      backgroundColor: "#ffffff",
-      border: "1px solid #e2e8f0",
-      borderRadius: "12px",
-      boxShadow: "0 12px 35px rgba(0, 0, 0, 0.14)",
-      padding: "8px",
-      zIndex: 10000,
-    }}
-  >
-    
+              {isNotificationMenuOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 8px)",
+                    right: "0",
+                    width: "290px",
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "12px",
+                    boxShadow: "0 12px 35px rgba(0, 0, 0, 0.14)",
+                    padding: "8px",
+                    zIndex: 10000,
+                  }}
+                >
+                  {user?.accountType === "client" && (
+                    <Link
+                      to="/sent-interests"
+                      onClick={() => setIsNotificationMenuOpen(false)}
+                      style={menuLinkStyle}
+                    >
+                      <span>❤️</span>
+                      <span>
+                        შეთავაზებაზე გამოხატული ინტერესი
+                        {unreadInterestResponses > 0
+                          ? ` (${unreadInterestResponses})`
+                          : ""}
+                      </span>
+                    </Link>
+                  )}
 
-   
-{(user?.accountType === "provider" ||
-  user?.accountType === "client") && (
-  <Link
-    to={
-      user?.accountType === "client"
-        ? "/received-applications"
-        : "/received-interests"
-    }
-    onClick={() => setIsNotificationMenuOpen(false)}
-    style={menuLinkStyle}
-  >
-    <span>❤️</span>
-    
-<span>
-  მიღებული დაინტერესებები
-  {(user?.accountType === "provider"
-    ? unreadInterests
-    : unreadApplications) > 0
-    ? ` (${
-        user?.accountType === "provider"
-          ? unreadInterests
-          : unreadApplications
-      })`
-    : ""}
-</span>
+                  {(user?.accountType === "provider" ||
+                    user?.accountType === "client") && (
+                    <Link
+                      to={
+                        user?.accountType === "client"
+                          ? "/received-applications"
+                          : "/received-interests"
+                      }
+                      onClick={() => setIsNotificationMenuOpen(false)}
+                      style={menuLinkStyle}
+                    >
+                      <span>❤️</span>
 
-  </Link>
-)}
+                      <span>
+                        მიღებული დაინტერესებები
+                        {(user?.accountType === "provider"
+                          ? unreadInterests
+                          : unreadApplications) > 0
+                          ? ` (${
+                              user?.accountType === "provider"
+                                ? unreadInterests
+                                : unreadApplications
+                            })`
+                          : ""}
+                      </span>
+                    </Link>
+                  )}
 
-
-    <Link
-      to="/messages"
-      onClick={() => setIsNotificationMenuOpen(false)}
-      style={menuLinkStyle}
-    >
-      <span>💬</span>
-      <span>
-        მიღებული წერილები
-        {unreadMessages > 0 ? ` (${unreadMessages})` : ""}
-      </span>
-    </Link>
-  </div>
-)}
-
+                  <Link
+                    to="/messages"
+                    onClick={() => setIsNotificationMenuOpen(false)}
+                    style={menuLinkStyle}
+                  >
+                    <span>💬</span>
+                    <span>
+                      მიღებული წერილები
+                      {unreadMessages > 0 ? ` (${unreadMessages})` : ""}
+                    </span>
+                  </Link>
+                </div>
+              )}
 
               <button
                 type="button"
                 className="user-name"
                 onClick={() =>
-                  setIsUserMenuOpen(
-                    (
-                      previousValue,
-                    ) =>
-                      !previousValue,
-                  )
+                  setIsUserMenuOpen((previousValue) => !previousValue)
                 }
                 style={{
                   border: "none",
-                  background:
-                    "transparent",
+                  background: "transparent",
                   cursor: "pointer",
-                  fontFamily:
-                    "inherit",
-                  fontSize:
-                    "inherit",
+                  fontFamily: "inherit",
+                  fontSize: "inherit",
                   color: "inherit",
-                  padding:
-                    "8px 10px",
+                  padding: "8px 10px",
                   display: "flex",
-                  alignItems:
-                    "center",
+                  alignItems: "center",
                   gap: "5px",
                 }}
               >
-                <span>
-                  👤{" "}
-                  {user?.firstName ||
-                    t.user}
-                </span>
+                <span>👤 {user?.firstName || t.user}</span>
 
                 <span
                   style={{
                     fontSize: "11px",
-                    transform:
-                      isUserMenuOpen
-                        ? "rotate(180deg)"
-                        : "rotate(0deg)",
-                    transition:
-                      "transform 0.2s ease",
+                    transform: isUserMenuOpen
+                      ? "rotate(180deg)"
+                      : "rotate(0deg)",
+                    transition: "transform 0.2s ease",
                   }}
                 >
                   ▼
@@ -713,75 +629,47 @@ opacity:
             {isUserMenuOpen && (
               <div
                 style={{
-                  position:
-                    "absolute",
-                  top:
-                    "calc(100% + 8px)",
+                  position: "absolute",
+                  top: "calc(100% + 8px)",
                   right: "0",
                   width: "290px",
-                  backgroundColor:
-                    "#ffffff",
-                  border:
-                    "1px solid #e2e8f0",
-                  borderRadius:
-                    "12px",
-                  boxShadow:
-                    "0 12px 35px rgba(0, 0, 0, 0.14)",
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "12px",
+                  boxShadow: "0 12px 35px rgba(0, 0, 0, 0.14)",
                   padding: "8px",
                   zIndex: "9999",
                 }}
               >
                 <Link
                   to="/my-profile"
-                  onClick={
-                    closeMenu
-                  }
-                  style={
-                    menuLinkStyle
-                  }
+                  onClick={closeMenu}
+                  style={menuLinkStyle}
                 >
                   <span>👤</span>
+                  <span>{t.myProfile}</span>
+                </Link>
+
+                <Link to="/messages" onClick={closeMenu} style={menuLinkStyle}>
+                  <span>💬</span>
                   <span>
-                    {t.myProfile}
+                    {language === "ka"
+                      ? "ჩემი შეტყობინებები"
+                      : language === "ru"
+                        ? "Мои сообщения"
+                        : "My Messages"}
                   </span>
                 </Link>
 
-                
-<Link
-  to="/messages"
-  onClick={closeMenu}
-  style={menuLinkStyle}
->
-  <span>💬</span>
-  <span>
-    {language === "ka"
-      ? "ჩემი შეტყობინებები"
-      : language === "ru"
-        ? "Мои сообщения"
-        : "My Messages"}
-  </span>
-</Link>
-
-
-
-                {user?.accountType ===
-                  "client" && (
+                {user?.accountType === "client" && (
                   <>
                     <Link
                       to="/my-jobs"
-                      onClick={
-                        closeMenu
-                      }
-                      style={
-                        menuLinkStyle
-                      }
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
                     >
-                      <span>
-                        📋
-                      </span>
-                      <span>
-                        {t.myJobs}
-                      </span>
+                      <span>📋</span>
+                      <span>{t.myJobs}</span>
                     </Link>
 
                     <Link
@@ -795,107 +683,57 @@ opacity:
 
                     <Link
                       to="/sent-interests"
-                      onClick={
-                        closeMenu
-                      }
-                      style={
-                        menuLinkStyle
-                      }
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
                     >
-                      <span>
-                        📤
-                      </span>
-                      <span>
-                        {
-                          t.sentInterests
-                        }
-                      </span>
+                      <span>📤</span>
+                      <span>{t.sentInterests}</span>
                     </Link>
                   </>
                 )}
 
-                {user?.accountType ===
-                  "provider" && (
+                {user?.accountType === "provider" && (
                   <>
                     <Link
                       to="/my-jobs"
-                      onClick={
-                        closeMenu
-                      }
-                      style={
-                        menuLinkStyle
-                      }
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
                     >
-                      <span>
-                        📋
-                      </span>
-                      <span>
-                        {t.myJobs}
-                      </span>
+                      <span>📋</span>
+                      <span>{t.myJobs}</span>
                     </Link>
 
                     <Link
                       to="/my-applications"
-                      onClick={
-                        closeMenu
-                      }
-                      style={
-                        menuLinkStyle
-                      }
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
                     >
-                      <span>
-                        📨
-                      </span>
-                      <span>
-                        {
-                          t.myApplications
-                        }
-                      </span>
+                      <span>📨</span>
+                      <span>{t.myApplications}</span>
                     </Link>
 
                     <Link
                       to="/received-interests"
-                      onClick={
-                        closeMenu
-                      }
-                      style={
-                        menuLinkStyle
-                      }
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
                     >
-                      <span>
-                        🔔
-                      </span>
+                      <span>🔔</span>
 
                       <span>
-                        {
-                          t.receivedInterests
-                        }
+                        {t.receivedInterests}
 
-                        {unreadInterests >
-                        0
-                          ? ` (${unreadInterests})`
-                          : ""}
+                        {unreadInterests > 0 ? ` (${unreadInterests})` : ""}
                       </span>
                     </Link>
 
                     <Link
                       to="/create-specialist-profile"
-                      onClick={
-                        closeMenu
-                      }
-                      style={
-                        menuLinkStyle
-                      }
+                      onClick={closeMenu}
+                      style={menuLinkStyle}
                     >
-                      <span>
-                        🧑‍💼
-                      </span>
+                      <span>🧑‍💼</span>
 
-                      <span>
-                        {
-                          t.createSpecialistProfile
-                        }
-                      </span>
+                      <span>{t.createSpecialistProfile}</span>
                     </Link>
                   </>
                 )}
@@ -903,68 +741,44 @@ opacity:
                 <div
                   style={{
                     height: "1px",
-                    backgroundColor:
-                      "#e2e8f0",
-                    margin:
-                      "6px 0",
+                    backgroundColor: "#e2e8f0",
+                    margin: "6px 0",
                   }}
                 />
 
                 <button
                   type="button"
-                  onClick={
-                    handleLogout
-                  }
+                  onClick={handleLogout}
                   style={{
                     width: "100%",
                     display: "flex",
-                    alignItems:
-                      "center",
+                    alignItems: "center",
                     gap: "10px",
-                    padding:
-                      "12px 14px",
+                    padding: "12px 14px",
                     border: "none",
-                    borderRadius:
-                      "8px",
-                    backgroundColor:
-                      "transparent",
-                    color:
-                      "#dc2626",
-                    fontFamily:
-                      "inherit",
-                    fontSize:
-                      "inherit",
-                    fontWeight:
-                      "600",
-                    cursor:
-                      "pointer",
-                    textAlign:
-                      "left",
+                    borderRadius: "8px",
+                    backgroundColor: "transparent",
+                    color: "#dc2626",
+                    fontFamily: "inherit",
+                    fontSize: "inherit",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    textAlign: "left",
                   }}
                 >
                   <span>🚪</span>
-                  <span>
-                    {t.logout}
-                  </span>
+                  <span>{t.logout}</span>
                 </button>
               </div>
             )}
           </div>
         ) : (
           <>
-            <Link
-              to="/login"
-              className="login-btn"
-              onClick={closeMenu}
-            >
+            <Link to="/login" className="login-btn" onClick={closeMenu}>
               {t.login}
             </Link>
 
-            <Link
-              to="/register"
-              className="register-btn"
-              onClick={closeMenu}
-            >
+            <Link to="/register" className="register-btn" onClick={closeMenu}>
               {t.register}
             </Link>
           </>

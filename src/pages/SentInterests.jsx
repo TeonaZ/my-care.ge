@@ -72,6 +72,8 @@ const cityLabels = {
 // The URL uses the profession profile ID, not the account/user ID.
 const profileRoutes = {
   nanny: "/nannies",
+  caregiver: "/caregivers",
+  tutor: "/tutors",
   driver: "/drivers",
   dogwalker: "/dogwalker",
   "dog-walker": "/dogwalker",
@@ -254,22 +256,47 @@ export default function SentInterests() {
 
         setInterests(Array.isArray(data.interests) ? data.interests : []);
 
+        const seenResponse = await fetch(
+          "http://localhost:5000/api/interests/responses/mark-seen",
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (seenResponse.ok) {
+          window.dispatchEvent(
+            new Event("careGeorgiaInterestResponsesUpdated"),
+          );
+        }
+
         // Find public specialist profiles by their account ID and profession.
         // The interests API may return only the account ID, not the profile ID.
-        const services = ["nanny", "driver", "dog-walker", "caregiver", "tutor", "housekeeper"];
+        const services = [
+          "nanny",
+          "driver",
+          "dog-walker",
+          "caregiver",
+          "tutor",
+          "housekeeper",
+        ];
         const results = await Promise.allSettled(
           services.map(async (profession) => {
             const response = await fetch(
-              `http://localhost:5000/api/specialists?profession=${encodeURIComponent(profession)}`
+              `http://localhost:5000/api/specialists?profession=${encodeURIComponent(profession)}`,
             );
             if (!response.ok) return [];
             const body = await response.json();
             return Array.isArray(body.specialists) ? body.specialists : [];
-          })
+          }),
         );
-        setProfiles(results.flatMap((result) =>
-          result.status === "fulfilled" ? result.value : []
-        ));
+        setProfiles(
+          results.flatMap((result) =>
+            result.status === "fulfilled" ? result.value : [],
+          ),
+        );
       } catch (error) {
         console.error("Load sent interests error:", error);
 
@@ -393,17 +420,23 @@ export default function SentInterests() {
               const service = job.service || specialist.profession || "";
               const normalizedService = normalizeService(service);
               const specialistUserId =
-                specialist.userId || specialist.id || interest.specialistUserId ||
-                interest.specialistId || interest.specialist_user_id;
-              const matchingProfile = profiles.find((profile) =>
-                String(profile.ownerId) === String(specialistUserId) &&
-                normalizeService(profile.profession) === normalizedService &&
-                profile.status !== "inactive"
+                specialist.userId ||
+                specialist.id ||
+                interest.specialistUserId ||
+                interest.specialistId ||
+                interest.specialist_user_id;
+              const matchingProfile = profiles.find(
+                (profile) =>
+                  String(profile.ownerId) === String(specialistUserId) &&
+                  normalizeService(profile.profession) === normalizedService &&
+                  profile.status !== "inactive",
               );
-              const profileId = matchingProfile?.id || interest.specialistProfileId;
-              const profilePath = profileRoutes[service] && profileId
-                ? `${profileRoutes[service]}/${profileId}`
-                : null;
+              const profileId =
+                matchingProfile?.id || interest.specialistProfileId;
+              const profilePath =
+                profileRoutes[service] && profileId
+                  ? `${profileRoutes[service]}/${profileId}`
+                  : null;
               const city = matchingProfile?.city || job.city || specialist.city;
 
               const hasEmail = Boolean(specialist.email);
@@ -422,17 +455,27 @@ export default function SentInterests() {
                   </h3>
 
                   {service && (
-                    <p>{serviceLabels[language]?.[service] || serviceLabels.ka[service] || service}</p>
+                    <p>
+                      {serviceLabels[language]?.[service] ||
+                        serviceLabels.ka[service] ||
+                        service}
+                    </p>
                   )}
 
-                  {city && (
-                    <p>📍 {cityLabels[language]?.[city] || city}</p>
-                  )}
+                  {city && <p>📍 {cityLabels[language]?.[city] || city}</p>}
 
                   {profilePath && (
                     <p>
-                      <Link to={profilePath} state={{ from: "sent-interests" }} className="profile-btn">
-                        {language === "en" ? "View profile" : language === "ru" ? "Посмотреть профиль" : "პროფილის ნახვა"}
+                      <Link
+                        to={profilePath}
+                        state={{ from: "sent-interests" }}
+                        className="profile-btn"
+                      >
+                        {language === "en"
+                          ? "View profile"
+                          : language === "ru"
+                            ? "Посмотреть профиль"
+                            : "პროფილის ნახვა"}
                       </Link>
                     </p>
                   )}
@@ -448,6 +491,22 @@ export default function SentInterests() {
                     >
                       <strong>💼 {t.job}:</strong>{" "}
                       {serviceLabels[language]?.[job.service] || job.service}
+                      {job.city && (
+                        <p style={{ margin: "8px 0 0" }}>
+                          📍 {cityLabels[language]?.[job.city] || job.city}
+                        </p>
+                      )}
+                      {job.id && (
+                        <p
+                          style={{
+                            margin: "6px 0 0",
+                            fontSize: "12px",
+                            color: "#64748b",
+                          }}
+                        >
+                          განცხადების № {String(job.id).slice(0, 8)}
+                        </p>
+                      )}
                     </div>
                   )}
 

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./DriverProfile.css";
+
+const API = "http://localhost:5000/api";
 
 const translations = {
   ka: {
@@ -21,6 +23,11 @@ const translations = {
       "სახლის დამხმარესთან დასაკავშირებლად გაიარეთ რეგისტრაცია ან შედით თქვენს ანგარიშზე.",
     contactUnlocked: "თქვენ შეგიძლიათ დაუკავშირდეთ ამ სპეციალისტს.",
     phoneHidden: "ტელეფონის ნომერი სპეციალისტმა დამალა.",
+    noPublicPhone: "ტელეფონის ნომერი მითითებული არ არის ან დამალულია.",
+    noPublicEmail: "ელფოსტა მითითებული არ არის ან დამალულია.",
+    contactChatHint: "სპეციალისტთან დაკავშირება შეგიძლიათ საიტის შიდა ჩატით.",
+    openChat: "შიდა ჩატის გახსნა",
+    closeContact: "დახურვა",
 
     login: "შესვლა",
     register: "რეგისტრაცია",
@@ -155,6 +162,11 @@ const translations = {
       "Please register or log in to your account to contact this housekeeper.",
     contactUnlocked: "You can contact this specialist.",
     phoneHidden: "The specialist has hidden their phone number.",
+    noPublicPhone: "Phone number is unavailable or hidden.",
+    noPublicEmail: "Email address is unavailable or hidden.",
+    contactChatHint: "You can contact the specialist using the site chat.",
+    openChat: "Open chat",
+    closeContact: "Close",
 
     login: "Login",
     register: "Register",
@@ -290,6 +302,11 @@ const translations = {
       "Чтобы связаться с помощником по дому, зарегистрируйтесь или войдите в свой аккаунт.",
     contactUnlocked: "Вы можете связаться с этим специалистом.",
     phoneHidden: "Специалист скрыл номер телефона.",
+    noPublicPhone: "Номер телефона не указан или скрыт.",
+    noPublicEmail: "Эл. почта не указана или скрыта.",
+    contactChatHint: "Вы можете связаться со специалистом через чат сайта.",
+    openChat: "Открыть чат",
+    closeContact: "Закрыть",
 
     login: "Войти",
     register: "Регистрация",
@@ -409,13 +426,14 @@ const translations = {
 
 function HousekeeperProfile() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const location = useLocation();
   const { language } = useLanguage();
 
   const t = translations[language] || translations.ka;
 
-  const isLoggedIn = localStorage.getItem("careGeorgiaLoggedIn") === "true";
+  const isLoggedIn = Boolean(localStorage.getItem("careGeorgiaToken"));
 
   const currentUserId = localStorage.getItem("careGeorgiaCurrentUserId");
 
@@ -430,6 +448,52 @@ function HousekeeperProfile() {
   };
 
   const currentUser = getCurrentUser();
+
+  const [backendProfile, setBackendProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [showContactModal, setShowContactModal] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadProfile = async () => {
+      try {
+        const response = await fetch(
+          `${API}/specialists/${encodeURIComponent(id)}`,
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Profile not found");
+        }
+
+        const profile = data.profile || data.specialist || data;
+
+        if (
+          profile?.profession !== "housekeeper" ||
+          profile?.status === "inactive"
+        ) {
+          throw new Error("Housekeeper not found");
+        }
+
+        if (!cancelled) {
+          setBackendProfile(profile);
+        }
+      } catch (error) {
+        console.error("HOUSEKEEPER PROFILE ERROR:", error);
+        if (!cancelled) setBackendProfile(null);
+      } finally {
+        if (!cancelled) setProfileLoading(false);
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   const isClient = currentUser?.accountType === "client";
 
@@ -457,167 +521,44 @@ function HousekeeperProfile() {
             : "← Back to Sent Interests"
         : t.back;
 
-  /* =========================
-     DEFAULT HOUSEKEEPERS
-  ========================= */
+  const getCityName = (city) => t[city] || city || t.other;
 
-  const defaultHousekeepers = [
-    {
-      id: "1",
-      ownerId: null,
-      name: t.name1,
-      city: t.tbilisi,
-      cityValue: "tbilisi",
-      experience: t.years6,
-      employmentType: "full-time",
-      paymentType: "hourly",
-      priceValue: 20,
-      rating: 4.9,
-      reviews: 41,
-      verified: true,
-      service: t.service1,
-      description: t.description1,
-      phone: "+995 555 71 22 33",
-      email: "natia@example.com",
-      showPhone: true,
-      isCustom: false,
-    },
+  const housekeeper = backendProfile
+    ? {
+        id: String(backendProfile.id),
+        ownerId: backendProfile.ownerId,
 
-    {
-      id: "2",
-      ownerId: null,
-      name: t.name2,
-      city: t.tbilisi,
-      cityValue: "tbilisi",
-      experience: t.years4,
-      employmentType: "part-time",
-      paymentType: "hourly",
-      priceValue: 18,
-      rating: 4.8,
-      reviews: 28,
-      verified: true,
-      service: t.service2,
-      description: t.description2,
-      phone: "+995 555 72 33 44",
-      email: "tamuna@example.com",
-      showPhone: true,
-      isCustom: false,
-    },
+        name:
+          `${backendProfile.firstName || ""} ${
+            backendProfile.lastName
+              ? backendProfile.lastName.charAt(0) + "."
+              : ""
+          }`.trim() || t.defaultService,
 
-    {
-      id: "3",
-      ownerId: null,
-      name: t.name3,
-      city: t.batumi,
-      cityValue: "batumi",
-      experience: t.years5,
-      employmentType: "part-time",
-      paymentType: "hourly",
-      priceValue: 17,
-      rating: 4.7,
-      reviews: 20,
-      verified: false,
-      service: t.service3,
-      description: t.description3,
-      phone: "+995 555 73 44 55",
-      email: "eka.housekeeper@example.com",
-      showPhone: true,
-      isCustom: false,
-    },
-  ];
+        city: getCityName(backendProfile.city),
+        cityValue: backendProfile.city || "other",
 
-  /* =========================
-     SAVED SPECIALISTS
-  ========================= */
+        experience: backendProfile.experience || "",
+        employmentType: backendProfile.employmentType || "part-time",
+        paymentType: backendProfile.paymentType || "hourly",
+        priceValue: Number(backendProfile.priceValue) || 0,
 
-  const getSavedSpecialists = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaSpecialists"));
+        rating: backendProfile.rating ?? null,
+        reviews: Number(backendProfile.reviews) || 0,
+        verified: backendProfile.verified === true,
 
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
-  };
+        service: t.defaultService,
+        description: backendProfile.description || "",
 
-  const savedProfile = getSavedSpecialists().find(
-    (profile) =>
-      String(profile.id) === String(id) &&
-      profile.profession === "housekeeper" &&
-      profile.status !== "inactive",
-  );
+        phone: backendProfile.phone || "",
+        email: backendProfile.email || "",
 
-  const getCityName = (city) => {
-    return t[city] || city || t.other;
-  };
+        showPhone: backendProfile.showPhone === true,
+        showEmail: backendProfile.showEmail === true,
 
-  const getSafeName = (profile) => {
-    const firstName = profile.firstName || "";
-
-    const lastName = profile.lastName || "";
-
-    const lastInitial = lastName ? `${lastName.charAt(0)}.` : "";
-
-    return (
-      `${firstName} ${lastInitial}`.trim() ||
-      (language === "ka"
-        ? "სახლის დამხმარე"
-        : language === "ru"
-          ? "Помощник по дому"
-          : "Housekeeper")
-    );
-  };
-
-  let customHousekeeper = null;
-
-  if (savedProfile) {
-    customHousekeeper = {
-      id: String(savedProfile.id),
-
-      ownerId: savedProfile.ownerId,
-
-      name: getSafeName(savedProfile),
-
-      city: getCityName(savedProfile.city),
-
-      cityValue: savedProfile.city || "other",
-
-      experience: savedProfile.experience || "",
-
-      employmentType: savedProfile.employmentType || "part-time",
-
-      paymentType: savedProfile.paymentType || "hourly",
-
-      priceValue: Number(savedProfile.priceValue) || 0,
-
-      rating:
-        savedProfile.rating !== null && savedProfile.rating !== undefined
-          ? savedProfile.rating
-          : null,
-
-      reviews: Number(savedProfile.reviews) || 0,
-
-      verified: savedProfile.verified === true,
-
-      service: savedProfile.service || t.defaultService,
-
-      description: savedProfile.description || "",
-
-      phone: savedProfile.phone || "",
-
-      email: savedProfile.email || "",
-
-      showPhone: savedProfile.showPhone === true,
-
-      isCustom: true,
-    };
-  }
-
-  const defaultHousekeeper = defaultHousekeepers.find(
-    (item) => String(item.id) === String(id),
-  );
-
-  const housekeeper = customHousekeeper || defaultHousekeeper;
+        isCustom: true,
+      }
+    : null;
 
   /* =========================
      JOBS
@@ -658,27 +599,82 @@ function HousekeeperProfile() {
      INTERESTS
   ========================= */
 
-  const getSavedInterests = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaInterests"));
+  const [interests, setInterests] = useState([]);
+  const [applications, setApplications] = useState([]);
+  useEffect(() => {
+  const token = localStorage.getItem("careGeorgiaToken");
 
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
+  if (!token || !isClient) {
+    setApplications([]);
+    return;
+  }
+
+  let cancelled = false;
+
+  const loadApplications = async () => {
+    try {
+      const response = await fetch(`${API}/applications/received`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to load applications");
+      }
+
+      if (!cancelled) {
+        setApplications(
+          Array.isArray(data.applications) ? data.applications : []
+        );
+      }
+    } catch (error) {
+      console.error("HOUSEKEEPER APPLICATIONS ERROR:", error);
+
+      if (!cancelled) setApplications([]);
     }
   };
 
-  const getSavedApplications = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaApplications"));
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
-  };
+  loadApplications();
 
-  const [interests, setInterests] = useState(getSavedInterests);
-  const [applications, setApplications] = useState(getSavedApplications);
+  return () => {
+    cancelled = true;
+  };
+}, [isClient]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("careGeorgiaToken");
+
+    if (!token || !isClient) {
+      setInterests([]);
+      return;
+    }
+
+    const loadInterests = async () => {
+      try {
+        const response = await fetch(`${API}/interests/sent`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to load interests");
+        }
+
+        setInterests(Array.isArray(data.interests) ? data.interests : []);
+      } catch (error) {
+        console.error("HOUSEKEEPER INTERESTS ERROR:", error);
+        setInterests([]);
+      }
+    };
+
+    loadInterests();
+  }, [isClient]);
 
   const [showInterestBox, setShowInterestBox] = useState(false);
 
@@ -689,6 +685,20 @@ function HousekeeperProfile() {
   const [sharePhone, setSharePhone] = useState(false);
 
   if (!housekeeper) {
+    if (profileLoading) {
+      return (
+        <div className="profile-not-found">
+          <p>
+            {language === "ka"
+              ? "პროფილი იტვირთება..."
+              : language === "ru"
+                ? "Загрузка профиля..."
+                : "Loading profile..."}
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="profile-not-found">
         <h1>{t.notFound}</h1>
@@ -743,11 +753,9 @@ function HousekeeperProfile() {
   ========================= */
 
   const phoneCanBeShown =
-    isLoggedIn && housekeeper.phone && housekeeper.showPhone === true;
-
-  const cleanPhone = housekeeper.phone
-    ? String(housekeeper.phone).replace(/\s/g, "")
-    : "";
+    Boolean(isLoggedIn && housekeeper.phone && housekeeper.showPhone === true);
+  const emailCanBeShown =
+    Boolean(isLoggedIn && housekeeper.email && housekeeper.showEmail === true);
 
   /* =========================
      MATCHING JOBS
@@ -760,11 +768,11 @@ function HousekeeperProfile() {
       job.status === "active",
   );
 
-  const employerApplications = applications.filter(
-    (application) =>
-      String(application.specialistProfileId) === String(housekeeper.id) &&
-      String(application.jobOwnerId) === String(currentUserId),
-  );
+ const employerApplications = applications.filter(
+  (application) =>
+    String(application.specialistId) === String(housekeeper.ownerId) &&
+    String(application.job?.ownerId) === String(currentUserId)
+);
 
   const getApplicationJob = (application) =>
     savedJobs.find(
@@ -829,36 +837,72 @@ function HousekeeperProfile() {
     };
   };
 
-  const updateApplicationStatus = (applicationId, newStatus) => {
-    const application = applications.find(
-      (item) => String(item.id) === String(applicationId),
+ const updateApplicationStatus = async (applicationId, newStatus) => {
+  const application = applications.find(
+    (item) => String(item.id) === String(applicationId)
+  );
+
+  if (!application) return;
+
+  if (
+    String(application.job?.ownerId) !== String(currentUserId)
+  ) {
+    return;
+  }
+
+  if (
+    String(application.specialistId) !==
+    String(housekeeper.ownerId)
+  ) {
+    return;
+  }
+
+  const token = localStorage.getItem("careGeorgiaToken");
+
+  if (!token) return;
+
+  try {
+    const response = await fetch(
+      `${API}/applications/${applicationId}/status`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status: newStatus,
+        }),
+      }
     );
-    if (!application) return;
-    if (String(application.jobOwnerId) !== String(currentUserId)) return;
-    if (String(application.specialistProfileId) !== String(housekeeper.id))
-      return;
 
-    const now = new Date().toISOString();
-    const updatedApplications = applications.map((item) => {
-      if (String(item.id) !== String(applicationId)) return item;
-      return {
-        ...item,
-        status: newStatus,
-        statusUpdatedAt: now,
-        ...(newStatus === "reviewed" ? { reviewedAt: now } : {}),
-        ...(newStatus === "next-stage" ? { nextStageAt: now } : {}),
-        ...(newStatus === "not-selected" ? { notSelectedAt: now } : {}),
-        ...(newStatus === "completed" ? { completedAt: now } : {}),
-      };
-    });
+    const data = await response.json();
 
-    setApplications(updatedApplications);
-    localStorage.setItem(
-      "careGeorgiaApplications",
-      JSON.stringify(updatedApplications),
+    if (!response.ok) {
+      throw new Error(
+        data.message || "სტატუსის შეცვლა ვერ მოხერხდა."
+      );
+    }
+
+    setApplications((prev) =>
+      prev.map((item) =>
+        String(item.id) === String(applicationId)
+          ? {
+              ...item,
+              status: newStatus,
+            }
+          : item
+      )
     );
-  };
+  } catch (error) {
+    console.error(
+      "HOUSEKEEPER APPLICATION STATUS ERROR:",
+      error
+    );
 
+    alert(error.message);
+  }
+};
   /* =========================
      DUPLICATE INTEREST
   ========================= */
@@ -866,8 +910,8 @@ function HousekeeperProfile() {
   const hasInterestForJob = (jobId) => {
     return interests.some(
       (interest) =>
-        String(interest.employerUserId) === String(currentUserId) &&
-        String(interest.specialistProfileId) === String(housekeeper.id) &&
+        String(interest.senderId) === String(currentUserId) &&
+        String(interest.specialistId) === String(housekeeper.ownerId) &&
         String(interest.jobId) === String(jobId),
     );
   };
@@ -919,77 +963,109 @@ function HousekeeperProfile() {
     resetInterestForm();
   };
 
-  const handleSendInterest = () => {
-    if (!selectedJobId) {
-      return;
+ const handleSendInterest = async () => {
+  if (!selectedJobId || !isLoggedIn || !isClient) return;
+
+  const token = localStorage.getItem("careGeorgiaToken");
+
+  if (!token) {
+    alert(t.loginToSend);
+    return;
+  }
+
+  if (!housekeeper.ownerId) return;
+
+  if (String(housekeeper.ownerId) === String(currentUserId)) {
+    alert(t.ownProfile);
+    return;
+  }
+
+  const selectedJob = availableJobs.find(
+    (job) => String(job.id) === String(selectedJobId)
+  );
+
+  if (!selectedJob) return;
+
+  if (hasInterestForJob(selectedJob.id)) {
+    alert(t.alreadySent);
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API}/interests`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        jobId: String(selectedJob.id),
+        specialistId: String(housekeeper.ownerId),
+        showSenderEmail: shareEmail,
+        showSenderPhone: sharePhone,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        response.status === 409
+          ? t.alreadySent
+          : data.message || "დაინტერესების გაგზავნა ვერ მოხერხდა."
+      );
     }
 
-    if (!isLoggedIn || !currentUserId || !isClient) {
-      return;
+    if (data.interest) {
+      setInterests((prev) => [data.interest, ...prev]);
     }
 
-    if (!housekeeper.isCustom || !housekeeper.ownerId) {
-      return;
-    }
-
-    if (String(housekeeper.ownerId) === String(currentUserId)) {
-      return;
-    }
-
-    const selectedJob = availableJobs.find(
-      (job) => String(job.id) === String(selectedJobId),
+    window.dispatchEvent(
+      new Event("careGeorgiaInterestsUpdated")
     );
-
-    if (!selectedJob) {
-      return;
-    }
-
-    if (hasInterestForJob(selectedJob.id)) {
-      alert(t.alreadySent);
-      return;
-    }
-
-    const newInterest = {
-      id: crypto.randomUUID(),
-
-      employerUserId: String(currentUserId),
-
-      specialistUserId: String(housekeeper.ownerId),
-
-      specialistProfileId: String(housekeeper.id),
-
-      jobId: String(selectedJob.id),
-
-      showEmployerEmail: shareEmail,
-
-      showEmployerPhone: sharePhone,
-
-      employerEmail: shareEmail ? currentUser?.email || "" : "",
-
-      employerPhone: sharePhone ? currentUser?.phone || "" : "",
-
-      status: "sent",
-
-      specialistSeen: false,
-
-      createdAt: new Date().toISOString(),
-    };
-
-    const updatedInterests = [...interests, newInterest];
-
-    setInterests(updatedInterests);
-
-    localStorage.setItem(
-      "careGeorgiaInterests",
-      JSON.stringify(updatedInterests),
-    );
-
-    window.dispatchEvent(new Event("careGeorgiaInterestsUpdated"));
 
     setShowInterestBox(false);
     resetInterestForm();
 
     alert(t.interestSent);
+  } catch (error) {
+    console.error("HOUSEKEEPER INTEREST ERROR:", error);
+    alert(error.message);
+  }
+};
+
+  const handleStartChat = async () => {
+    const token = localStorage.getItem("careGeorgiaToken");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    if (!housekeeper.ownerId || String(housekeeper.ownerId) === String(currentUserId)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API}/messages/start`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ providerId: housekeeper.ownerId }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "ჩატის გახსნა ვერ მოხერხდა.");
+      }
+      if (!data.conversationId) {
+        throw new Error("ჩატის ID ვერ მოიძებნა.");
+      }
+      navigate(`/messages/${data.conversationId}`);
+    } catch (error) {
+      console.error("HOUSEKEEPER CHAT ERROR:", error);
+      alert(error.message);
+    }
   };
 
   return (
@@ -1039,30 +1115,24 @@ function HousekeeperProfile() {
 
             {isLoggedIn ? (
               <>
-                {phoneCanBeShown && (
-                  <a
-                    href={`tel:${cleanPhone}`}
-                    className="contact-btn"
-                    style={{
-                      textDecoration: "none",
-                      textAlign: "center",
-                    }}
-                  >
-                    {t.contact}
-                  </a>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setShowContactModal(true)}
+                  className="contact-btn"
+                  style={{ textAlign: "center", cursor: "pointer" }}
+                >
+                  {t.contact}
+                </button>
 
-                {housekeeper.email && (
-                  <a
-                    href={`mailto:${housekeeper.email}`}
+                {housekeeper.ownerId && String(housekeeper.ownerId) !== String(currentUserId) && (
+                  <button
+                    type="button"
+                    onClick={handleStartChat}
                     className="message-btn"
-                    style={{
-                      textDecoration: "none",
-                      textAlign: "center",
-                    }}
+                    style={{ textAlign: "center", cursor: "pointer" }}
                   >
                     {t.message}
-                  </a>
+                  </button>
                 )}
               </>
             ) : (
@@ -1083,6 +1153,75 @@ function HousekeeperProfile() {
             )}
           </div>
         </div>
+
+        {showContactModal && isLoggedIn && (
+          <div
+            role="presentation"
+            onClick={() => setShowContactModal(false)}
+            style={{
+              position: "fixed", inset: 0, zIndex: 1000,
+              backgroundColor: "rgba(15, 23, 42, 0.55)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "16px",
+            }}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="housekeeper-contact-title"
+              onClick={(event) => event.stopPropagation()}
+              style={{
+                width: "100%", maxWidth: "420px", background: "#fff",
+                borderRadius: "16px", padding: "24px",
+                boxShadow: "0 20px 55px rgba(0,0,0,0.2)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
+                <h2 id="housekeeper-contact-title" style={{ margin: 0, fontSize: "22px" }}>
+                  📞 {t.contactTitle}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setShowContactModal(false)}
+                  aria-label={t.closeContact}
+                  style={{ border: "none", background: "transparent", fontSize: "24px", cursor: "pointer" }}
+                >
+                  ×
+                </button>
+              </div>
+              <p style={{ fontWeight: 700, margin: "20px 0" }}>{housekeeper.name}</p>
+              <p style={{ lineHeight: 1.6 }}>
+                📞 <strong>{t.phone}:</strong>{" "}
+                {phoneCanBeShown ? housekeeper.phone : t.noPublicPhone}
+              </p>
+              <p style={{ lineHeight: 1.6 }}>
+                ✉️ <strong>{t.email}:</strong>{" "}
+                {emailCanBeShown ? housekeeper.email : t.noPublicEmail}
+              </p>
+              {!phoneCanBeShown && !emailCanBeShown && (
+                <p style={{ background: "#eff6ff", padding: "12px", borderRadius: "10px", color: "#1e40af" }}>
+                  {t.contactChatHint}
+                </p>
+              )}
+              {housekeeper.ownerId && String(housekeeper.ownerId) !== String(currentUserId) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowContactModal(false);
+                    handleStartChat();
+                  }}
+                  style={{
+                    width: "100%", marginTop: "12px", padding: "13px",
+                    border: "none", borderRadius: "10px", background: "#2563eb",
+                    color: "white", fontWeight: 700, cursor: "pointer",
+                  }}
+                >
+                  💬 {t.openChat}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* APPLICATION MANAGEMENT */}
 
@@ -1697,7 +1836,7 @@ function HousekeeperProfile() {
               {phoneCanBeShown ? (
                 <p>
                   <strong>{t.phone}:</strong>{" "}
-                  <a href={`tel:${cleanPhone}`}>{housekeeper.phone}</a>
+                  <span>{housekeeper.phone}</span>
                 </p>
               ) : housekeeper.phone ? (
                 <p
@@ -1709,12 +1848,10 @@ function HousekeeperProfile() {
                 </p>
               ) : null}
 
-              {housekeeper.email && (
+              {housekeeper.showEmail && housekeeper.email && (
                 <p>
                   <strong>{t.email}:</strong>{" "}
-                  <a href={`mailto:${housekeeper.email}`}>
-                    {housekeeper.email}
-                  </a>
+                  <span>{housekeeper.email}</span>
                 </p>
               )}
             </div>

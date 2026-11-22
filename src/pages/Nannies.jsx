@@ -184,49 +184,6 @@ function Nannies() {
   const [customNannies, setCustomNannies] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ძველი სატესტო ძიძები
-  const defaultNannies = [
-    {
-      id: "1",
-      name: t.name1,
-      cityValue: "tbilisi",
-      ageGroups: ["0-1", "1-3", "3-6"],
-      experience: t.years7,
-      employmentType: "full-time",
-      paymentType: "hourly",
-      priceValue: 20,
-      rating: "⭐ 4.9",
-      verified: true,
-      isCustom: false,
-    },
-    {
-      id: "2",
-      name: t.name2,
-      cityValue: "tbilisi",
-      ageGroups: ["1-3", "3-6", "6+"],
-      experience: t.years5,
-      employmentType: "part-time",
-      paymentType: "hourly",
-      priceValue: 18,
-      rating: "⭐ 4.8",
-      verified: true,
-      isCustom: false,
-    },
-    {
-      id: "3",
-      name: t.name3,
-      cityValue: "batumi",
-      ageGroups: ["0-1", "1-3"],
-      experience: t.years4,
-      employmentType: "part-time",
-      paymentType: "hourly",
-      priceValue: 15,
-      rating: "⭐ 4.7",
-      verified: false,
-      isCustom: false,
-    },
-  ];
-
   // PostgreSQL-იდან მომხმარებლის მიერ შექმნილი ძიძების ჩატვირთვა
   useEffect(() => {
     const loadNannies = async () => {
@@ -280,7 +237,7 @@ function Nannies() {
                 : "",
 
             verified: profile.verified === true,
-            isCustom: true,
+            createdAt: profile.createdAt || profile.created_at || null,
           };
         });
 
@@ -296,8 +253,12 @@ function Nannies() {
     loadNannies();
   }, [language]);
 
-  // სატესტო + PostgreSQL-ის ძიძები
-  const nannies = [...defaultNannies, ...customNannies];
+  // ვაჩვენებთ მხოლოდ PostgreSQL-იდან მიღებულ რეალურ ძიძებს.
+  // ახალი პროფილები გამოჩნდება სიის თავში, თუ Backend აბრუნებს createdAt-ს.
+  const nannies = [...customNannies].sort((a, b) => {
+    if (!a.createdAt || !b.createdAt) return 0;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   const cityNames = {
     tbilisi: t.tbilisi,

@@ -383,9 +383,10 @@ function NannyProfile() {
 
   const location = useLocation();
   const { language } = useLanguage();
-  const t = translations[language] || translations.ka;
+  const lang = translations[language] ? language : "ka";
+  const t = translations[lang];
 
-  const isLoggedIn = localStorage.getItem("careGeorgiaLoggedIn") === "true";
+  const isLoggedIn = Boolean(localStorage.getItem("careGeorgiaToken"));
 
   const currentUserId = localStorage.getItem("careGeorgiaCurrentUserId");
 
@@ -485,154 +486,135 @@ function NannyProfile() {
       ownerId: null,
     },
   ];
-const getCityName = (city) => {
-  const cities = {
-    tbilisi: t.tbilisi,
-    batumi: t.batumi,
-    kutaisi: t.kutaisi,
-    rustavi: t.rustavi,
-    gori: t.gori,
-    zugdidi: t.zugdidi,
-    poti: t.poti,
-    telavi: t.telavi,
-    other: t.other,
+  const getCityName = (city) => {
+    const cities = {
+      tbilisi: t.tbilisi,
+      batumi: t.batumi,
+      kutaisi: t.kutaisi,
+      rustavi: t.rustavi,
+      gori: t.gori,
+      zugdidi: t.zugdidi,
+      poti: t.poti,
+      telavi: t.telavi,
+      other: t.other,
+    };
+
+    return cities[city] || city || t.other;
   };
 
-  return cities[city] || city || t.other;
-};
+  const getSafeName = (profile) => {
+    const firstName = profile?.firstName || "";
+    const lastName = profile?.lastName || "";
 
-const getSafeName = (profile) => {
-  const firstName = profile?.firstName || "";
-  const lastName = profile?.lastName || "";
+    const lastInitial = lastName ? `${lastName.charAt(0)}.` : "";
 
-  const lastInitial = lastName
-    ? `${lastName.charAt(0)}.`
-    : "";
+    return (
+      `${firstName} ${lastInitial}`.trim() ||
+      (language === "ka" ? "ძიძა" : language === "ru" ? "Няня" : "Nanny")
+    );
+  };
 
-  return (
-    `${firstName} ${lastInitial}`.trim() ||
-    (language === "ka"
-      ? "ძიძა"
-      : language === "ru"
-        ? "Няня"
-        : "Nanny")
-  );
-};
+  // ========================================
+  // NANNY PROFILE FROM POSTGRESQL
+  // ========================================
 
-// ========================================
-// NANNY PROFILE FROM POSTGRESQL
-// ========================================
+  const defaultNanny =
+    defaultNannies.find((item) => String(item.id) === String(id)) || null;
 
-const defaultNanny =
-  defaultNannies.find(
-    (item) => String(item.id) === String(id),
-  ) || null;
+  const [backendProfile, setBackendProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(defaultNanny === null);
+  const [profileNotFound, setProfileNotFound] = useState(false);
 
-const [backendProfile, setBackendProfile] = useState(null);
-const [profileLoading, setProfileLoading] = useState(
-  defaultNanny === null,
-);
-const [profileNotFound, setProfileNotFound] = useState(false);
-
-useEffect(() => {
-  const loadProfile = async () => {
-    // ძველი სატესტო პროფილები: 1, 2, 3
-    if (defaultNanny) {
-      setProfileLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/specialists/${id}`,
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setBackendProfile(null);
-        setProfileNotFound(true);
+  useEffect(() => {
+    const loadProfile = async () => {
+      // ძველი სატესტო პროფილები: 1, 2, 3
+      if (defaultNanny) {
+        setProfileLoading(false);
         return;
       }
 
-      const profile = data.profile || data.specialist || data;
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/specialists/${id}`,
+        );
 
-      if (
-        !profile ||
-        profile.profession !== "nanny" ||
-        profile.status === "inactive"
-      ) {
+        const data = await response.json();
+
+        if (!response.ok) {
+          setBackendProfile(null);
+          setProfileNotFound(true);
+          return;
+        }
+
+        const profile = data.profile || data.specialist || data;
+
+        if (
+          !profile ||
+          profile.profession !== "nanny" ||
+          profile.status === "inactive"
+        ) {
+          setBackendProfile(null);
+          setProfileNotFound(true);
+          return;
+        }
+
+        setBackendProfile(profile);
+        setProfileNotFound(false);
+      } catch (error) {
+        console.error("Load nanny profile error:", error);
+
         setBackendProfile(null);
         setProfileNotFound(true);
-        return;
+      } finally {
+        setProfileLoading(false);
       }
+    };
 
-      setBackendProfile(profile);
-      setProfileNotFound(false);
-    } catch (error) {
-      console.error("Load nanny profile error:", error);
+    loadProfile();
+  }, [id]);
 
-      setBackendProfile(null);
-      setProfileNotFound(true);
-    } finally {
-      setProfileLoading(false);
-    }
-  };
+  let nanny = defaultNanny;
 
-  loadProfile();
-}, [id]);
+  if (backendProfile) {
+    nanny = {
+      id: String(backendProfile.id),
+      ownerId: backendProfile.ownerId,
 
-let nanny = defaultNanny;
+      name: getSafeName(backendProfile),
 
-if (backendProfile) {
-  nanny = {
-    id: String(backendProfile.id),
-    ownerId: backendProfile.ownerId,
+      city: getCityName(backendProfile.city),
+      rawCity: backendProfile.city,
 
-    name: getSafeName(backendProfile),
+      experience: backendProfile.experience || "",
 
-    city: getCityName(backendProfile.city),
-    rawCity: backendProfile.city,
+      employmentType: backendProfile.employmentType || "part-time",
 
-    experience: backendProfile.experience || "",
+      paymentType: backendProfile.paymentType || "hourly",
 
-    employmentType:
-      backendProfile.employmentType || "part-time",
+      priceValue: Number(backendProfile.priceValue) || 0,
 
-    paymentType:
-      backendProfile.paymentType || "hourly",
+      rating:
+        backendProfile.rating !== null && backendProfile.rating !== undefined
+          ? backendProfile.rating
+          : null,
 
-    priceValue:
-      Number(backendProfile.priceValue) || 0,
+      reviews: Number(backendProfile.reviews) || 0,
 
-    rating:
-      backendProfile.rating !== null &&
-      backendProfile.rating !== undefined
-        ? backendProfile.rating
-        : null,
+      verified: backendProfile.verified === true,
 
-    reviews:
-      Number(backendProfile.reviews) || 0,
+      ageGroups: backendProfile.ageGroupsText || t.ageNotSpecified,
 
-    verified:
-      backendProfile.verified === true,
+      description: backendProfile.description || "",
 
-    ageGroups:
-      backendProfile.ageGroupsText ||
-      t.ageNotSpecified,
+      phone: backendProfile.phone || "",
+      email: backendProfile.email || "",
+      showPhone: backendProfile.showPhone === true,
+      showEmail: backendProfile.showEmail === true,
 
-    description:
-      backendProfile.description || "",
+      isCustom: true,
+    };
+  }
 
-   phone: backendProfile.phone || "",
-email: backendProfile.email || "",
-showPhone: backendProfile.showPhone === true,
-showEmail: backendProfile.showEmail === true,
-
-    isCustom: true,
-  };
-}
- 
   // ========================================
   // JOBS FROM POSTGRESQL
   // ========================================
@@ -726,16 +708,17 @@ showEmail: backendProfile.showEmail === true,
   }, []);
 
   const [sharePhone, setSharePhone] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
 
   if (profileLoading) {
-  return (
-    <div className="profile-not-found">
-      <p>...</p>
-    </div>
-  );
-}
+    return (
+      <div className="profile-not-found">
+        <p>...</p>
+      </div>
+    );
+  }
 
- if (profileNotFound || !nanny) {
+  if (profileNotFound || !nanny) {
     return (
       <div className="profile-not-found">
         <h1>{t.notFound}</h1>
@@ -875,7 +858,10 @@ showEmail: backendProfile.showEmail === true,
 
   const hasRating = nanny.rating !== null && nanny.rating !== undefined;
 
-  const phoneCanBeShown = nanny.phone && nanny.showPhone === true;
+  const phoneCanBeShown =
+    isLoggedIn && Boolean(nanny.phone) && nanny.showPhone === true;
+  const emailCanBeShown =
+    isLoggedIn && Boolean(nanny.email) && nanny.showEmail === true;
 
   const hasInterestForSpecialistService = interests.some(
     (interest) =>
@@ -1008,22 +994,20 @@ showEmail: backendProfile.showEmail === true,
   };
 
   const handleStartChat = async () => {
-  const token = localStorage.getItem("careGeorgiaToken");
+    const token = localStorage.getItem("careGeorgiaToken");
 
-  if (!token) {
-    alert("შეტყობინების გასაგზავნად გაიარეთ ავტორიზაცია.");
-    return;
-  }
+    if (!token) {
+      alert("შეტყობინების გასაგზავნად გაიარეთ ავტორიზაცია.");
+      return;
+    }
 
-  if (!nanny.ownerId) {
-    alert("სპეციალისტის ანგარიში ვერ მოიძებნა.");
-    return;
-  }
+    if (!nanny.ownerId) {
+      alert("სპეციალისტის ანგარიში ვერ მოიძებნა.");
+      return;
+    }
 
-  try {
-    const response = await fetch(
-      "http://localhost:5000/api/messages/start",
-      {
+    try {
+      const response = await fetch("http://localhost:5000/api/messages/start", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1032,20 +1016,19 @@ showEmail: backendProfile.showEmail === true,
         body: JSON.stringify({
           providerId: nanny.ownerId,
         }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "ჩატის გახსნა ვერ მოხერხდა.");
       }
-    );
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "ჩატის გახსნა ვერ მოხერხდა.");
+      window.location.href = `/messages/${data.conversationId}`;
+    } catch (error) {
+      alert(error.message);
     }
-
-    window.location.href = `/messages/${data.conversationId}`;
-  } catch (error) {
-    alert(error.message);
-  }
-};
+  };
 
   return (
     <div className="profile-page">
@@ -1091,36 +1074,33 @@ showEmail: backendProfile.showEmail === true,
 
             {isLoggedIn ? (
               <>
-                {phoneCanBeShown && (
-                  <a
-                    href={`tel:${String(nanny.phone).replace(/\s/g, "")}`}
-                    className="contact-btn"
+                <button
+                  type="button"
+                  className="contact-btn"
+                  onClick={() => setShowContactModal(true)}
+                  style={{
+                    cursor: "pointer",
+                    textAlign: "center",
+                    width: "100%",
+                  }}
+                >
+                  📞 {t.contact}
+                </button>
+                {nanny.ownerId && (
+                  <button
+                    type="button"
+                    onClick={handleStartChat}
+                    className="message-btn"
                     style={{
                       textDecoration: "none",
                       textAlign: "center",
+                      cursor: "pointer",
+                      width: "100%",
                     }}
                   >
-                    {t.contact}
-                  </a>
+                    💬 {t.message}
+                  </button>
                 )}
-
-               
-{nanny.ownerId && (
-  <button
-    type="button"
-    onClick={handleStartChat}
-    className="message-btn"
-    style={{
-      textDecoration: "none",
-      textAlign: "center",
-      cursor: "pointer",
-      width: "100%",
-    }}
-  >
-    💬 {t.message}
-  </button>
-)}
-
               </>
             ) : (
               <div
@@ -1170,10 +1150,6 @@ showEmail: backendProfile.showEmail === true,
               const job = getApplicationJob(application);
               const status = normalizeApplicationStatus(application.status);
               const info = getApplicationStatusInfo(application);
-
-              
-
-
 
               return (
                 <div
@@ -1730,10 +1706,7 @@ showEmail: backendProfile.showEmail === true,
 
               {phoneCanBeShown ? (
                 <p>
-                  <strong>{t.phone}:</strong>{" "}
-                  <a href={`tel:${String(nanny.phone).replace(/\s/g, "")}`}>
-                    {nanny.phone}
-                  </a>
+                  <strong>{t.phone}:</strong> <span>{nanny.phone}</span>
                 </p>
               ) : nanny.phone ? (
                 <p
@@ -1745,7 +1718,7 @@ showEmail: backendProfile.showEmail === true,
                 </p>
               ) : null}
 
-              {nanny.email && (
+              {emailCanBeShown && (
                 <p>
                   <strong>{t.email}:</strong>{" "}
                   <a href={`mailto:${nanny.email}`}>{nanny.email}</a>
@@ -1794,6 +1767,125 @@ showEmail: backendProfile.showEmail === true,
             </div>
           )}
         </div>
+
+        {showContactModal && (
+          <div
+            role="presentation"
+            onClick={() => setShowContactModal(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 1000,
+              background: "rgba(15,23,42,0.6)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 20,
+            }}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={t.contactTitle}
+              onClick={(event) => event.stopPropagation()}
+              style={{
+                width: "100%",
+                maxWidth: 440,
+                background: "#fff",
+                borderRadius: 16,
+                padding: 24,
+                boxShadow: "0 20px 50px rgba(0,0,0,0.2)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <h2 style={{ margin: 0 }}>📞 {t.contactTitle}</h2>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={() => setShowContactModal(false)}
+                  style={{
+                    border: 0,
+                    background: "transparent",
+                    fontSize: 26,
+                    cursor: "pointer",
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <p style={{ color: "#475569" }}>{nanny.name}</p>
+              <p>
+                <strong>📞 {t.phone}:</strong>{" "}
+                {phoneCanBeShown
+                  ? nanny.phone
+                  : lang === "ka"
+                    ? "ტელეფონის ნომერი მიუწვდომელია"
+                    : lang === "ru"
+                      ? "Номер телефона недоступен"
+                      : "Phone number unavailable"}
+              </p>
+              <p>
+                <strong>✉️ {t.email}:</strong>{" "}
+                {emailCanBeShown
+                  ? nanny.email
+                  : lang === "ka"
+                    ? "ელფოსტა მიუწვდომელია"
+                    : lang === "ru"
+                      ? "Эл. почта недоступна"
+                      : "Email unavailable"}
+              </p>
+              {!phoneCanBeShown && !emailCanBeShown && (
+                <p style={{ color: "#64748b" }}>
+                  {lang === "ka"
+                    ? "დასაკავშირებლად გამოიყენეთ შიდა ჩატი."
+                    : lang === "ru"
+                      ? "Для связи воспользуйтесь внутренним чатом."
+                      : "Use internal chat to get in touch."}
+                </p>
+              )}
+              {nanny.ownerId &&
+                String(nanny.ownerId) !== String(currentUserId) && (
+                  <button
+                    type="button"
+                    className="message-btn"
+                    onClick={() => {
+                      setShowContactModal(false);
+                      handleStartChat();
+                    }}
+                    style={{ cursor: "pointer", width: "100%", marginTop: 12 }}
+                  >
+                    💬 {t.message}
+                  </button>
+                )}
+              <button
+                type="button"
+                onClick={() => setShowContactModal(false)}
+                style={{
+                  marginTop: 12,
+                  width: "100%",
+                  padding: 10,
+                  borderRadius: 8,
+                  border: "1px solid #cbd5e1",
+                  background: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                {lang === "ka"
+                  ? "დახურვა"
+                  : lang === "ru"
+                    ? "Закрыть"
+                    : "Close"}
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="profile-about">
           <h2>{t.about}</h2>

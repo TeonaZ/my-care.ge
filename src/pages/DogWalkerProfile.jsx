@@ -167,6 +167,7 @@ function DogWalkerProfile() {
   const [sharePhone, setSharePhone] = useState(false);
   const [sendingInterest, setSendingInterest] = useState(false);
   const [updatingId, setUpdatingId] = useState(null);
+  const [showContactModal, setShowContactModal] = useState(false);
 
   const cityName = (city) => cityNames[city]?.[lang] || city || "—";
   const paymentName = (payment) => t[payment] || t.hourly;
@@ -361,10 +362,15 @@ function DogWalkerProfile() {
           <div className="profile-action">
             <span>{t.price}</span>
             <strong>{price}</strong>
-            {phoneVisible && (
-              <a className="contact-btn" href={`tel:${String(walker.phone).replace(/\s/g, "")}`}>
+            {isLoggedIn && !isOwnProfile && (
+              <button
+                className="contact-btn"
+                type="button"
+                onClick={() => setShowContactModal(true)}
+                style={{ cursor: "pointer", width: "100%" }}
+              >
                 📞 {t.contact}
-              </a>
+              </button>
             )}
             {isLoggedIn && isClient && !isOwnProfile && ownerId && (
               <button className="message-btn" type="button" onClick={handleStartChat}
@@ -455,6 +461,98 @@ function DogWalkerProfile() {
               </div>
             )}
           </section>
+        )}
+
+        {showContactModal && (
+          <div
+            role="presentation"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setShowContactModal(false);
+            }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 1000,
+              background: "rgba(15, 23, 42, 0.55)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 16,
+            }}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="dogwalker-contact-modal-title"
+              style={{
+                width: "100%",
+                maxWidth: 420,
+                background: "#fff",
+                borderRadius: 16,
+                padding: 24,
+                boxShadow: "0 20px 50px rgba(0,0,0,0.2)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+                <h2 id="dogwalker-contact-modal-title" style={{ margin: 0 }}>📞 {t.contactTitle}</h2>
+                <button type="button" onClick={() => setShowContactModal(false)} aria-label={t.cancel}>
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ marginTop: 18 }}>
+                <p>
+                  <strong>{t.phone}:</strong>{" "}
+                  {phoneVisible ? (
+                    <a href={`tel:${String(walker.phone).replace(/\s/g, "")}`}>{walker.phone}</a>
+                  ) : (
+                    t.phoneHidden
+                  )}
+                </p>
+                <p>
+                  <strong>{t.email}:</strong>{" "}
+                  {emailVisible ? (
+                    <a href={`mailto:${walker.email}`}>{walker.email}</a>
+                  ) : (
+                    t.emailHidden
+                  )}
+                </p>
+              </div>
+
+              {!phoneVisible && !emailVisible && (
+                <p style={{ background: "#f8fafc", padding: 12, borderRadius: 10 }}>
+                  {lang === "ka"
+                    ? "საკონტაქტო ინფორმაცია ხელმისაწვდომი არ არის. შეგიძლიათ ძაღლის გამსეირნებელს საიტის ჩატით მისწეროთ."
+                    : lang === "ru"
+                      ? "Контактные данные недоступны. Вы можете написать специалисту во внутреннем чате."
+                      : "Contact details are unavailable. You can message the walker using the site chat."}
+                </p>
+              )}
+
+              {!isOwnProfile && isClient && (
+                <button
+                  type="button"
+                  className="message-btn"
+                  disabled={!ownerId}
+                  onClick={() => {
+                    setShowContactModal(false);
+                    handleStartChat();
+                  }}
+                  style={{ width: "100%", marginTop: 12, cursor: "pointer" }}
+                >
+                  💬 {t.message}
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setShowContactModal(false)}
+                style={{ width: "100%", marginTop: 10, padding: 10, borderRadius: 8 }}
+              >
+                {t.cancel}
+              </button>
+            </div>
+          </div>
         )}
 
         <section style={{ background: "#fff", padding: 24, borderRadius: 16, marginBottom: 24 }}>

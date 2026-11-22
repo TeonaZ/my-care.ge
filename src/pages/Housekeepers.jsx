@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./Drivers.css";
@@ -40,6 +40,8 @@ const translations = {
     viewProfile: "პროფილის ნახვა",
     noReviews: "ჯერ არ აქვს შეფასება",
     noResults: "შესაბამისი სახლის დამხმარე ვერ მოიძებნა",
+    loading: "სახლის დამხმარეები იტვირთება...",
+    loadError: "სახლის დამხმარეების ჩატვირთვა ვერ მოხერხდა.",
 
     name1: "ნათია მ.",
     name2: "თამუნა კ.",
@@ -93,6 +95,8 @@ const translations = {
     viewProfile: "View Profile",
     noReviews: "No reviews yet",
     noResults: "No matching housekeepers found",
+    loading: "Loading housekeepers...",
+    loadError: "Could not load housekeepers.",
 
     name1: "Natia M.",
     name2: "Tamuna K.",
@@ -146,6 +150,8 @@ const translations = {
     viewProfile: "Посмотреть профиль",
     noReviews: "Пока нет отзывов",
     noResults: "Подходящие помощники по дому не найдены",
+    loading: "Загрузка помощников по дому...",
+    loadError: "Не удалось загрузить помощников по дому.",
 
     name1: "Натия М.",
     name2: "Тамуна К.",
@@ -187,158 +193,85 @@ function Housekeepers() {
 
   const [appliedEmployment, setAppliedEmployment] = useState("");
 
-  /* =========================
-     DEFAULT HOUSEKEEPERS
-  ========================= */
+  // რეალური სახლის დამხმარეები PostgreSQL-იდან.
+  const [profiles, setProfiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
-  const defaultHousekeepers = [
-    {
-      id: "1",
-      name: t.name1,
-      cityValue: "tbilisi",
-      services: ["cleaning", "daily"],
-      experience: t.years6,
-      employmentType: "full-time",
-      paymentType: "hourly",
-      priceValue: 20,
-      rating: 4.9,
-      reviews: 41,
-      verified: true,
-      isCustom: false,
-    },
+  useEffect(() => {
+    let active = true;
 
-    {
-      id: "2",
-      name: t.name2,
-      cityValue: "tbilisi",
-      services: ["cleaning", "cooking"],
-      experience: t.years4,
-      employmentType: "part-time",
-      paymentType: "hourly",
-      priceValue: 18,
-      rating: 4.8,
-      reviews: 28,
-      verified: true,
-      isCustom: false,
-    },
+    const loadHousekeepers = async () => {
+      try {
+        setLoading(true);
+        setLoadError(false);
 
-    {
-      id: "3",
-      name: t.name3,
-      cityValue: "batumi",
-      services: ["daily", "cooking"],
-      experience: t.years5,
-      employmentType: "part-time",
-      paymentType: "hourly",
-      priceValue: 17,
-      rating: 4.7,
-      reviews: 20,
-      verified: false,
-      isCustom: false,
-    },
-  ];
+        const response = await fetch(
+          "http://localhost:5000/api/specialists?profession=housekeeper"
+        );
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-  /* =========================
-     SAVED SPECIALISTS
-  ========================= */
+        const data = await response.json();
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data.specialists)
+            ? data.specialists
+            : Array.isArray(data.profiles)
+              ? data.profiles
+              : [];
 
-  const getSavedSpecialists = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("careGeorgiaSpecialists"));
+        if (active) setProfiles(list);
+      } catch (error) {
+        console.error("Load housekeepers error:", error);
+        if (active) {
+          setProfiles([]);
+          setLoadError(true);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
 
-      return Array.isArray(saved) ? saved : [];
-    } catch {
-      return [];
-    }
-  };
-
-  const getSafeName = (profile) => {
-    const firstName = profile.firstName || "";
-
-    const lastName = profile.lastName || "";
-
-    const lastInitial = lastName ? `${lastName.charAt(0)}.` : "";
-
-    return (
-      `${firstName} ${lastInitial}`.trim() ||
-      (language === "ka"
-        ? "სახლის დამხმარე"
-        : language === "ru"
-          ? "Помощник по дому"
-          : "Housekeeper")
-    );
-  };
+    loadHousekeepers();
+    return () => { active = false; };
+  }, []);
 
   const getServices = (profile) => {
     if (Array.isArray(profile.services) && profile.services.length > 0) {
       return profile.services;
     }
-
-    if (profile.serviceType) {
-      return [profile.serviceType];
+    if (profile.serviceType) return [profile.serviceType];
+    if (["cleaning", "daily", "cooking"].includes(profile.service)) {
+      return [profile.service];
     }
-
-    if (profile.service) {
-      const service = String(profile.service).toLowerCase();
-
-      if (
-        service === "cleaning" ||
-        service === "daily" ||
-        service === "cooking"
-      ) {
-        return [service];
-      }
-    }
-
-    /*
-      ძველი/ზოგადი პროფილი თუ კონკრეტულ
-      მომსახურებას არ ინახავს, ყველა
-      მომსახურების ფილტრში არ დავმალოთ.
-    */
     return ["cleaning", "daily", "cooking"];
   };
 
-  const customHousekeepers = getSavedSpecialists()
+  const housekeepers = profiles
     .filter(
       (profile) =>
-        profile.profession === "housekeeper" && profile.status !== "inactive",
+        String(profile.profession || "").toLowerCase() === "housekeeper" &&
+        profile.status !== "inactive"
     )
-    .map((profile) => ({
-      id: String(profile.id),
-
-      ownerId: profile.ownerId,
-
-      name: getSafeName(profile),
-
-      cityValue: profile.city || "other",
-
-      services: getServices(profile),
-
-      experience: profile.experience || "",
-
-      employmentType: profile.employmentType || "part-time",
-
-      paymentType: profile.paymentType || "hourly",
-
-      priceValue: Number(profile.priceValue) || 0,
-
-      rating:
-        profile.rating !== null && profile.rating !== undefined
-          ? Number(profile.rating)
-          : null,
-
-      reviews: Number(profile.reviews) || 0,
-
-      verified: profile.verified === true,
-
-      isCustom: true,
-    }));
-
-  /* =========================
-     ALL HOUSEKEEPERS
-  ========================= */
-
-  const housekeepers = [...customHousekeepers, ...defaultHousekeepers];
+    .map((profile) => {
+      const firstName = profile.firstName || "";
+      const lastName = profile.lastName || "";
+      const name = `${firstName} ${lastName ? `${lastName.charAt(0)}.` : ""}`.trim();
+      return {
+        id: profile.id,
+        ownerId: profile.ownerId,
+        name: name || (language === "ka" ? "სახლის დამხმარე" : language === "ru" ? "Помощник по дому" : "Housekeeper"),
+        cityValue: profile.city || "other",
+        services: getServices(profile),
+        experience: profile.experience || "",
+        employmentType: profile.employmentType || "part-time",
+        paymentType: profile.paymentType || "hourly",
+        priceValue: Number(profile.priceValue) || 0,
+        rating: profile.rating ?? null,
+        reviews: Number(profile.reviews) || 0,
+        verified: profile.verified === true,
+      };
+    });
 
   /* =========================
      CITY
@@ -553,7 +486,11 @@ function Housekeepers() {
       {/* HOUSEKEEPERS */}
 
       <section className="drivers-list">
-        {filteredHousekeepers.length === 0 ? (
+        {loading ? (
+          <p>{t.loading}</p>
+        ) : loadError ? (
+          <p style={{ color: "#dc2626" }}>{t.loadError}</p>
+        ) : filteredHousekeepers.length === 0 ? (
           <div
             style={{
               width: "100%",

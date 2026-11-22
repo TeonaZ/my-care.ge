@@ -6,7 +6,9 @@ const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
 
 const normalizeService = (value) => {
-  const service = String(value || "").trim().toLowerCase();
+  const service = String(value || "")
+    .trim()
+    .toLowerCase();
 
   if (service === "dog-walker") {
     return "dogwalker";
@@ -62,24 +64,21 @@ router.post("/", authMiddleware, async (req, res) => {
     if (String(job.owner_id) !== String(req.user.userId)) {
       return res.status(403).json({
         success: false,
-        message:
-          "ამ განცხადებიდან დაინტერესების გაგზავნის უფლება არ გაქვს.",
+        message: "ამ განცხადებიდან დაინტერესების გაგზავნის უფლება არ გაქვს.",
       });
     }
 
     if (job.status !== "active") {
       return res.status(400).json({
         success: false,
-        message:
-          "დახურული განცხადებიდან დაინტერესებას ვერ გააგზავნი.",
+        message: "დახურული განცხადებიდან დაინტერესებას ვერ გააგზავნი.",
       });
     }
 
     if (String(specialistId) === String(req.user.userId)) {
       return res.status(400).json({
         success: false,
-        message:
-          "საკუთარ პროფილზე დაინტერესებას ვერ გააგზავნი.",
+        message: "საკუთარ პროფილზე დაინტერესებას ვერ გააგზავნი.",
       });
     }
 
@@ -87,20 +86,26 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const specialistResult = await pool.query(
       `
-      SELECT
-        id,
-        account_type,
-        service
-      FROM users
-      WHERE id = $1
-      `,
-      [specialistId],
+    SELECT
+      u.id,
+      u.account_type,
+      sp.profession AS service
+    FROM users u
+    JOIN specialist_profiles sp
+      ON sp.owner_id = u.id
+    WHERE u.id = $1
+      AND sp.status = 'active'
+      AND REPLACE(LOWER(sp.profession), '-', '') =
+          REPLACE(LOWER($2), '-', '')
+    LIMIT 1
+  `,
+      [specialistId, job.service],
     );
 
     if (specialistResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "სპეციალისტი ვერ მოიძებნა.",
+        message: "ამ სპეციალისტს შესაბამისი პროფესიის აქტიური პროფილი არ აქვს.",
       });
     }
 
@@ -109,20 +114,21 @@ router.post("/", authMiddleware, async (req, res) => {
     if (specialist.account_type !== "provider") {
       return res.status(400).json({
         success: false,
-        message:
-          "არჩეული მომხმარებელი სპეციალისტი არ არის.",
+        message: "არჩეული მომხმარებელი სპეციალისტი არ არის.",
       });
     }
 
     if (
       normalizeService(specialist.service) &&
-      normalizeService(job.service) !==
-        normalizeService(specialist.service)
+      normalizeService(job.service) !== normalizeService(specialist.service)
     ) {
+      console.log("INTEREST SERVICE CHECK:", {
+        jobService: job.service,
+        specialistService: specialist.service,
+      });
       return res.status(400).json({
         success: false,
-        message:
-          "ეს ვაკანსია სპეციალისტის სერვისს არ ემთხვევა.",
+        message: "ეს ვაკანსია სპეციალისტის სერვისს არ ემთხვევა.",
       });
     }
 
@@ -168,11 +174,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
       LIMIT 1
       `,
-      [
-        req.user.userId,
-        specialistId,
-        job.service,
-      ],
+      [req.user.userId, specialistId, job.service],
     );
 
     if (existingResult.rows.length > 0) {
@@ -309,9 +311,15 @@ router.get("/sent", authMiddleware, async (req, res) => {
       JOIN users u
         ON u.id = i.specialist_id
 
-      JOIN specialist_profiles sp
-        ON sp.owner_id = i.specialist_id
-
+      LEFT JOIN LATERAL (
+  SELECT sp.*
+  FROM specialist_profiles sp
+  WHERE sp.owner_id = i.specialist_id
+  ORDER BY
+    CASE WHEN sp.profession = j.service THEN 0 ELSE 1 END,
+    sp.id
+  LIMIT 1
+) sp ON TRUE
       WHERE i.sender_id = $1
 
       ORDER BY i.created_at DESC
@@ -338,15 +346,9 @@ router.get("/sent", authMiddleware, async (req, res) => {
         firstName: row.specialist_first_name,
         lastName: row.specialist_last_name,
 
-        email:
-          row.specialist_show_email === true
-            ? row.specialist_email
-            : null,
+        email: row.specialist_show_email === true ? row.specialist_email : null,
 
-        phone:
-          row.specialist_show_phone === true
-            ? row.specialist_phone
-            : null,
+        phone: row.specialist_show_phone === true ? row.specialist_phone : null,
 
         showEmail: row.specialist_show_email === true,
         showPhone: row.specialist_show_phone === true,
@@ -383,13 +385,10 @@ router.get("/sent", authMiddleware, async (req, res) => {
 // GET /api/interests/received
 // ========================================
 
-router.get(
-  "/received",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const result = await pool.query(
-        `
+router.get("/received", authMiddleware, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `
         SELECT
           i.id,
           i.job_id,
@@ -427,81 +426,67 @@ router.get(
 
         ORDER BY i.created_at DESC
         `,
-        [req.user.userId],
-      );
+      [req.user.userId],
+    );
 
-      const interests = result.rows.map((row) => ({
-        id: row.id,
-        jobId: row.job_id,
-        senderId: row.sender_id,
-        specialistId: row.specialist_id,
-        status: row.status,
-        isSeen: row.is_seen,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
+    const interests = result.rows.map((row) => ({
+      id: row.id,
+      jobId: row.job_id,
+      senderId: row.sender_id,
+      specialistId: row.specialist_id,
+      status: row.status,
+      isSeen: row.is_seen,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
 
-        employer: {
-          id: row.sender_id,
-          firstName: row.sender_first_name,
-          lastName: row.sender_last_name,
+      employer: {
+        id: row.sender_id,
+        firstName: row.sender_first_name,
+        lastName: row.sender_last_name,
 
-          email:
-            row.show_sender_email === true
-              ? row.sender_email
-              : null,
+        email: row.show_sender_email === true ? row.sender_email : null,
 
-          phone:
-            row.show_sender_phone === true
-              ? row.sender_phone
-              : null,
+        phone: row.show_sender_phone === true ? row.sender_phone : null,
 
-          showEmail: row.show_sender_email === true,
-          showPhone: row.show_sender_phone === true,
-        },
+        showEmail: row.show_sender_email === true,
+        showPhone: row.show_sender_phone === true,
+      },
 
-        job: {
-          id: row.job_id,
-          service: row.service,
-          city: row.city,
-          employmentType: row.employment_type,
-          paymentType: row.payment_type,
-          budget: Number(row.budget),
-          description: row.description,
-          status: row.job_status,
-        },
-      }));
+      job: {
+        id: row.job_id,
+        service: row.service,
+        city: row.city,
+        employmentType: row.employment_type,
+        paymentType: row.payment_type,
+        budget: Number(row.budget),
+        description: row.description,
+        status: row.job_status,
+      },
+    }));
 
-      return res.json({
-        success: true,
-        interests,
-      });
-    } catch (error) {
-      console.error(
-        "GET RECEIVED INTERESTS ERROR:",
-        error,
-      );
+    return res.json({
+      success: true,
+      interests,
+    });
+  } catch (error) {
+    console.error("GET RECEIVED INTERESTS ERROR:", error);
 
-      return res.status(500).json({
-        success: false,
-        message:
-          "მიღებული დაინტერესებების მიღება ვერ მოხერხდა.",
-      });
-    }
-  },
-);
+    return res.status(500).json({
+      success: false,
+      message: "მიღებული დაინტერესებების მიღება ვერ მოხერხდა.",
+    });
+  }
+});
 
 // ========================================
 // MARK RECEIVED INTERESTS AS SEEN
 // PATCH /api/interests/received/seen
 // ========================================
 
-router.patch(
-  "/received/seen",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const result = await pool.query(
-        `
+router.patch("/received/seen", authMiddleware, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `
         UPDATE interests
 
         SET
@@ -513,61 +498,51 @@ router.patch(
 
         RETURNING id
         `,
-        [req.user.userId],
-      );
+      [req.user.userId],
+    );
 
-      return res.json({
-        success: true,
-        markedCount: result.rowCount,
-      });
-    } catch (error) {
-      console.error(
-        "MARK INTERESTS AS SEEN ERROR:",
-        error,
-      );
+    return res.json({
+      success: true,
+      markedCount: result.rowCount,
+    });
+  } catch (error) {
+    console.error("MARK INTERESTS AS SEEN ERROR:", error);
 
-      return res.status(500).json({
-        success: false,
-        message:
-          "შეტყობინებების ნანახად მონიშვნა ვერ მოხერხდა.",
-      });
-    }
-  },
-);
+    return res.status(500).json({
+      success: false,
+      message: "შეტყობინებების ნანახად მონიშვნა ვერ მოხერხდა.",
+    });
+  }
+});
 
 // ========================================
 // UPDATE STATUS
 // PATCH /api/interests/:id/status
 // ========================================
 
-router.patch(
-  "/:id/status",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { status } = req.body;
+router.patch("/:id/status", authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
 
-      const allowedStatuses = [
-        "accepted",
-        "declined",
-      ];
+    const allowedStatuses = ["accepted", "declined"];
 
-      if (!allowedStatuses.includes(status)) {
-        return res.status(400).json({
-          success: false,
-          message: "სტატუსი არასწორია.",
-        });
-      }
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "სტატუსი არასწორია.",
+      });
+    }
 
-      const result = await pool.query(
-        `
+    const result = await pool.query(
+      `
         UPDATE interests
 
-        SET
-          status = $1,
-          is_seen = TRUE,
-          updated_at = CURRENT_TIMESTAMP
+SET
+  status = $1,
+  is_seen = TRUE,
+  response_seen_at = NULL,
+  updated_at = CURRENT_TIMESTAMP
 
         WHERE id = $2
           AND specialist_id = $3
@@ -582,55 +557,125 @@ router.patch(
           created_at,
           updated_at
         `,
-        [
-          status,
-          id,
-          req.user.userId,
-        ],
-      );
+      [status, id, req.user.userId],
+    );
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message:
-            "დაინტერესება ვერ მოიძებნა ან მისი შეცვლის უფლება არ გაქვს.",
-        });
-      }
-
-      const interest = result.rows[0];
-
-      return res.json({
-        success: true,
-
-        message:
-          status === "accepted"
-            ? "დაინტერესება მიღებულია."
-            : "დაინტერესება უარყოფილია.",
-
-        interest: {
-          id: interest.id,
-          jobId: interest.job_id,
-          senderId: interest.sender_id,
-          specialistId: interest.specialist_id,
-          status: interest.status,
-          isSeen: interest.is_seen,
-          createdAt: interest.created_at,
-          updatedAt: interest.updated_at,
-        },
-      });
-    } catch (error) {
-      console.error(
-        "UPDATE INTEREST ERROR:",
-        error,
-      );
-
-      return res.status(500).json({
+    if (result.rows.length === 0) {
+      return res.status(404).json({
         success: false,
-        message:
-          "დაინტერესების სტატუსის შეცვლა ვერ მოხერხდა.",
+        message: "დაინტერესება ვერ მოიძებნა ან მისი შეცვლის უფლება არ გაქვს.",
       });
     }
-  },
-);
+
+    const interest = result.rows[0];
+
+    return res.json({
+      success: true,
+
+      message:
+        status === "accepted"
+          ? "დაინტერესება მიღებულია."
+          : "დაინტერესება უარყოფილია.",
+
+      interest: {
+        id: interest.id,
+        jobId: interest.job_id,
+        senderId: interest.sender_id,
+        specialistId: interest.specialist_id,
+        status: interest.status,
+        isSeen: interest.is_seen,
+        createdAt: interest.created_at,
+        updatedAt: interest.updated_at,
+      },
+    });
+  } catch (error) {
+    console.error("UPDATE INTEREST ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "დაინტერესების სტატუსის შეცვლა ვერ მოხერხდა.",
+    });
+  }
+});
+
+// ========================================
+// EMPLOYER UNREAD INTEREST RESPONSES
+// GET /api/interests/responses/unread/count
+// ========================================
+
+router.get("/responses/unread/count", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.accountType !== "client") {
+      return res.status(403).json({
+        success: false,
+        message: "ეს ფუნქცია მხოლოდ დამსაქმებლისთვისაა.",
+      });
+    }
+
+    const result = await pool.query(
+      `
+        SELECT COUNT(*)::integer AS unread_count
+        FROM interests
+        WHERE sender_id = $1
+          AND status IN ('accepted', 'declined')
+          AND response_seen_at IS NULL
+      `,
+      [req.user.userId],
+    );
+
+    return res.json({
+      success: true,
+      unreadCount: result.rows[0].unread_count,
+    });
+  } catch (error) {
+    console.error("UNREAD INTEREST RESPONSES ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "ახალი პასუხების დათვლა ვერ მოხერხდა.",
+    });
+  }
+});
+
+// ========================================
+// MARK EMPLOYER INTEREST RESPONSES AS SEEN
+// PATCH /api/interests/responses/mark-seen
+// ========================================
+
+router.patch("/responses/mark-seen", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.accountType !== "client") {
+      return res.status(403).json({
+        success: false,
+        message: "ეს ფუნქცია მხოლოდ დამსაქმებლისთვისაა.",
+      });
+    }
+
+    const result = await pool.query(
+      `
+        UPDATE interests
+        SET
+          response_seen_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE sender_id = $1
+          AND status IN ('accepted', 'declined')
+          AND response_seen_at IS NULL
+      `,
+      [req.user.userId],
+    );
+
+    return res.json({
+      success: true,
+      markedSeen: result.rowCount,
+    });
+  } catch (error) {
+    console.error("MARK INTEREST RESPONSES SEEN ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "პასუხების ნანახად მონიშვნა ვერ მოხერხდა.",
+    });
+  }
+});
 
 module.exports = router;

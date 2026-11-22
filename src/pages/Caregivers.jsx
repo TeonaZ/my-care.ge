@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../Context/LanguageContext";
 import "./Drivers.css";
@@ -53,6 +53,8 @@ const translations = {
     monthly: "თვე",
 
     noResults: "ამ ფილტრებით მომვლელი ვერ მოიძებნა.",
+    loading: "მომვლელები იტვირთება...",
+    loadError: "მომვლელების ჩატვირთვა ვერ მოხერხდა.",
   },
 
   en: {
@@ -105,6 +107,8 @@ const translations = {
 
     noResults:
       "No caregivers were found with these filters.",
+    loading: "Loading caregivers...",
+    loadError: "Could not load caregivers.",
   },
 
   ru: {
@@ -157,6 +161,8 @@ const translations = {
 
     noResults:
       "По этим фильтрам сиделки не найдены.",
+    loading: "Загрузка сиделок...",
+    loadError: "Не удалось загрузить сиделок.",
   },
 };
 
@@ -191,159 +197,72 @@ function Caregivers() {
   const [appliedPrice, setAppliedPrice] =
     useState("");
 
-  // ძველი სატესტო მომვლელები
-  const defaultCaregivers = [
-    {
-      id: "1",
-      name: t.name1,
-      cityValue: "tbilisi",
-      experience: t.years8,
-      experienceYears: 8,
-      employmentType: "full-time",
-      paymentType: "hourly",
-      priceValue: 22,
-      rating: "⭐ 4.9",
-      verified: true,
-    },
+  // რეალური მომვლელები PostgreSQL-იდან (backend API).
+  const [profiles, setProfiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
-    {
-      id: "2",
-      name: t.name2,
-      cityValue: "kutaisi",
-      experience: t.years6,
-      experienceYears: 6,
-      employmentType: "part-time",
-      paymentType: "hourly",
-      priceValue: 18,
-      rating: "⭐ 4.8",
-      verified: true,
-    },
+  useEffect(() => {
+    let active = true;
+    const loadCaregivers = async () => {
+      try {
+        setLoading(true);
+        setLoadError(false);
+        const response = await fetch(
+          "http://localhost:5000/api/specialists?profession=caregiver"
+        );
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data.specialists)
+            ? data.specialists
+            : Array.isArray(data.profiles)
+              ? data.profiles
+              : [];
+        if (active) setProfiles(list);
+      } catch (error) {
+        console.error("Load caregivers error:", error);
+        if (active) {
+          setProfiles([]);
+          setLoadError(true);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadCaregivers();
+    return () => { active = false; };
+  }, []);
 
-    {
-      id: "3",
-      name: t.name3,
-      cityValue: "batumi",
-      experience: t.years5,
-      experienceYears: 5,
-      employmentType: "full-time",
-      paymentType: "hourly",
-      priceValue: 17,
-      rating: "⭐ 4.7",
-      verified: false,
-    },
-  ];
-
-  // localStorage-დან სპეციალისტების წამოღება
-  const getSavedSpecialists = () => {
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem(
-          "careGeorgiaSpecialists"
-        )
-      );
-
-      return Array.isArray(saved)
-        ? saved
-        : [];
-    } catch {
-      return [];
-    }
-  };
-
-  const savedSpecialists =
-    getSavedSpecialists();
-
-  // გამოცდილებიდან რიცხვის ამოღება
-  // მაგალითად "5 წელი" -> 5
   const getExperienceYears = (experience) => {
-    if (
-      experience === null ||
-      experience === undefined
-    ) {
-      return 0;
-    }
-
-    const match = String(experience).match(
-      /\d+([.,]\d+)?/
-    );
-
-    if (!match) {
-      return 0;
-    }
-
-    return Number(
-      match[0].replace(",", ".")
-    );
+    const match = String(experience ?? "").match(/\d+([.,]\d+)?/);
+    return match ? Number(match[0].replace(",", ".")) : 0;
   };
 
-  // მომხმარებლების მიერ შექმნილი აქტიური მომვლელები
-  const customCaregivers = savedSpecialists
-    .filter(
-      (profile) =>
-        profile.profession ===
-          "caregiver" &&
-        profile.status !== "inactive"
+  const caregivers = profiles
+    .filter((profile) =>
+      String(profile.profession || "").toLowerCase() === "caregiver" &&
+      profile.status !== "inactive"
     )
     .map((profile) => {
-      const firstName =
-        profile.firstName || "";
-
-      const lastName =
-        profile.lastName || "";
-
-      const lastInitial = lastName
-        ? `${lastName.charAt(0)}.`
-        : "";
-
-      const safeName =
-        `${firstName} ${lastInitial}`.trim() ||
-        (language === "ka"
-          ? "მომვლელი"
-          : language === "ru"
-          ? "Сиделка"
-          : "Caregiver");
-
+      const firstName = profile.firstName || "";
+      const lastName = profile.lastName || "";
+      const name = `${firstName} ${lastName ? `${lastName.charAt(0)}.` : ""}`.trim();
+      const rating = profile.rating;
       return {
-        id: String(profile.id),
-
-        name: safeName,
-
-        cityValue:
-          profile.city || "other",
-
-        experience:
-          profile.experience || "",
-
-        experienceYears:
-          getExperienceYears(
-            profile.experience
-          ),
-
-        employmentType:
-          profile.employmentType || "",
-
-        paymentType:
-          profile.paymentType || "hourly",
-
-        priceValue:
-          Number(profile.priceValue) || 0,
-
-        rating:
-          profile.rating !== null &&
-          profile.rating !== undefined
-            ? `⭐ ${profile.rating}`
-            : "",
-
-        verified:
-          profile.verified === true,
+        id: profile.id,
+        name: name || (language === "ka" ? "მომვლელი" : language === "ru" ? "Сиделка" : "Caregiver"),
+        cityValue: profile.city || "other",
+        experience: profile.experience || "",
+        experienceYears: getExperienceYears(profile.experience),
+        employmentType: profile.employmentType || "",
+        paymentType: profile.paymentType || "hourly",
+        priceValue: Number(profile.priceValue) || 0,
+        rating: rating !== null && rating !== undefined && rating !== "" ? `⭐ ${rating}` : "",
+        verified: profile.verified === true,
       };
     });
-
-  // ძველი + მომხმარებლების პროფილები
-  const caregivers = [
-    ...defaultCaregivers,
-    ...customCaregivers,
-  ];
 
   const cityNames = {
     tbilisi: t.tbilisi,
@@ -636,7 +555,11 @@ function Caregivers() {
       </div>
 
       <section className="drivers-list">
-        {filteredCaregivers.length ===
+        {loading ? (
+          <p>{t.loading}</p>
+        ) : loadError ? (
+          <p style={{ color: "#dc2626" }}>{t.loadError}</p>
+        ) : filteredCaregivers.length ===
         0 ? (
           <div
             className="driver-card"
